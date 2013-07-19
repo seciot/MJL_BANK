@@ -1,0 +1,22 @@
+00 Approved
+01 Contact card issuer
+03 Format error
+05 External decline
+12 Invalid transaction
+13 Merchant limit exceeded
+14 Invalid track 2
+30 Invalid format
+41 Lost card
+43 Stolen card
+51 Insufficient funds
+54 Expired card
+55 Invalid PIN, PIN tries exceeded
+58 Invalid processing code
+62 Invalid MAC
+78 Original request not found
+81 Wrong format of customer information field (Invalid format of the payment information field)
+82 Prepaid Code not found (Prepaid-code to the defined amount is not found)
+89 Invalid terminal id.
+91 Destination not available
+94 Duplicate transmission
+96 System error

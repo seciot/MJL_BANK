@@ -1,0 +1,54 @@
+QLineEdit{
+      border:3px groove seagreen;
+      border-radius:8px;
+      background-color:white;
+}
+QLineEdit:focus{
+      border: 3px solid red;
+}
+QLineEdit:!enabled{
+      background-color:brown
+}
+QTextEdit:focus{
+      border: 3px solid red;
+}
+QTextEdit:!enabled{
+      background-color:brown
+}
+QGroupBox:!enabled{
+      color:grey
+}
+QPushButton:!enabled{
+      color:grey
+}
+QTabWidget::pane{
+	background-color:rgb(0,0,0,0);
+}
+
+QMessageBox{
+	background-color:thistle;
+	color:white;
+	border-style: outset;
+	border-width: 2px;
+	border-color: red;      
+}
+QPushButton:focus{border: 3px solid green} 
+QPushButton:pressed{border: 3px solid yellow}
+QToolButton:focus{border: 3px solid red} 
+QToolButton:pressed{border: 3px solid yellow}
+QCommandLinkButton:focus{border: 3px solid red} 
+QCommandLinkButton:pressed{border: 3px solid yellow}
+
+QListView::item:selected {
+     border: 1px solid #6a6ea9;
+}
+ 
+QListView::item:selected:!active {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #ABAFE5, stop: 1 #8588B2);
+}
+ 
+QListView::item:selected:active {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #6a6ea9, stop: 1 #888dd9);
+}
