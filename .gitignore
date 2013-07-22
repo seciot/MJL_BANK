@@ -19,7 +19,6 @@ qrc_*.cpp
 Makefile
 *-build-*
  *.o*.svn-base
-
+*.bin
 /.svn
 /OBJ
-/BIN_IPS420
