@@ -2,10 +2,11 @@
 #define UISETTLE_H_
 #include "ui.h"
 #include <QAction>
+
 #include <QThread>
 
-#include "uiTransOnline.h"
-#include "uiPrint.h"
+#include "TransOnlinePro.h"
+
 
 class UISettle : public QDialog
 {
@@ -15,24 +16,48 @@ public:
     ~UISettle();
 
     QLabel *lbHead;
+    QLabel *lbGif;
+    QLabel *lbNotice;
+    QLabel *lbNotice2;
+
+    QPushButton *btnCancel;
+
+
+    void startSettle();
 
 private:
-    UITransOnline *uiTO;
-    UIPrint *uiP;
+    QThread *passThread;
 
-    bool FLAG_TransOnline;
-    bool FLAG_PrintReceipt;
+    QMovie * movie;
+    TransOnlinePro * transOnlineProcess;
+    void ClearLabelInfo();
+    int iitype;
+    QTimer * pUpdateTimer;
+
+private:
+    QString qsUpdate;
+    QString qsBack;
+    char showColon;
+    char backColon;
+    char ucShortCutFlag;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
 private slots:
-    void transOnline();
-    void printReceipt();
 
-    void finishFromFlow();
+    void slotStartSettle();
+
+    void quitFromInputPass();
+    void EableKEY_CAN(bool bEnable);
+    void UpdateLabelText(const QString &str,const QString &backup);
+    void ReturnFromThread(unsigned char index);
+    void UpdateLabelChange();
+    void ReturnWay();
+    void slotBtnCancelclicked();
 
 signals:
-    void sigErrCancel();
+    void QuickQuit(unsigned char result);
+
 };
 
-#endif  
+#endif

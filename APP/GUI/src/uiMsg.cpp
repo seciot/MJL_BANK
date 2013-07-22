@@ -474,13 +474,6 @@ void UIMsg::showNoticeMsg(QString str)
     msg->exec();
 }
 
-void UIMsg::showNoticeMsgWithAutoClose(QString str, int timeout)
-{
-    UIMsg *msg=new UIMsg(NOTICE_ERROR,str,false);
-    msg->setAutoClose(timeout);
-    msg->exec();
-}
-
 void UIMsg::showCombineErrMsg(const ErrIndex ucErrorCode)
 {
     unsigned char ucCode;
@@ -503,6 +496,89 @@ void UIMsg::showCombineErrMsg(const ErrIndex ucErrorCode)
     default:
         ucCode = ucErrorCode;
         showErrMsg(ErrIndex(ucCode));
+        break;
+    }
+}
+
+/// -------------------------------------------------------------------- ///
+/// -----------------------------Auto Close-------------------------- ///
+/// -------------------------------------------------------------------- ///
+void UIMsg::showErrMsgWithAutoClose(const ErrIndex ucErrorCode, int timeout)
+{
+    UIMsg *msg=new UIMsg(NORMAL_ERROR,(unsigned char)ucErrorCode);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+
+void UIMsg::showErrMsgWithAutoClose(QString str, int timeout)
+{
+    UIMsg *msg=new UIMsg(NORMAL_ERROR,str,true);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+
+void UIMsg::showFileErrMsgWithAutoClose(const FileErrIndex ucErrorCode, int timeout)
+{
+    UIMsg *msg=new UIMsg(FILE_ERROR,(unsigned char)ucErrorCode);
+    msg->setAutoClose(timeout);
+    msg->exec();
+
+}
+
+void UIMsg::showCommErrMsgWithAutoClose(const CommsErrIndex ucErrorCode, int timeout)
+{
+    UIMsg *msg=new UIMsg(COMM_ERROR,(unsigned char)ucErrorCode);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+
+void UIMsg::showHostErrMsgWithAutoClose(const HostErrIndex longErrorCode, int timeout)
+{
+    UIMsg *msg=new UIMsg(HOST_ERROR,(long)longErrorCode);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+
+void UIMsg::showNoticeMsgWithAutoClose(const MsgTabIndex index, int timeout)
+{
+    UIMsg *msg=new UIMsg(NOTICE_ERROR,(unsigned char)index);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+void UIMsg::showNoticeMsgWithAutoClose(QString str, int timeout)
+{
+    UIMsg *msg=new UIMsg(NOTICE_ERROR,str,false);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+void UIMsg::showCombineErrMsgWithAutoClose(const ErrIndex ucErrorCode, int timeout)
+{
+    unsigned char ucCode;
+    long hostErr;
+
+    switch(ucErrorCode)
+    {
+    case ERR_HOSTCODE:
+        hostErr = GetHostError();
+        showHostErrMsgWithAutoClose(HostErrIndex(hostErr),timeout);
+        break;
+    case ERR_XFILE_WRITE:
+        ucCode = GetFileError();
+        showFileErrMsgWithAutoClose(FileErrIndex(ucCode),timeout);
+        break;
+    case ERR_COMMUNICATION:
+        ucCode = GetCommsError();
+        showCommErrMsgWithAutoClose(CommsErrIndex(ucCode),timeout);
+        break;
+    default:
+        ucCode = ucErrorCode;
+        showErrMsgWithAutoClose(ErrIndex(ucCode),timeout);
         break;
     }
 }

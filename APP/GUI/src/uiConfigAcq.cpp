@@ -115,6 +115,20 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     lbCountryCode->setText(tr("Country Code:"));
     chkCashBackCheck->setText(tr("Cash Back Check"));
 
+    chkCashBackCheck->setStyleSheet(CHECK_BOX_STYLE);
+    chkCashBackCheck->setMinimumHeight(30);
+
+    cbCarrierTimeOut->setStyleSheet(COMBO_BOX_STYLE);
+    cbHostAccess->setStyleSheet(COMBO_BOX_STYLE);
+    cbHostType->setStyleSheet(COMBO_BOX_STYLE);
+    cbProType->setStyleSheet(COMBO_BOX_STYLE);
+    cbSettleHost->setStyleSheet(COMBO_BOX_STYLE);
+    cbCarrierTimeOut->setMinimumHeight(26);
+    cbHostAccess->setMinimumHeight(26);
+    cbHostType->setMinimumHeight(26);
+    cbProType->setMinimumHeight(26);
+    cbSettleHost->setMinimumHeight(26);
+
     //--------------------   LAYOUT ----------------------//
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(lbIndexNum);
@@ -254,6 +268,8 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     layout->setContentsMargins(0,0,0,5);
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
+
+
 
     this->initialSettings();
 }
@@ -402,7 +418,7 @@ void UIConfigAcq::slotSubmitClicked()
     QString maxAmt=leMaxTrnsAmt->text();
     if(minAmt.toULong()>maxAmt.toULong())
     {
-        UIMsg::showErrMsg("AMOUNT\nMIN > MAX");
+        UIMsg::showErrMsgWithAutoClose("AMOUNT\nMIN > MAX",g_changeParam.TIMEOUT_ERRMSG);
         return;
     }
     else
@@ -418,11 +434,11 @@ void UIConfigAcq::slotSubmitClicked()
     if(!ucResult)
     {
         //成功
-        UIMsg::showNoticeMsg("SAVE SUCCESS");
+        UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
     }
     else
     {
-        UIMsg::showFileErrMsg(FileErrIndex(ucResult));
+        UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
     }
 
 }

@@ -180,7 +180,7 @@ void UIUserManager::slotProcessUserManager()
     {
         qDebug()<<"把东西填满咯";
 
-        UIMsg::showNoticeMsg(INCOMPLETE_INFORMATION);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -190,7 +190,7 @@ void UIUserManager::slotProcessUserManager()
     {
         qDebug()<<"密码不匹配";
 
-        UIMsg::showNoticeMsg(PASSWORD_MISMATCHING);
+        UIMsg::showNoticeMsgWithAutoClose(PASSWORD_MISMATCHING,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -199,7 +199,7 @@ void UIUserManager::slotProcessUserManager()
     int userID=leUserId->text().toInt();
     if(userID==0 || userID==99)
     {
-        UIMsg::showNoticeMsg(NO_PERMISSION);
+         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -217,7 +217,7 @@ void UIUserManager::slotProcessUserManager()
         // 更新用户信息
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsg(ADD_USER_OK);
+        UIMsg::showNoticeMsgWithAutoClose(ADD_USER_OK,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -226,7 +226,7 @@ void UIUserManager::slotProcessUserManager()
         qDebug()<<"柜员存在,则更新柜员的密码";
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsg(CHANGE_PASSWORD_OK);
+        UIMsg::showNoticeMsgWithAutoClose(CHANGE_PASSWORD_OK,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -238,7 +238,7 @@ void UIUserManager::slotProcessUserManager()
         memset(aucCashierPass,0,(CASH_CASHIERPASSLEN+1));
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsg(DELETE_USER_OK);
+        UIMsg::showNoticeMsgWithAutoClose(DELETE_USER_OK,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -306,7 +306,7 @@ void UIUserManager::slotAllowEdit(UserType ut, QString ID)
     {
         qDebug()<<"不支持超级管理员管理员用户做用户设置";
 
-        UIMsg::showNoticeMsg(NO_PERMISSION);
+         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }

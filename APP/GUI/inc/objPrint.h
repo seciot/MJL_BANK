@@ -18,6 +18,8 @@ signals:
 public slots:
     void printReceipt();
     void rePrintReceipt();
+    void printSettle();
+    void printAudit();
 
 private:
 };

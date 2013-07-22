@@ -201,14 +201,14 @@ void UILogon::ReturnFromThread(unsigned char index)
         xDATA::WriteValidFile(xDATA::DataSaveChange);
 
         // 签到失败
-        UIMsg::showCombineErrMsg((ErrIndex)index);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_changeParam.TIMEOUT_ERRMSG);
     }
     else
     {
         //签到成功
         g_changeParam.boolCashierLogonFlag = true;
         xDATA::WriteValidFile(xDATA::DataSaveChange);
-        UIMsg::showNoticeMsg(LOGON_SUCCESS);
+        UIMsg::showNoticeMsgWithAutoClose(LOGON_SUCCESS,g_changeParam.TIMEOUT_ERRMSG);
 
     }
 

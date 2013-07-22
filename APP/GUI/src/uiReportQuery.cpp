@@ -242,7 +242,7 @@ void UIReportQuery::slotTransClicked()
         int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
         if(ucResult!=0)
         {
-            UIMsg::showFileErrMsg((FileErrIndex)ucResult);
+            UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
 
             return;
         }

@@ -86,11 +86,6 @@ UITransOnline::~UITransOnline()
 void UITransOnline::slotStartTrans(TransMode transType)
 {
     qDebug()<<Q_FUNC_INFO;
-
-    //    uiIP->close();
-    //    uiIP=NULL;
-    //    delete passThread;
-
     this->startTrans(transType);
 }
 
@@ -162,7 +157,7 @@ void UITransOnline::ReturnFromThread(unsigned char index)
     if(index)
     {
         qDebug()<<"交易失败";
-        UIMsg::showCombineErrMsg((ErrIndex)index);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_changeParam.TIMEOUT_ERRMSG);
 
         emit sigQuitTrans();
     }

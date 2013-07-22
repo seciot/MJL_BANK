@@ -139,7 +139,7 @@ void UIInputPassword::startAuthorize()
     unsigned char ucResult=SAV_CheckNormalTransIndex();
     if(ucResult!=SUCCESS)
     {
-        UIMsg::showCombineErrMsg(ErrIndex(ucResult));
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
         slotFinishTrans();
 
         return;
@@ -155,7 +155,7 @@ void UIInputPassword::startAuthorize()
     {
         qDebug()<<"把东西填满咯";
 
-        UIMsg::showNoticeMsg(INCOMPLETE_INFORMATION);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
 
         this->resetLine();
 
@@ -185,7 +185,7 @@ void UIInputPassword::startAuthorize()
         {
             qDebug()<<"系统管理员密码错误";
 
-            UIMsg::showErrMsg(ERR_CASH_PASS);
+            UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
             this->resetLine();
 
             return;
@@ -207,7 +207,7 @@ void UIInputPassword::startAuthorize()
             {
                 qDebug()<<"超级密码错误";
 
-                UIMsg::showErrMsg(ERR_CASH_PASS);
+                UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
                 this->resetLine();
 
                 return;
@@ -220,7 +220,7 @@ void UIInputPassword::startAuthorize()
             {
                 qDebug()<<"柜员不存在";
 
-                UIMsg::showErrMsg(ERR_CASH_NOTEXIST);
+                UIMsg::showErrMsgWithAutoClose(ERR_CASH_NOTEXIST,g_changeParam.TIMEOUT_ERRMSG);
                 this->resetLine();
 
                 return;
@@ -238,7 +238,7 @@ void UIInputPassword::startAuthorize()
                 {
                     qDebug()<<"密码错误";
 
-                    UIMsg::showErrMsg(ERR_CASH_PASS);
+                    UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
                     this->resetLine();
 
                     return;

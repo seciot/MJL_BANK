@@ -112,6 +112,8 @@ void UIReportSummary::setTransTotal()
     tbSummary->horizontalHeader()->setDefaultSectionSize(110);
     tbSummary->horizontalHeader()->setStretchLastSection(true);
     tbSummary->verticalHeader()->setVisible(false);
+
+    tbSummary->verticalScrollBar()->setStyleSheet(SCROLL_VERTICAL_STYLE);
 //    tbSummary->verticalHeader()->setStretchLastSection(true);
 
 //    QTableWidgetItem *itmCol1=new QTableWidgetItem();

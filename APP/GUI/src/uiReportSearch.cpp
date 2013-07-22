@@ -128,7 +128,7 @@ void UIReportSearch::slotSearchTransaction()
     {
         qDebug()<<"fill in the blank";
 
-        UIMsg::showNoticeMsg(INCOMPLETE_INFORMATION);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
         return;
     }
 
@@ -150,7 +150,7 @@ void UIReportSearch::slotSearchTransaction()
             int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
             if(ucResult!=0)
             {
-                UIMsg::showFileErrMsg((FileErrIndex)ucResult);
+                UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
 
                 return;
             }
@@ -210,7 +210,7 @@ void UIReportSearch::slotSearchTransaction()
         }
         else
         {
-            UIMsg::showErrMsg("No Match Transaction");
+            UIMsg::showErrMsgWithAutoClose("No Match Transaction",g_changeParam.TIMEOUT_ERRMSG);
             break;
     }
     }

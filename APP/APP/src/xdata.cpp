@@ -677,12 +677,12 @@ void xDATA::LoadChangeDefaultData(void)
     g_changeParam.boolCashierLogonFlag = false;
 
     // timeout
-   g_changeParam.TimeOut_PrintTearPaper=3*1000;   // 打印撕纸等待时间
-   g_changeParam.TimeOut_ErrMsg=5*1000;         // 报错窗口自动关闭时间
-   g_changeParam.TimeOut_Host=30*1000;    // 主机超时
-   g_changeParam.TimeOut_UserInterface=60*1000;    // 界面超时
+   g_changeParam.TIMEOUT_PAPERTEAR=3*1000;   // 打印撕纸等待时间
+   g_changeParam.TIMEOUT_ERRMSG=5*1000;         // 报错窗口自动关闭时间
+   g_changeParam.TIMEOUT_HOST=30*1000;    // 主机超时
+   g_changeParam.TIMEOUT_UI=60*1000;    // 界面超时
 
-   g_changeParam.connectRetry=0;     // 连接重试次数
+   g_changeParam.connectionRetry=0;     // 连接重试次数
 }
 
 void xDATA::LoadCashierDefaultData(void)

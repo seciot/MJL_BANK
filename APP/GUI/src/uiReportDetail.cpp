@@ -50,6 +50,9 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
     tbDetailList->horizontalHeader()->setStretchLastSection(true);
     tbDetailList->verticalHeader()->setVisible(false);
     tbDetailList->setShowGrid(false);
+
+    tbDetailList->verticalScrollBar()->setStyleSheet(SCROLL_VERTICAL_STYLE);
+
     //    ----------------------------------  //
     btnCancel=new QPushButton;
 //    btnSubmit=new QPushButton;

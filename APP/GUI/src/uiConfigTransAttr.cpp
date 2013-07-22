@@ -281,7 +281,7 @@ void UIConfigTransAttr::initialAttr()
 {
     unsigned char ucResult=xDATA::ReadValidFile(xDATA::DataSaveChange);
 //    if(ucResult)
-//        UIMsg::showFileErrMsg(FileErrIndex(ucResult));
+//    UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
 
     if(g_changeParam.advance.TRANS_ENABLE==true)
         chkCashAdTrans->setChecked(true);
@@ -372,7 +372,7 @@ void UIConfigTransAttr::slotSubmitClicked()
 
     unsigned char ucResult=xDATA::WriteValidFile(xDATA::DataSaveChange);
     if(!ucResult)
-        UIMsg::showNoticeMsg("Save Success");
+        UIMsg::showNoticeMsgWithAutoClose("Save Success",g_changeParam.TIMEOUT_ERRMSG);
 }
 
 UIConfigTransAttr::~UIConfigTransAttr()

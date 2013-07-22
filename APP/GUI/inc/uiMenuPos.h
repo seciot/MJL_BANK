@@ -21,7 +21,6 @@ public:
     QPushButton *btnCashierManager;
     QPushButton *btnReport;
     QPushButton *btnParDown;
-    QPushButton *btnLogon;
 
     QPushButton *btnPageOneCancel;
     QPushButton *btnPageTwoCancel;
@@ -42,7 +41,6 @@ private slots:
 
     void showTransMenu();
     void showConfigMenu();
-    void showLogon();
     void showCashierManager();
     void showReport();
     void showSettle();

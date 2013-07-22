@@ -332,7 +332,7 @@ void UIMenuConfig::slotAllowEdit(UserType ut,QString ID)
     {
         qDebug()<<"不支持系统管理员以外的用户做系统设置";
 
-        UIMsg::showNoticeMsg(NO_PERMISSION);
+         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }

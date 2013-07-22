@@ -4,6 +4,7 @@
 #include "uiBalanceInquiry.h"
 #include "uiP2PTransfer.h"
 #include "uiPayment.h"
+#include "uiLogon.h"
 #include "global.h"
 
 UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
@@ -107,12 +108,10 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     btnPageOneNext->setStyleSheet(BTN_MENU_CANCEL_STYLE);
     btnPageTwoBack->setStyleSheet(BTN_MENU_CANCEL_STYLE);
 
-    btnPageOneCancel->setMaximumHeight(30);
-    btnPageTwoCancel->setMaximumHeight(30);
-    btnPageOneNext->setMaximumHeight(30);
-    btnPageTwoBack->setMaximumHeight(30);
-
-
+    btnPageOneCancel->setFixedHeight(30);
+    btnPageTwoCancel->setFixedHeight(30);
+    btnPageOneNext->setFixedHeight(30);
+    btnPageTwoBack->setFixedHeight(30);
 
     stackWidget=new QStackedWidget();
     pageOne=new QWidget();
@@ -124,20 +123,23 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     QHBoxLayout *pageOneHLayout=new QHBoxLayout;
     QHBoxLayout *pageTwoHLayout=new QHBoxLayout;
 
+    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     pageOneVLayout->addWidget(btnCashAd);
     pageOneVLayout->addWidget(btnCashDp);
     pageOneVLayout->addWidget(btnP2P);
     pageOneVLayout->addWidget(btnVOID);
     pageOneVLayout->addWidget(btnAdjust);
+    pageOneVLayout->addItem(sp1);
     pageOneHLayout->addWidget(btnPageOneCancel);
     pageOneHLayout->addWidget(btnPageOneNext);
     pageOneVLayout->addLayout(pageOneHLayout);
 //    pageOne->setLayout(pageOneVLayout);
-
+    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     pageTwoVLayout->addWidget(btnBalance);
     pageTwoVLayout->addWidget(btnPayment);
     pageTwoVLayout->addWidget(btnPIN);
     pageTwoVLayout->addWidget(btnLogOn);
+    pageTwoVLayout->addItem(sp2);
     pageTwoHLayout->addWidget(btnPageTwoCancel);
     pageTwoHLayout->addWidget(btnPageTwoBack);
     pageTwoVLayout->addLayout(pageTwoHLayout);
@@ -166,6 +168,7 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     connect(btnBalance,SIGNAL(clicked()),this,SLOT(Balance_Inquiry_Click()));
     connect(btnP2P,SIGNAL(clicked()),this,SLOT(P2P_Card_Trans_Click()));
     connect(btnPayment,SIGNAL(clicked()),this,SLOT(Payment_Click()));
+    connect(btnLogOn,SIGNAL(clicked()),this,SLOT(showLogon()));
 }
 
 UIMenuTrans::~UIMenuTrans()
@@ -220,7 +223,7 @@ void UIMenuTrans::styleWidget(QWidget *btn, int iFontSize)
         btn->setFont(font13);
     }
     btn->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    btn->setMinimumSize(1,1);
+    btn->setFixedHeight(35);
 }
 
 void UIMenuTrans::Cash_Advance_Click()
@@ -261,4 +264,11 @@ void UIMenuTrans::Payment_Click()
 
     UIPayment *uiP = new UIPayment();
     uiP->exec();
+}
+
+void UIMenuTrans::showLogon()
+{
+    UILogon *uiLog=new UILogon();
+    uiLog->exec();
+
 }

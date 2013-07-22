@@ -10,5 +10,7 @@ typedef enum TICKET_TYPE
 }TicketType;
 
 void PrintTransTicket(NormalTrans *pNormalTrans, TicketType ucTicketType, bool isReprint);
+void PrintSettleTicket(void);
+void PrintTransDetailTicket(void);
 
 #endif // PRINT_H

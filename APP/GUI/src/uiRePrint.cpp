@@ -38,22 +38,22 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     btnRePrintLast=new QPushButton();
     btnRePrintWhich=new QPushButton();
     btnPrintAudit=new QPushButton();
-    btnPrintSummary=new QPushButton();
+    btnPrintSettle=new QPushButton();
 
     btnRePrintLast->setText("Reprint Last ");
     btnRePrintWhich->setText("Reprint At Will");
     btnPrintAudit->setText("Print Audit");
-    btnPrintSummary->setText("Print Settle");
+    btnPrintSettle->setText("Print Settle");
 
     btnRePrintLast->setFont(font2);
     btnRePrintWhich->setFont(font2);
     btnPrintAudit->setFont(font2);
-    btnPrintSummary->setFont(font2);
+    btnPrintSettle->setFont(font2);
 
     btnRePrintLast->setStyleSheet(BTN_MENU_STYLE);
     btnRePrintWhich->setStyleSheet(BTN_MENU_STYLE);
     btnPrintAudit->setStyleSheet(BTN_MENU_STYLE);
-    btnPrintSummary->setStyleSheet(BTN_MENU_STYLE);
+    btnPrintSettle->setStyleSheet(BTN_MENU_STYLE);
 
     btnRePrintLast->setMinimumHeight(40);
     btnRePrintLast->setMaximumHeight(40);
@@ -61,8 +61,8 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     btnRePrintWhich->setMaximumHeight(40);
     btnPrintAudit->setMinimumHeight(40);
     btnPrintAudit->setMaximumHeight(40);
-    btnPrintSummary->setMinimumHeight(40);
-    btnPrintSummary->setMaximumHeight(40);
+    btnPrintSettle->setMinimumHeight(40);
+    btnPrintSettle->setMaximumHeight(40);
     //    ----------------------------------  //
     btnCancel=new QPushButton;
     btnCancel->setText(tr("Cancel"));
@@ -78,7 +78,7 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     v1Lay->addWidget(btnRePrintLast);
     v1Lay->addWidget(btnRePrintWhich);
     v1Lay->addWidget(btnPrintAudit);
-    v1Lay->addWidget(btnPrintSummary);
+    v1Lay->addWidget(btnPrintSettle);
     v1Lay->addItem(sp2);
 
     QHBoxLayout *h2Lay=new QHBoxLayout();
@@ -95,7 +95,7 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     connect(btnRePrintLast,SIGNAL(clicked()),this,SLOT(slotReprintLast()));
     connect(btnRePrintWhich,SIGNAL(clicked()),this,SLOT(slotReprintWhich()));
     connect(btnPrintAudit,SIGNAL(clicked()),this,SLOT(slotPrintAudit()));
-    connect(btnPrintSummary,SIGNAL(clicked()),this,SLOT(slotPrintSummary()));
+    connect(btnPrintSettle,SIGNAL(clicked()),this,SLOT(slotPrintSettle()));
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
 
     //Animation
@@ -135,14 +135,14 @@ void UIRePrint::slotReprintLast()
     int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans,  g_transInfo.ulLastTransNumber);
     if(ucResult!=0)
     {
-        UIMsg::showFileErrMsg((FileErrIndex)ucResult);
+        UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
     memcpy(&NormalTransData,&g_saveTrans,sizeof(NORMAL_TRANS));
     if(NormalTransData.ulAmount==0)
     {
-        UIMsg::showErrMsg("No Transaction");
+        UIMsg::showErrMsgWithAutoClose("No Transaction",g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -181,7 +181,7 @@ void UIRePrint::slotReprintWhich()
                 int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
                 if(ucResult!=0)
                 {
-                    UIMsg::showFileErrMsg((FileErrIndex)ucResult);
+                    UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
 
                     return;
                 }
@@ -206,7 +206,7 @@ void UIRePrint::slotReprintWhich()
             }
             else
             {
-                UIMsg::showErrMsg("No Match Trace");
+                UIMsg::showErrMsgWithAutoClose("No Match Trace",g_changeParam.TIMEOUT_ERRMSG);
                 return;
 
             }
@@ -221,12 +221,29 @@ void UIRePrint::slotPrintAudit()
 {
     qDebug()<<Q_FUNC_INFO;
 
+    // 打印线程
+    threadPrint=new QThread(this);
+    pPrint = new objPrint;
+    connect(threadPrint, SIGNAL(started()), pPrint, SLOT(printAudit()));
+    connect(pPrint,SIGNAL(sigPrintComplete()),this,SLOT(slotFinishPrint()));
+
+    pPrint->moveToThread(threadPrint);
+    threadPrint->start();
+    Os__gif_start((char*)"BigLoad.gif", 60, 80, 124, 124);
 }
 
-void UIRePrint::slotPrintSummary()
+void UIRePrint::slotPrintSettle()
 {
     qDebug()<<Q_FUNC_INFO;
+    // 打印线程
+    threadPrint=new QThread(this);
+    pPrint = new objPrint;
+    connect(threadPrint, SIGNAL(started()), pPrint, SLOT(printSettle()));
+    connect(pPrint,SIGNAL(sigPrintComplete()),this,SLOT(slotFinishPrint()));
 
+    pPrint->moveToThread(threadPrint);
+    threadPrint->start();
+    Os__gif_start((char*)"BigLoad.gif", 60, 80, 124, 124);
 }
 
 void UIRePrint::slotFinishPrint()
@@ -248,6 +265,6 @@ void UIRePrint::slotTearPrint()
 {
     qDebug()<<Q_FUNC_INFO;
     Os__gif_stop();
-    UIMsg::showNoticeMsgWithAutoClose("Tear Receipt",g_changeParam.TimeOut_PrintTearPaper);
+    UIMsg::showNoticeMsgWithAutoClose("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
     Os__gif_start((char*)"BigLoad.gif", 60, 80, 124, 124);
 }

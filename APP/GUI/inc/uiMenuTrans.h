@@ -44,7 +44,7 @@ private slots:
     void Balance_Inquiry_Click();
     void P2P_Card_Trans_Click();
     void Payment_Click();
-
+    void showLogon();
 private:
     static void styleWidget(QWidget * btn,int iFontSize=13);
 };

@@ -100,12 +100,13 @@ void UICashDeposit::chooseAccountType(UserType ut,QString ID)
 
     if(g_changeParam.deposit.TRANS_ENABLE==false)
     {
-        UIMsg::showErrMsg("Transaction Disabled");
+                UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
     {
-        UIMsg::showErrMsg("Please Logon");
+        UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
         return;
     }
     //--------------------------------------- //
@@ -121,7 +122,7 @@ void UICashDeposit::chooseAccountType(UserType ut,QString ID)
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-        UIMsg::showNoticeMsg(NO_PERMISSION);
+         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
         uiIP->resetLine();
 
 
@@ -280,7 +281,7 @@ void UICashDeposit::quitFromFlow()
         uiIP->close();
         FLAG_InputPassword=false;
     }
-    UIMsg::showErrMsg(ERR_CANCEL);
+    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_changeParam.TIMEOUT_ERRMSG);
 
     this->close();
 }

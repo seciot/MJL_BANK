@@ -14,7 +14,7 @@ public:
 
     QPushButton *btnRePrintLast;
     QPushButton *btnRePrintWhich;
-    QPushButton *btnPrintSummary;
+    QPushButton *btnPrintSettle;
     QPushButton *btnPrintAudit;
 
     QPushButton *btnCancel;
@@ -30,7 +30,7 @@ public slots:
 private slots:
     void slotReprintLast();
     void slotReprintWhich();
-    void slotPrintSummary();
+    void slotPrintSettle();
     void slotPrintAudit();
 
     void slotFinishPrint();

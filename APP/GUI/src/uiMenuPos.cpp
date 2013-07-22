@@ -34,7 +34,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     lbMenuIndexText->setText(tr("1/2"));
     lbMenuIndexText->setFont(font2);
     lbMenuIndexText->setAlignment(Qt::AlignRight);
-    //    styleWidget(lbMenu);
 
     btnTrans=new QPushButton;
     btnConfig=new QPushButton;
@@ -45,7 +44,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnCashierManager=new QPushButton;
     btnReport=new QPushButton;
     btnParDown=new QPushButton;
-    btnLogon=new QPushButton;
 
     btnPageOneCancel=new QPushButton;
     btnPageTwoCancel=new QPushButton;
@@ -61,7 +59,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     styleWidget(btnCashierManager);
     styleWidget(btnReport);
     styleWidget(btnParDown);
-    styleWidget(btnLogon);
 
     styleWidget(btnPageOneCancel);
     styleWidget(btnPageOneNext);
@@ -78,7 +75,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnCashierManager->setText(tr("Cashier Manager"));
     btnReport->setText(tr("Report"));
     btnParDown->setText(tr("Param Download"));
-    btnLogon->setText(tr("Logon"));
 
     btnTrans->setFont(font);
     btnConfig->setFont(font);
@@ -89,18 +85,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnCashierManager->setFont(font);
     btnReport->setFont(font);
     btnParDown->setFont(font);
-    btnLogon->setFont(font);
-
-    //    btnTrans->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnConfig->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnBatch->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnReceipt->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnVOID->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnSettle->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnCashierManager->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnReport->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnParDown->setIcon(QIcon(":/icons/QCash/menu2.png"));
-    //    btnLogon->setIcon(QIcon(":/icons/QCash/menu2.png"));
 
     btnPageOneCancel->setText(tr("Cancel"));
     btnPageTwoCancel->setText(tr("Cancel"));
@@ -120,7 +104,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnCashierManager->setStyleSheet(BTN_MENU_STYLE);
     btnReport->setStyleSheet(BTN_MENU_STYLE);
     btnParDown->setStyleSheet(BTN_MENU_STYLE);
-    btnLogon->setStyleSheet(BTN_MENU_STYLE);
 
 
     btnPageOneCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
@@ -128,10 +111,10 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnPageOneNext->setStyleSheet(BTN_MENU_CANCEL_STYLE);
     btnPageTwoBack->setStyleSheet(BTN_MENU_CANCEL_STYLE);
 
-    btnPageOneCancel->setMaximumHeight(30);
-    btnPageTwoCancel->setMaximumHeight(30);
-    btnPageOneNext->setMaximumHeight(30);
-    btnPageTwoBack->setMaximumHeight(30);
+    btnPageOneCancel->setFixedHeight(30);
+    btnPageTwoCancel->setFixedHeight(30);
+    btnPageOneNext->setFixedHeight(30);
+    btnPageTwoBack->setFixedHeight(30);
 
     stackWidget=new QStackedWidget();
     pageOne=new QWidget();
@@ -143,21 +126,24 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     QHBoxLayout *pageOneHLayout=new QHBoxLayout;
     QHBoxLayout *pageTwoHLayout=new QHBoxLayout;
 
+    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     pageOneVLayout->addWidget(btnTrans);
     pageOneVLayout->addWidget(btnConfig);
     pageOneVLayout->addWidget(btnBatch);
     pageOneVLayout->addWidget(btnReceipt);
     pageOneVLayout->addWidget(btnVOID);
+    pageOneVLayout->addItem(sp1);
     pageOneHLayout->addWidget(btnPageOneCancel);
     pageOneHLayout->addWidget(btnPageOneNext);
     pageOneVLayout->addLayout(pageOneHLayout);
     //    pageOne->setLayout(pageOneVLayout);
 
+    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     pageTwoVLayout->addWidget(btnSettle);
     pageTwoVLayout->addWidget(btnCashierManager);
     pageTwoVLayout->addWidget(btnReport);
     pageTwoVLayout->addWidget(btnParDown);
-    pageTwoVLayout->addWidget(btnLogon);
+    pageTwoVLayout->addItem(sp2);
     pageTwoHLayout->addWidget(btnPageTwoCancel);
     pageTwoHLayout->addWidget(btnPageTwoBack);
     pageTwoVLayout->addLayout(pageTwoHLayout);
@@ -182,7 +168,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     connect(btnTrans,SIGNAL(clicked()),this,SLOT(showTransMenu()));
     connect(btnConfig,SIGNAL(clicked()),this,SLOT(showConfigMenu()));
     connect(btnCashierManager,SIGNAL(clicked()),this,SLOT(showCashierManager()));
-    connect(btnLogon,SIGNAL(clicked()),this,SLOT(showLogon()));
     connect(btnReport,SIGNAL(clicked()),this,SLOT(showReport()));
     connect(btnSettle,SIGNAL(clicked()),this,SLOT(showSettle()));
 }
@@ -238,7 +223,7 @@ void UIMenuPos::styleWidget(QWidget *btn, int iFontSize)
         btn->setFont(font13);
     }
     btn->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    btn->setMinimumSize(1,1);
+    btn->setFixedHeight(35);
 }
 
 void UIMenuPos::showTransMenu()
@@ -251,13 +236,6 @@ void UIMenuPos::showConfigMenu()
 {
     UIMenuConfig *uiCon=new UIMenuConfig();
     uiCon->exec();
-
-}
-
-void UIMenuPos::showLogon()
-{
-    UILogon *uiLog=new UILogon();
-    uiLog->exec();
 
 }
 

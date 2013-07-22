@@ -188,7 +188,7 @@ void UIInputAmount::slotAmountInputComplete()
             errMsg.append(" TO ");
             errMsg.append(QString::number(g_constantParam.ulMaxAmount));
 
-            UIMsg::showNoticeMsg(errMsg);
+            UIMsg::showNoticeMsgWithAutoClose(errMsg,g_changeParam.TIMEOUT_ERRMSG);
             return;
         }
     }

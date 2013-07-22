@@ -121,6 +121,36 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbALine4->setText(tr("Agree Line 4:"));
     lbCompLb->setText(tr("Edit Company Copy Label:"));
 
+    chkCard->setStyleSheet(CHECK_BOX_STYLE);
+    chkTrans->setStyleSheet(CHECK_BOX_STYLE);
+    chkNoBliendDial->setStyleSheet(CHECK_BOX_STYLE);
+    chkSelAccEnable->setStyleSheet(CHECK_BOX_STYLE);
+    chkSetReceipt->setStyleSheet(CHECK_BOX_STYLE);
+    chkCard->setMinimumHeight(30);
+    chkTrans->setMinimumHeight(30);
+    chkNoBliendDial->setMinimumHeight(30);
+    chkSelAccEnable->setMinimumHeight(30);
+    chkSetReceipt->setMinimumHeight(30);
+
+    cbDialType->setStyleSheet(COMBO_BOX_STYLE);
+    cbInvoiceLogo->setStyleSheet(COMBO_BOX_STYLE);
+    cbScreenLogo->setStyleSheet(COMBO_BOX_STYLE);
+    cbDialType->setMinimumHeight(26);
+    cbInvoiceLogo->setMinimumHeight(26);
+    cbScreenLogo->setMinimumHeight(26);
+    cbDialType->addItem("GPRS");
+    cbDialType->addItem("WIFI");
+    cbDialType->addItem("BLUETOOTH");
+    cbInvoiceLogo->addItem("LOGO 1");
+    cbInvoiceLogo->addItem("LOGO 2");
+    cbInvoiceLogo->addItem("LOGO 3");
+    cbInvoiceLogo->addItem("LOGO 4");
+    cbScreenLogo->addItem("LOGO 1");
+    cbScreenLogo->addItem("LOGO 2");
+    cbScreenLogo->addItem("LOGO 3");
+    cbScreenLogo->addItem("LOGO 4");
+
+
     //--------------------   LAYOUT ----------------------//
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(chkTrans);
@@ -252,6 +282,8 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
 
+
+
 }
 
 UIConfigTer::~UIConfigTer()
@@ -317,5 +349,5 @@ void UIConfigTer::slotSubmitClicked()
 
     xDATA::WriteValidFile(xDATA::DataSaveChange);
 
-    UIMsg::showNoticeMsg("SAVE SUCCESS");
+    UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
 }

@@ -41,6 +41,14 @@ public:
     static void showHostErrMsg(const HostErrIndex longErrorCode);
     static void showNoticeMsg(const MsgTabIndex index);
     static void showNoticeMsg(QString);
+
+    static void showCombineErrMsgWithAutoClose(const ErrIndex ucErrorCode,int timeout);
+    static void showErrMsgWithAutoClose(const ErrIndex ucErrorCode,int timeout);
+    static void showErrMsgWithAutoClose(QString,int timeout);
+    static void showFileErrMsgWithAutoClose(const FileErrIndex ucErrorCode,int timeout);
+    static void showCommErrMsgWithAutoClose(const CommsErrIndex ucErrorCode,int timeout);
+    static void showHostErrMsgWithAutoClose(const HostErrIndex longErrorCode,int timeout);
+    static void showNoticeMsgWithAutoClose(const MsgTabIndex index,int timeout);
     static void showNoticeMsgWithAutoClose(QString,int);
 
 private:

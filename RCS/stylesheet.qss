@@ -1,0 +1,1181 @@
+/*有着细微差别*/
+QTreeWidget,QListWidget
+{border-image: url(:/styles/listWidgetBg.png) 3 3 3 3 stretch;
+                        border-width: 1px 1px 1px 1px;
+                        min-width: 200px;
+                        min-height: 250px;
+                        }
+
+
+QMenuBar {
+        border-image: url(:/styles/window.png) 2 8 2 8 stretch;
+font-family: Verdana;
+}
+
+QMenuBar::item {
+background: transparent;
+}
+
+ QMenuBar::item:selected { /* when selected using mouse or keyboard */
+border: 1px solid #f5f6fa;
+     border-radius: 3px;
+
+     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                       stop:0 #f0f0f0 stop:0.5 #ffffff stop:1 #e9ecfa);
+ }
+
+ QMenuBar::item:pressed {
+          border: 1px solid grey;
+     border-radius: 3px;
+
+}
+
+QPushButton {
+	min-height: 22px;
+	color: black; 
+        border-image: url(:/styles/normalButton.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px; 
+} 
+QPushButton:pressed { 
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:focus { 
+        border-image: url(:/styles/normalButton_focus.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+	/* Esto nos ayuda a correr un poco las líneas punteadas del "focus" */
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: -5px; 
+	padding-right: -5px;
+} 
+QPushButton:focus:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px; 
+} 
+QPushButton:focus:pressed { 
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+}
+QPushButton:disabled { 
+        border-image: url(:/styles/normalButton_disabled.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default { 
+        border-image: url(:/styles/normalButton_default.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:pressed { 
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:focus { 
+        border-image: url(:/styles/normalButton_focus.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:focus:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:focus:pressed { 
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton:default:disabled { 
+        border-image: url(:/styles/normalButton_disabled.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+
+QScrollBar:vertical { 
+        border-image: url(:/styles/scrollbar_bg.png) 6 0 6 0 stretch;
+	width: 15px; 
+	margin: 15px 0 15px 0; 
+	padding-top: -6px; 
+	padding-bottom: -6px; 
+	border-width: 6px 0px 6px 0px;
+} 
+QScrollBar::handle:vertical { 
+        border-image: url(:/styles/scrollbar_body.png) 6 0 6 0 stretch;
+	min-height: 15px; 
+	border-width: 6px 0px 6px 0px;
+} 
+QScrollBar::handle:vertical:hover { 
+        border-image: url(:/styles/scrollbar_body_hover.png) 6 0 6 0 stretch;
+	border-width: 6px 0px 6px 0px;
+} 
+QScrollBar::handle:vertical:pressed { 
+        border-image: url(:/styles/scrollbar_body_pressed.png) 6 0 6 0 stretch;
+	border-width: 6px 0px 6px 0px;
+} 
+QScrollBar::sub-line:vertical {
+	border: 0px; 
+	background: none;
+	height: 15px; 
+	subcontrol-position: top; 
+	subcontrol-origin: margin;
+} 
+QScrollBar::add-line:vertical { 
+	border: 0px; 
+	background: none; 
+	height: 15px; 
+	subcontrol-position: bottom; 
+	subcontrol-origin: margin;
+} 
+QScrollBar::up-arrow:vertical { 
+        background-image: url(:/styles/scrollbar_upArrow.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::up-arrow:vertical:hover { 
+        background-image: url(:/styles/scrollbar_upArrow_hover.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::up-arrow:vertical:pressed { 
+        background-image: url(:/styles/scrollbar_upArrow_pressed.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::down-arrow:vertical { 
+        background-image: url(:/styles/scrollbar_downArrow.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::down-arrow:vertical:hover { 
+        background-image: url(:/styles/scrollbar_downArrow_hover.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::down-arrow:vertical:pressed { 
+        background-image: url(:/styles/scrollbar_downArrow_pressed.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { 
+	background: none;
+} 
+QScrollBar:horizontal { 
+        border-image: url(:/styles/scrollbar_h_bg.png) 0 6 0 6 stretch;
+	height: 15px; 
+	margin: 0 15px 0 15px; 
+	padding-left: -6px; 
+	padding-right: -6px; 
+	border-width: 0px 6px 0px 6px;
+} 
+QScrollBar::handle:horizontal { 
+        border-image: url(:/styles/scrollbar_h_body.png) 0 6 0 6 stretch;
+	min-width: 15px; 
+	border-width: 0px 6px 0px 6px;
+} 
+QScrollBar::handle:horizontal:hover { 
+        border-image: url(:/styles/scrollbar_h_body_hover.png) 0 6 0 6 stretch;
+	border-width: 0px 6px 0px 6px;
+} 
+QScrollBar::handle:horizontal:pressed { 
+        border-image: url(:/styles/scrollbar_h_body_pressed.png) 0 6 0 6 stretch;
+	border-width: 0px 6px 0px 6px;
+} 
+QScrollBar::sub-line:horizontal { 
+	border: 0px; 
+	background: none; 
+	width: 15px; 
+	subcontrol-position: left; 
+	subcontrol-origin: margin;
+} 
+QScrollBar::add-line:horizontal { 
+	border: 0px; 
+	background: none; 
+	width: 15px; 
+	subcontrol-position: right; 
+	subcontrol-origin: margin;
+} 
+QScrollBar::left-arrow:horizontal { 
+        background-image: url(:/styles/scrollbar_h_leftArrow.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::left-arrow:horizontal:hover { 
+        background-image: url(:/styles/scrollbar_h_leftArrow_hover.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::left-arrow:horizontal:pressed { 
+        background-image: url(:/styles/scrollbar_h_leftArrow_pressed.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::right-arrow:horizontal { 
+        background-image: url(:/styles/scrollbar_h_rightArrow.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::right-arrow:horizontal:hover { 
+        background-image: url(:/styles/scrollbar_h_rightArrow_hover.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::right-arrow:horizontal:pressed { 
+        background-image: url(:/styles/scrollbar_h_rightArrow_pressed.png);
+	background-repeat: no repeat; 
+	width: 15px; 
+	height: 15px;
+} 
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { 
+	background: none;
+}
+	
+QLineEdit, QSpinBox, QDoubleSpinBox, QTimeEdit {
+	max-height: 17px;
+        border-image: url(:/styles/lineEditBg.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px; 
+	border-radius: 0px;
+} 
+QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover { 
+        border-image: url(:/styles/lineEditBg_hover.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px; 
+	border-radius: 0px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus { 
+        border-image: url(:/styles/lineEditBg_pressed.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px; 
+	border-radius: 0px;
+}
+QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QTimeEdit:disabled { 
+        border-image: url(:/styles/lineEditBg_disabled.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px; 
+	border-radius: 0px;
+}
+
+QScrollArea, QTextBrowser, QTextEdit {
+        background-color: #f0f0f0;
+	border-color: #969696;
+	border-style: solid; 
+	border-radius: 3px;
+        border-width: 2px 2px 2px 2px;
+
+/*border-image: url(:/styles/wsChatDisplayBg.png) 3 3 3 3 stretch;
+                        border-width: 1px 1px 1px 1px;*/
+}
+
+QScrollArea:focus, QTextBrowser:focus, QListWidget:focus, QTextEdit:focus, QTreeWidget:focus {
+	background-color: #f0f0f0;
+        border-color: #3178bf;
+	border-style: solid; 
+	border-radius: 3px;
+	border-width: 2px 2px 2px 2px;
+}
+
+/** QCheckBox & QRadioButton **/
+QCheckBox::indicator:unchecked { 
+        image: url(:/styles/checkBox.png);
+} 
+QCheckBox::indicator:unchecked:hover { 
+        image: url(:/styles/checkBox_hover.png);
+}
+QCheckBox::indicator:unchecked:pressed { 
+        image: url(:/styles/checkBox_pressed.png);
+}
+QCheckBox::indicator:unchecked:focus { 
+        image: url(:/styles/checkBox_focus.png);
+}
+QCheckBox::indicator:unchecked:focus:pressed { 
+        image: url(:/styles/checkBox_pressed.png);
+} 
+QCheckBox::indicator:checked { 
+        image: url(:/styles/checkBox_checked.png);
+} 
+QCheckBox::indicator:checked:hover { 
+        image: url(:/styles/checkBox_checked_hover.png);
+}
+QCheckBox::indicator:checked:pressed { 
+        image: url(:/styles/checkBox_checked_pressed.png);
+}
+QCheckBox::indicator:checked:focus { 
+        image: url(:/styles/checkBox_checked_focus.png);
+}
+QCheckBox::indicator:checked:focus:pressed { 
+        image: url(:/styles/checkBox_checked_pressed.png);
+}
+QCheckBox::indicator:disabled { 
+        image: url(:/styles/checkBox_disabled.png);
+}
+QCheckBox::indicator:checked:disabled { 
+        image: url(:/styles/checkBox_checked_disabled.png);
+}
+
+QRadioButton::indicator:unchecked { 
+        image: url(:/styles/radioButton.png);
+} 
+QRadioButton::indicator:unchecked:hover { 
+        image: url(:/styles/radioButton_hover.png);
+}
+QRadioButton::indicator:unchecked:pressed { 
+        image: url(:/styles/radioButton_pressed.png);
+}
+QRadioButton::indicator:unchecked:focus { 
+        image: url(:/styles/radioButton_focus.png);
+}
+QRadioButton::indicator:unchecked:focus:pressed { 
+        image: url(:/styles/radioButton_pressed.png);
+}
+QRadioButton::indicator:checked { 
+        image: url(:/styles/radioButton_checked.png);
+} 
+QRadioButton::indicator:checked:hover { 
+        image: url(:/styles/radioButton_checked_hover.png);
+}
+QRadioButton::indicator:checked:pressed { 
+        image: url(:/styles/radioButton_checked_pressed.png);
+}
+QRadioButton::indicator:checked:focus { 
+        image: url(:/styles/radioButton_checked_focus.png);
+}
+QRadioButton::indicator:checked:focus:pressed { 
+        image: url(:/styles/radioButton_checked_pressed.png);
+}
+QRadioButton::indicator:disabled { 
+        image: url(:/styles/radioButton_disabled.png);
+}
+QRadioButton::indicator:checked:disabled { 
+        image: url(:/styles/radioButton_checked_disabled.png);
+}
+
+QMenu { 
+	padding: 2px;
+	border-top-color: #fdfdfd;
+	border-bottom-color: #cfcecc;
+	border-left-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fdfdfd, stop: 0.3 #e3e3e1, stop: 0.7 #e3e3e1, stop: 1 transparent);
+	border-right-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fdfdfd, stop: 0.3 #e3e3e1, stop: 0.7 #e3e3e1, stop: 1 transparent);
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e9e8e8, stop: 1 #cfcecc);	
+	border-style: solid; 
+	border-width: 1px;
+} 
+QMenu::item { 
+	padding: 2px 20px 2px 20px;
+	background-color: transparent;
+} 
+QMenu::item:selected { 
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #98bbe5, stop: 1 #68a0d8); 
+	border-color: #3882cc; 
+	border-style: solid; 
+	border-radius: 3px; 
+	border-width: 1px 1px 1px 1px;
+}
+QMenu::separator {
+	border-style: solid;
+	border-width: 1px 0px 1px 0px;
+	border-top-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 transparent, stop: 0.3 #aaaaaa, stop: 0.7 #aaaaaa, stop: 1 transparent);
+	border-bottom-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 transparent, stop: 0.3 #e6e6e6, stop: 0.7 #e6e6e6, stop: 1 transparent);
+	margin-left: 3px; 
+	margin-right: 3px;
+} 
+
+/* TODO: el comboBox no está bien estilizado en todos sus estados... verificar esto... */
+	/* Acá hay un bug con el comboBox, necesita 0px en el top sino agrega un 1px extra */
+	/*min-height: 22px;*/
+QComboBox { 
+        border-image: url(:/styles/normalButton.png) 0 8 2 8 stretch;
+	border-width: 0x 8px 2px 8px;
+} 
+QComboBox:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QComboBox:on { 
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+}
+QComboBox:focus { 
+        border-image: url(:/styles/normalButton_focus.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+}
+QComboBox:focus:hover { 
+        border-image: url(:/styles/normalButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+}
+QComboBox:disabled { 
+        border-image: url(:/styles/normalButton_disabled.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QComboBox::down-arrow {
+	margin-left: 5px;
+	width: 14px;
+	height: 12px;
+        image: url(:/styles/arrowDown.png);
+}
+QComboBox::down-arrow:hover {
+        image: url(:/styles/arrowDown_hover.png);
+}
+QComboBox::down-arrow:pressed {
+        image: url(:/styles/arrowDown_pressed.png);
+}
+QComboBox::down-arrow:focus {
+        image: url(:/styles/arrowDown_focus.png);
+}
+QComboBox::down-arrow:disabled {
+        image: url(:/styles/arrowDown_disabled.png);
+}
+QComboBox::editable {
+        border-image: url(:/styles/lineEditBg.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+QComboBox::editable:hover {
+        border-image: url(:/styles/lineEditBg_hover.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+QComboBox::editable:pressed {
+        border-image: url(:/styles/lineEditBg_pressed.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+QComboBox::editable:disabled {
+        border-image: url(:/styles/lineEditBg_disabled.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+QComboBox::drop-down {
+	border: 0px
+}
+QComboBox QAbstractItemView { 
+	padding: 2px;
+	border-top-color: #fdfdfd;
+	border-bottom-color: #cfcecc;
+	border-left-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fdfdfd, stop: 0.3 #e3e3e1, stop: 0.7 #e3e3e1, stop: 1 transparent);
+	border-right-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fdfdfd, stop: 0.3 #e3e3e1, stop: 0.7 #e3e3e1, stop: 1 transparent);
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e9e8e8, stop: 1 #cfcecc);	
+	border-style: solid; 
+	border-width: 1px;
+}
+
+QProgressBar:horizontal {
+	color: #ffffff; 
+	text-align: center; 
+	font-weight: bold; 
+        border-image: url(:/styles/progressBarBg.png) 1 5 1 5 stretch stretch;
+	border-width: 1px 5px 1px 5px; 
+	padding-left:-4px; 
+	padding-right: -4px;
+} 
+QProgressBar::chunk:horizontal { 
+        border-image: url(:/styles/progressBar.png) 0 6 0 6 stretch;
+	border-width: 0px 6px 0px 6px;
+}
+
+ QListWidget::item:selected, QTreeWidget::item:selected {
+        /*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #98bbe5, stop: 1 #68a0d8);
+	border-color: #3882cc; 
+	border-style: solid; 
+        border-radius: 3px;
+        border-width: 1px 1px 1px 1px;*/
+
+        border-image: url(:/styles/normalButton_pressed.png) 2 8 2 8 stretch;
+        border-width: 2px 8px 2px 8px;
+}
+QListWidget::item:hover, QTreeWidget::item:hover { 
+        /*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e8eef9, stop: 1 #b8d1ed);
+	border-color: #88b4e0; 
+	border-style: solid; 
+	border-radius: 3px; 
+        border-width: 1px 1px 1px 1px;*/
+
+        border-image: url(:/styles/normalButton_focus.png) 2 8 2 8 stretch;
+        border-width: 2px 8px 2px 8px;
+} 
+QListWidget::item:selected:hover, QTreeWidget::item:selected:hover { 
+        /*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #afd0f6, stop: 1 #7ab4ef);
+	border-color: #5996d4; 
+	border-style: solid; 
+	border-radius: 3px; 
+        border-width: 1px 1px 1px 1px;*/
+
+        border-image: url(:/styles/normalButton_focus.png) 2 8 2 8 stretch;
+        border-width: 2px 8px 2px 8px;
+}
+
+
+ QGroupBox {
+     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                       stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+     border: 2px solid gray;
+     border-radius: 5px;
+     margin-top: 1ex; /* leave space at the top for the title */
+ }
+
+ QGroupBox::title {
+     subcontrol-origin: margin;
+     subcontrol-position: top center; /* position at the top center */
+     padding: 0 3px;
+ }
+ QGroupBox::indicator {
+     width: 13px;
+     height: 13px;
+ }
+
+ QGroupBox::indicator:unchecked {
+     image: url(:/styles/checkBox.png);
+ }
+
+ QGroupBox::indicator:checked {
+     image: url(:/styles/checkBox_checked.png);
+ }
+
+QLabel{
+        border-image: url(:/styles/normalButton_disabled.png) 3 3 3 3 stretch;
+        border-width: 3px 3px 3px 3px;
+        border-radius: 0px;
+}
+
+QTabWidget::pane {
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #dcdcdc);
+	border-color: #646464;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 5px;
+	top: -2px;
+}
+QTabWidget:tab-bar {
+	left: 5px;
+	right 5px;
+}
+QTabBar:tab { 
+        border-image: url(:/styles/tabBarBg.png) 0 8 0 8 stretch;
+	border-width: 0px 8px 0px 8px; 
+	min-width: 82px; 
+	min-height: 25px;
+} 
+QTabBar:tab:hover { 
+        border-image: url(:/styles/tabBarBg_hover.png) 0 8 0 8 stretch;
+	border-width: 0px 8px 0px 8px; 
+	min-width: 82px; 
+	min-height: 25px;
+} 
+QTabBar:tab:selected { 
+        border-image: url(:/styles/tabBarBg_selected.png) 0 8 0 8 stretch;
+	border-width: 0px 8px 0px 8px; 
+	min-width: 82px; 
+	min-height: 25px;
+}
+QTabBar:tab:disabled { 
+        border-image: url(:/styles/tabBarBg_disabled.png) 0 8 0 8 stretch;
+	border-width: 0px 8px 0px 8px; 
+	min-width: 82px; 
+	min-height: 25px;
+} 
+QTabBar:tab:!selected { 
+	margin-top: 0px;
+}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button {
+      margin: 1px 1px 1px 1px;
+      subcontrol-origin: border;
+      subcontrol-position: top right;
+      width: 14px;
+      height: 12px;
+      background-image: url(:/styles/arrowUp.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover, QTimeEdit::up-button:hover {
+      background-image: url(:/styles/arrowUp_hover.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed, QTimeEdit::up-button:pressed {
+      background-image: url(:/styles/arrowUp_pressed.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::up-button:disabled, QDoubleSpinBox::up-button:disabled, QTimeEdit::up-button:disabled {
+      background-image: url(:/styles/arrowUp_disabled.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button, QTimeEdit::down-button {
+      margin: 1px 1px 1px 1px;
+      subcontrol-origin: border;
+      subcontrol-position: bottom right;
+      width: 14px;
+      height: 12px;
+      background-image: url(:/styles/arrowDown.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover, QTimeEdit::down-button:hover {
+      background-image: url(:/styles/arrowDown_hover.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed, QTimeEdit::down-button:pressed {
+      background-image: url(:/styles/arrowDown_pressed.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::down-button:disabled, QDoubleSpinBox::down-button:disabled, QTimeEdit::down-button:disabled {
+      background-image: url(:/styles/arrowDown_disabled.png);
+      background-repeat: no-repeat;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QTimeEdit::up-arrow {
+      background: none;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {
+      background: none;
+}
+
+QTableView {
+      selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+						  stop: 0 #d2d2d2, stop: 0.25 #dcdcdc,
+						  stop: 0.5 #e6e6e6, stop: 1 #d2d2d2);
+      gridline-color: #cccccc;
+      selection-color: #000000;
+}
+QTableView:focus, QSpinBox:focus {
+      border-image: none;
+      background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+					stop: 0 #b7d2ed, stop: 0.25 #c7dcf1,
+					stop: 0.5 #d7e6f5, stop: 1 #b7d2ed);
+     color: #666666;
+}
+QHeaderView::section {
+      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                       stop:0 #b0b4b4, stop: 0.45 #6f7374,
+                                       stop: 0.5 #333333, stop:1 #050505);
+      padding-left: 2px;
+      padding-right: 2px;
+      color: white;
+      border: 1px solid #646464;
+
+}
+QHeaderView::section:hover {
+      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                       stop:0 #b9bcbd, stop: 0.45 #7c8082,
+                                       stop: 0.5 #474747, stop:1 #191919);
+      border: 1px solid #5796d5;
+}
+QHeaderView::section:pressed {
+      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                       stop:0 #737575, stop: 0.45 #434546,
+                                       stop: 0.5 #191919, stop:1 #020202);
+      border: 1px solid #3d648b;
+}
+QHeaderView::down-arrow {
+      image: url(:/styles/headerViewArrow_down.png);
+      height: 16px;
+      width: 16px;
+      padding-left: 5px;
+}
+QHeaderView::up-arrow {
+      image: url(:/styles/headerViewArrow_up.png);
+      height: 16px;
+      width: 16px;
+      padding-left: 5px;
+}
+
+/** QToolTip **/
+QToolTip {
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #deeaf7, stop: 1 #b9d2ee);
+	border: 1px solid qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cadaee, stop: 1 #acc5e4);
+	border-radius: 3px;
+	opacity: 230;
+}
+
+/** QToolBar **/
+QToolBar::separator { 
+	border-style: solid;
+	border-width: 0px 1px 0px 1px;
+	border-left-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 transparent, stop: 0.3 #aaaaaa, stop: 0.7 #aaaaaa, stop: 1 transparent);
+	border-right-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 transparent, stop: 0.3 #ffffff, stop: 0.7 #ffffff, stop: 1 transparent);
+	margin-top: 3px; 
+	margin-bottom: 3px;
+}
+
+
+/** Empezamos a estilizar los elementos que, del mismo tipo, tienen aspecto distinto **/ 
+
+/** Ventana principal **/
+/* Botones de la ventana de la aplicación */
+
+QLabel#titleLabel, #userInfoLabel1 {
+	color: #ffffff;
+	font-weight: bold;
+}
+
+QLabel#userInfoLabel2 {
+	color: #acc7e5;
+}
+
+QPushButton#minimizeWindowButton {
+	min-height: 12px;
+        background: url(:/styles/minimizeWindowButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+} 
+QPushButton#minimizeWindowButton:hover {
+        background: url(:/styles/minimizeWindowButton_hover.png) no-repeat center;
+} 
+QPushButton#minimizeWindowButton:pressed {
+        background: url(:/styles/minimizeWindowButton_pressed.png) no-repeat center;
+}
+
+QPushButton#closeWindowButton {
+	min-height: 12px;
+        background: url(:/styles/closeWindowButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+} 
+QPushButton#closeWindowButton:hover {
+        background: url(:/styles/closeWindowButton_hover.png) no-repeat center;
+} 
+QPushButton#closeWindowButton:pressed {
+        background: url(:/styles/closeWindowButton_pressed.png) no-repeat center;
+}
+
+/* Botones del menú de la ventana principal */
+QPushButton#menuMainButton, QPushButton#menuHelpButton {
+	min-height: 12px;
+	color: white; 
+        border-image: url(:/styles/menuButton.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton#menuMainButton:hover, QPushButton#menuHelpButton:hover { 
+	color: white; 
+        border-image: url(:/styles/menuButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton#menuMainButton:open, QPushButton#menuHelpButton:open { 
+	color: white; 
+        border-image: url(:/styles/menuButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px; 
+} 
+QPushButton#menuMainButton:focus, QPushButton#menuHelpButton:focus { 
+	color: white; 
+        border-image: url(:/styles/menuButton_focus.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px; 
+} 
+QPushButton#menuMainButton:focus:hover, QPushButton#menuHelpButton:focus:hover { 
+	color: white; 
+        border-image: url(:/styles/menuButton_hover.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px;
+} 
+QPushButton#menuMainButton:focus:open, QPushButton#menuHelpButton:focus:open{ 
+	color: white; 
+        border-image: url(:/styles/menuButton_pressed.png) 2 8 2 8 stretch;
+	border-width: 2px 8px 2px 8px; 
+} 
+QPushButton#menuMainButton::menu-indicator, QPushButton#menuHelpButton::menu-indicator {
+	width: 14px;
+	height: 12px;
+	margin-right: 3px;
+	subcontrol-origin: margin;
+	subcontrol-position: center right;
+        image: url(:/styles/arrowDown.png)
+}
+QPushButton#menuMainButton::menu-indicator:hover, QPushButton#menuHelpButton::menu-indicator:hover { 
+        image: url(:/styles/arrowDown_hover.png)
+}
+QPushButton#menuMainButton::menu-indicator:on, QPushButton#menuHelpButton::menu-indicator:on { 
+        image: url(:/styles/arrowDown_pressed.png)
+}
+QPushButton#menuMainButton::menu-indicator:focus, QPushButton#menuHelpButton::menu-indicator:focus { 
+        image: url(:/styles/arrowDown_focus.png)
+}
+QPushButton#menuMainButton::menu-indicator:focus:open, QPushButton#menuHelpButton::menu-indicator:focus:open { 
+        image: url(:/styles/arrowDown_pressed.png)
+}
+/*
+QPushButton#menuMainButton QAbstractItemView#menuMainButton, QPushButton#menuHelpButton QAbstractItemView#menuHelpButton {
+}*/
+	
+
+
+/* Diálogo de cierre de sesión */
+QPushButton#closeSessionButton, QPushButton#closeAppButton {
+	/*min-height: 12px;*/
+        background: url(:/styles/sessionButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	text-align: left;
+	padding-left: 5px;
+}
+QPushButton#closeSessionButton:hover, QPushButton#closeAppButton:hover {
+        background: url(:/styles/sessionButton_hover.png) no-repeat center;
+}
+QPushButton#closeSessionButton:pressed, QPushButton#closeAppButton:pressed {
+        background: url(:/styles/sessionButton_pressed.png) no-repeat center;
+}
+
+/* Diálogo de Administración de Usuarios */
+/** Módulos de la aplicación Principal (Servidor, Usuarios, Puestos, Clientes, Artículos, Facturación, Utilidades) **/
+
+/* Fondo del tabWidget del MainWindow */
+QTabWidget#tabWidget:pane {
+	border: 0px;
+        background: url(:/styles/tabBg.png) no-repeat center;
+	background-color: none;
+	top: 0px;
+}
+QTabWidget#tabWidget:tab-bar {
+	top: 7px;
+	left: 10px;
+	right 10px;
+}
+
+/* Fondo el "Frame" utilizados para la vista previa de imágenes */
+QLabel#imagePreview {
+	border: 0;
+        background: url(:/styles/imageFrameBg.png) no-repeat;
+}
+
+/** Módulo Usuarios/Clientes/Artículos/Facturación **/
+QToolButton {
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QToolButton:hover {
+        border-image: url(:/styles/toolbarButton_hover.png) 1 stretch;
+	border-width: 1px;
+}
+
+QToolButton:pressed {
+        border-image: url(:/styles/toolbarButton_pressed.png) 1 stretch;
+	border-width: 1px;
+}
+
+/** Módulo Puestos **/
+QStackedWidget#wsStackedWidget {
+        background: url(:/styles/workstationWidgetBg.png) no-repeat;
+	border: 0px;
+}
+QStackedWidget#wsStackedWidget:focus {
+        background: url(:/styles/workstationWidgetBg_focus.png) no-repeat;
+	border: 0px;
+}
+
+/* Página principal del stackedWidget */
+QLabel#blockedLabel {
+	color: #ffffff;
+}
+
+/* Página del Formulario de desbloqueo del Puesto del stackedWidget */
+QLabel#unlockLabel, QLabel#limitedTimeLabel, QLabel#fractionValueLabel {
+	color: #ffffff;
+}
+QRadioButton#unlimitedRadioButton, QRadioButton#limitedRadioButton {
+	color: #ffffff;
+}
+QCheckBox#extrasCheckBox {
+	color: #ffffff;
+}
+
+QPushButton#cancelUnlockButton, QPushButton#unlockButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#cancelUnlockButton:hover, QPushButton#unlockButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#cancelUnlockButton:pressed, QPushButton#unlockButton:pressed {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Barra de herramientas de los Puestos */
+QPushButton#wsSettingsButton {
+	min-height: 12px;
+        background: url(:/styles/wsToolbarButton1.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#wsSettingsButton:hover {
+        background: url(:/styles/wsToolbarButton1_hover.png) no-repeat center;
+}
+QPushButton#wsSettingsButton:pressed {
+        background: url(:/styles/wsToolbarButton1_pressed.png) no-repeat center;
+}
+QPushButton#wsSettingsButton:disabled {
+        background: url(:/styles/wsToolbarButton1_disabled.png) no-repeat center;
+}
+
+QPushButton#wsExpensesButton {
+	min-height: 12px;
+        background: url(:/styles/wsToolbarButton2.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#wsExpensesButton:hover {
+        background: url(:/styles/wsToolbarButton2_hover.png) no-repeat center;
+}
+QPushButton#wsExpensesButton:pressed {
+        background: url(:/styles/wsToolbarButton2_pressed.png) no-repeat center;
+}
+QPushButton#wsExpensesButton:disabled {
+        background: url(:/styles/wsToolbarButton2_disabled.png) no-repeat center;
+}
+
+QPushButton#wsChatButton {
+	min-height: 12px;
+        background: url(:/styles/wsToolbarButton3.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#wsChatButton:hover {
+        background: url(:/styles/wsToolbarButton3_hover.png) no-repeat center;
+}
+QPushButton#wsChatButton:pressed {
+        background: url(:/styles/wsToolbarButton3_pressed.png) no-repeat center;
+}
+QPushButton#wsChatButton:disabled {
+        background: url(:/styles/wsToolbarButton3_disabled.png) no-repeat center;
+}
+
+/* Botón de "Volver" de las páginas del stackedWidget de los Puestos y Webcams */
+QPushButton#backButton1, QPushButton#backButton2, QPushButton#backButton3, QPushButton#webcamBackButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButtonSmall.png) no-repeat;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#backButton1:hover, QPushButton#backButton2:hover, QPushButton#backButton3:hover, QPushButton#webcamBackButton:hover {
+        background: url(:/styles/widgetButtonSmall_hover.png) no-repeat center;
+}
+QPushButton#backButton1:pressed, QPushButton#backButton2:pressed, QPushButton#backButton3:pressed, QPushButton#webcamBackButton:pressed {
+        background: url(:/styles/widgetButtonSmall_pressed.png) no-repeat center;
+}
+
+/* Labels de la información de los Puestos y Webcams*/
+QLabel#wsUserLabel, QLabel#wsTimeLabel, QLabel#wsCreditLabel, QLabel#wsExpensesLabel, QLabel#wsTotalLabel,
+QLabel#webcamNameLabel, QLabel#webcamDescriptionLabel, QLabel#webcamUrlLabel {
+	color: #ffffff;
+}
+	
+/* Botones de acciones de los Puestos */
+QPushButton#pauseButton, QPushButton#blockButton, QPushButton#restartButton,QPushButton#powerButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#pauseButton:hover, QPushButton#blockButton:hover, QPushButton#restartButton:hover, QPushButton#powerButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#pauseButton:checked, QPushButton#blockButton:pressed, QPushButton#restartButton:pressed, QPushButton#powerButton:pressed {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Botones de la página de configuración */
+QPushButton#wsSaveButton, QPushButton#wsAddExpensesButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#wsSaveButton:hover, QPushButton#wsAddExpensesButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#wsSaveButton:pressed, QPushButton#wsAddExpensesButton:pressed {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Página de "Configuración" del stackedWidget */
+QLabel#settingsLabel, QLabel#wsNameLabel, QLabel#wsDescriptionLabel, QLabel#wsIpLabel, QLabel#wsMacLabel {
+	color: #ffffff;
+}
+
+/* Página de "Gastos" del stackedWidget */
+QLabel#expensesLabel, QLabel#articlesExpensesLabel, QLabel#articlesQuantityLabel, QLabel#otherExpensesLabel,
+QLabel#otherExpensesPriceLabel, QLabel#otherExpensesQuantityLabel,QLabel#expensesDetailsLabel {
+	color: #ffffff;
+}
+
+QPushButton#addExpensesButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#addExpensesButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#addExpensesButton:hover {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Página de "Soporte/chat" del stackedWidget */
+QLabel#chatLabel {
+	color: #ffffff;
+}
+	
+QTextBrowser#chatTextBrowser { 
+	border: 0px;
+	padding: 2px 1px 2px 1px;
+        background: url(:/styles/wsChatDisplayBg.png) no-repeat;
+	background-attachment: fixed;
+}
+/* Página de "Facturaciónt" del stackedWidget */
+QLabel#billingLabel {
+	color: #ffffff;
+}
+
+QLabel#generateBillLabel {
+	color: #cadcef;
+	font-weight: bold;
+}
+
+QPushButton#generateBillButton, QPushButton#cancelBillButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#generateBillButton:hover, QPushButton#cancelBillButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#generateBillButton:hover, QPushButton#cancelBillButton:hover {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+
+/** Módulo Artículos **/
+
+/** Módulo VideoStreamimg **/
+QStackedWidget#webcamStackedWidget {
+        background-image: url(:/styles/webcamWidgetBg.png);
+	background-repeat: no repeat;
+	border: 0px;
+}
+QStackedWidget#webcamStackedWidget:focus {
+        background-image: url(:/styles/webcamWidgetBg_focus.png);
+	background-repeat: no repeat;
+	border: 0px;
+} 
+
+/* Botones control webcam */
+QPushButton#webcamPlayButton, QPushButton#webcamStopButton,QPushButton#webcamSettingsButton, QPushButton#webcamRecordButton {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#webcamPlayButton:hover, QPushButton#webcamStopButton:hover, QPushButton#webcamSettingsButton:hover, QPushButton#webcamRecordButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#webcamPlayButton:pressed, QPushButton#webcamStopButton:pressed, QPushButton#webcamSettingsButton:pressed, QPushButton#webcamRecordButton:checked {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Botones fomulario de modificación de datos de la webcam */
+QPushButton#webcamRemoveButton, QPushButton#webcamCancelButton,QPushButton#webcamSaveButton  {
+	min-height: 12px;
+        background: url(:/styles/widgetButton.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#webcamRemoveButton:hover, QPushButton#webcamCancelButton:hover, QPushButton#webcamSaveButton:hover {
+        background: url(:/styles/widgetButton_hover.png) no-repeat center;
+}
+QPushButton#webcamRemoveButton:pressed, QPushButton#webcamCancelButton:pressed, QPushButton#webcamSaveButton:pressed {
+        background: url(:/styles/widgetButton_pressed.png) no-repeat center;
+}
+
+/* Labels en la página de configuración */
+QLabel#settingsTitleLabel{
+  color: #ffffff;
+  font-weight: bold;
+}
+
+QLabel#settingsUrlLabel, QLabel#settingsIdLabel {
+  color: #ffffff;
+}
+
+
+/** Login **/
+/* Mensaje de error del Login */
+QLabel#loginErrorLabel {
+	color: #d40000;
+}
+
+
+/** Módulo Documentación **/
+/* Botones barra de herramientas */
+QPushButton#backDocsButton, QPushButton#forwardDocsButton, QPushButton#refreshDocsButton, QPushButton#homeDocsButton,
+QPushButton#printerDocsButton, QPushButton#previewDocsButton {
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#backDocsButton:hover, QPushButton#forwardDocsButton:hover, QPushButton#refreshDocsButton:hover,
+QPushButton#homeDocsButton:hover, QPushButton#printerDocsButton:hover, QPushButton#previewDocsButton:hover {
+        border-image: url(:/styles/toolbarButton_hover.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+QPushButton#backDocsButton:pressed, QPushButton#forwardDocsButton:pressed, QPushButton#refreshDocsButton:pressed,
+QPushButton#homeDocsButton:pressed, QPushButton#printerDocsButton:pressed, QPushButton#previewDocsButton:pressed {
+        border-image: url(:/styles/toolbarButton_pressed.png) 3 3 3 3 stretch;
+	border-width: 3px 3px 3px 3px;
+}
+
+
+/** Notificación de Eventos **/
+/* Botón de cerrado */
+QPushButton#notifyCloseButton {
+	min-height: 12px;
+        background: url(:/styles/notityWindowClose.png) no-repeat center;
+	border-image: none;
+	border: 0px;
+	padding: 0px;
+}
+QPushButton#notifyCloseButton:hover {
+        background: url(:/styles/notityWindowClose_hover.png) no-repeat center;
+}
+QPushButton#notifyCloseButton:pressed {
+        background: url(:/styles/notityWindowClose_pressed.png) no-repeat center;
+}
+
+/* Título y texto de la ventana */
+QLabel#notifyTittleLabel {
+	color: #444444;
+	font-weight: bold;
+}
+
+QTextEdit#notifyTextBrowser {
+	border: 0;
+	background-color: transparent;
+}
+
+
+/** Estilizamos los widgets dentro de los diálogos nativos de Qt (QPrintDialog, QFileDialog, etc.)
+O bien aplicamos correciones necesarias **/
+
+/* Correción de la altura del QComboBox de QFileDialog, QPrintDialog y QPrintPreviewDialog */
+QFileDialog QComboBox, QPrintDialog QComboBox, QPrintPreviewDialog QComboBox {
+	min-height: 22px;
+}
+
+/* Correción de la altura del QComboBox (modo editable) de QFileDialog, QPrintDialog y QPrintPreviewDialog */
+QFileDialog QComboBox::editable, QPrintDialog QComboBox::editable, QPrintPreviewDialog QComboBox::editable {
+	max-height: 24px;
+}

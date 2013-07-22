@@ -40,3 +40,18 @@ void objPrint::rePrintReceipt()
     PrintTransTicket(&NormalTransData, CardHolderTicket, true);
     emit sigPrintComplete();
 }
+
+void objPrint::printSettle()
+{
+    qDebug()<<Q_FUNC_INFO;
+    PrintSettleTicket();
+
+    emit sigPrintComplete();
+}
+
+void objPrint::printAudit()
+{
+    qDebug()<<Q_FUNC_INFO;
+    PrintTransDetailTicket();
+    emit sigPrintComplete();
+}

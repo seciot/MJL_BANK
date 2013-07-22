@@ -168,7 +168,7 @@ void UIInputManual::slotInputComplete()
     if(leCardNo->text().isEmpty() && FLAG_RECEIVER==true)
     {
         qDebug()<<"fill in the blank";
-        UIMsg::showNoticeMsg(INCOMPLETE_INFORMATION);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
         return;
     }
 
@@ -176,14 +176,14 @@ void UIInputManual::slotInputComplete()
     {
         qDebug()<<"fill in the blank";
 
-        UIMsg::showNoticeMsg(INCOMPLETE_INFORMATION);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
 
     if(leEXP->text().length()<4 && FLAG_RECEIVER==false)
     {
-        UIMsg::showNoticeMsg(WRONG_EXP);
+        UIMsg::showNoticeMsgWithAutoClose(WRONG_EXP,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }

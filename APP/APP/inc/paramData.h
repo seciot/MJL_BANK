@@ -96,12 +96,13 @@ typedef struct CHANGE_PARAM
 
 
     // timeout
-    unsigned int TimeOut_PrintTearPaper;   // 打印撕纸等待时间
-    unsigned int TimeOut_ErrMsg;         // 报错窗口自动关闭时间
+    unsigned int TIMEOUT_PAPERTEAR;   // 打印撕纸等待时间
+    unsigned int TIMEOUT_ERRMSG;         // 报错窗口自动关闭时间
 
-    unsigned int TimeOut_Host;    // 主机超时
-    unsigned int TimeOut_UserInterface;    // 界面超时
-    unsigned int connectRetry;     // 连接重试次数
+    unsigned int TIMEOUT_HOST;    // 主机超时
+    unsigned int TIMEOUT_UI;    // 界面超时
+
+    unsigned int connectionRetry;     // 连接重试次数
 }ChangeParam;
 
 #endif // PARAMDATA_H
