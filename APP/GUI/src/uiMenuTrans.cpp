@@ -5,11 +5,16 @@
 #include "uiP2PTransfer.h"
 #include "uiPayment.h"
 #include "uiLogon.h"
+#include "uiVOID.h"
+#include "uiPINChange.h"
+
 #include "global.h"
 
 UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
+
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -168,7 +173,13 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     connect(btnBalance,SIGNAL(clicked()),this,SLOT(Balance_Inquiry_Click()));
     connect(btnP2P,SIGNAL(clicked()),this,SLOT(P2P_Card_Trans_Click()));
     connect(btnPayment,SIGNAL(clicked()),this,SLOT(Payment_Click()));
-    connect(btnLogOn,SIGNAL(clicked()),this,SLOT(showLogon()));
+    connect(btnLogOn,SIGNAL(clicked()),this,SLOT(Logon_Click()));
+    connect(btnVOID,SIGNAL(clicked()),this,SLOT(VOID_Click()));
+    connect(btnPIN,SIGNAL(clicked()),this,SLOT(PIN_Change_Click()));
+
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+
 }
 
 UIMenuTrans::~UIMenuTrans()
@@ -185,12 +196,15 @@ void UIMenuTrans::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F1:
         this->pageTwoBackClicked();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     case Qt::Key_F2:
         this->pageOneNextClicked();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     default:
         event->ignore();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     }
 }
@@ -266,9 +280,52 @@ void UIMenuTrans::Payment_Click()
     uiP->exec();
 }
 
-void UIMenuTrans::showLogon()
+void UIMenuTrans::Logon_Click()
 {
     UILogon *uiLog=new UILogon();
     uiLog->exec();
 
+}
+
+void UIMenuTrans::VOID_Click()
+{
+    UIVOID *uiVoid=new UIVOID();
+    uiVoid->exec();
+}
+
+void UIMenuTrans::PIN_Change_Click()
+{
+    UIPINChange *uiPINChange=new UIPINChange;
+    uiPINChange->exec();
+}
+
+void UIMenuTrans::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIMenuTrans::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIMenuTrans::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

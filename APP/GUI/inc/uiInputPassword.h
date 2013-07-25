@@ -22,6 +22,7 @@ public:
 
     QPushButton *btnCancel;
     QPushButton *btnSubmit;
+    QTimer *closeTimer;
 private:
 
 protected:
@@ -29,15 +30,13 @@ protected:
 
 public slots:
     void startAuthorize();
-    void slotQuitTrans();
     void slotFinishTrans();
 
     void resetLine();
-
+    void setAutoClose(int timeout);
 
 signals:
     void sigLogInSuccess(UserType ut,QString ID);
-    void sigQuitTrans();
     void sigFinishTrans();
 };
 

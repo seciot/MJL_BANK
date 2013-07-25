@@ -21,14 +21,17 @@ public:
 
     UIReportDetail *uiRDetail;
 private:
-
+    QTimer *closeTimer;
 
 protected:
+    bool eventFilter(QObject *obj, QEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 public slots:
+    void slotQuitMenu();
 private slots:
     void slotSearchTransaction();
+    void setAutoClose(int timeout);
 
 signals:
 };

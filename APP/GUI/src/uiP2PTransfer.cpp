@@ -104,7 +104,7 @@ void UIP2PTransfer::chooseAccountType(UserType ut,QString ID)
 
     if(g_changeParam.p2p.TRANS_ENABLE==false)
     {
-                UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -117,17 +117,18 @@ void UIP2PTransfer::chooseAccountType(UserType ut,QString ID)
     if(ut==typeCashier)
     {
         FLAG_AccountType=true;
-        memcpy(NormalTransData.aucCashier , ID.toAscii().data() , 2);
+        memcpy(NormalTransData.aucCashier, ID.toAscii().data() , 2);
         uiCAT=new UIChooseAccType();
         uiCAT->setSender();
         connect(uiCAT,SIGNAL(sigChooseTypeComplete(AccType)),this,SLOT(setAccountType(AccType)));
+        connect(uiCAT,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
         uiCAT->exec();
     }
     else
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
         uiIP->resetLine();
 
         return;
@@ -158,7 +159,7 @@ void UIP2PTransfer::swipeCard()
     uiSC=new UISwipeCard();
     if(g_changeParam.p2p.MANUAL_ENABLE==false)
     {
-            uiSC->setNoManual();
+        uiSC->setNoManual();
     }
     connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
     connect(uiSC,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));

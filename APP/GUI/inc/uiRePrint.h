@@ -18,16 +18,21 @@ public:
     QPushButton *btnPrintAudit;
 
     QPushButton *btnCancel;
-//    QPushButton *btnSubmit;
+    //    QPushButton *btnSubmit;
 private:
     QThread *threadPrint;
 
     objPrint *pPrint;
+
+    QTimer *closeTimer;
 protected:
+    bool eventFilter(QObject *obj, QEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 public slots:
+    void slotQuitMenu();
 private slots:
+    void setAutoClose(int timeout);
     void slotReprintLast();
     void slotReprintWhich();
     void slotPrintSettle();

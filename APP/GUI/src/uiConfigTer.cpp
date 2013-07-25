@@ -58,6 +58,10 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     leHostTimeOut=new QLineEdit();
     lbUserTimeOut=new QLabel();
     leUserTimeOut=new QLineEdit();
+    lbErrMsgTimeOut=new QLabel();
+    leErrMsgTimeOut=new QLineEdit();
+    lbPaperTearTimeOut=new QLabel();
+    lePaperTearTimeOut=new QLineEdit();
     lbInvoiceLogo=new QLabel();
     cbInvoiceLogo=new QComboBox();
     lbScreenLogo=new QLabel();
@@ -69,8 +73,10 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbPABXDelay->setText(tr("PABX Delay:"));
     lbDialType->setText(tr("Dial Type:"));
     lbTechPass->setText(tr("Tech Password:"));
-    lbHostTimeOut->setText(tr("Host Time Out:"));
-    lbUserTimeOut->setText(tr("User Time Out:"));
+    lbHostTimeOut->setText(tr("Host Time Out(sec):"));
+    lbUserTimeOut->setText(tr("User Time Out(sec):"));
+    lbErrMsgTimeOut->setText(tr("Message Box Time Out(sec):"));
+    lbPaperTearTimeOut->setText(tr("Receipt Tear Time Out(sec):"));
     lbInvoiceLogo->setText(tr("Invoice Logo:"));
     lbScreenLogo->setText(tr("Screen Logo:"));
 
@@ -82,6 +88,8 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbTechPass->setScaledContents(true);
     lbHostTimeOut->setScaledContents(true);
     lbUserTimeOut->setScaledContents(true);
+    lbErrMsgTimeOut->setScaledContents(true);
+    lbPaperTearTimeOut->setScaledContents(true);
     lbInvoiceLogo->setScaledContents(true);
     lbScreenLogo->setScaledContents(true);
 
@@ -131,6 +139,11 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     chkNoBliendDial->setMinimumHeight(30);
     chkSelAccEnable->setMinimumHeight(30);
     chkSetReceipt->setMinimumHeight(30);
+    chkCard->setFont(font2);
+    chkTrans->setFont(font2);
+    chkNoBliendDial->setFont(font2);
+    chkSelAccEnable->setFont(font2);
+    chkSetReceipt->setFont(font2);
 
     cbDialType->setStyleSheet(COMBO_BOX_STYLE);
     cbInvoiceLogo->setStyleSheet(COMBO_BOX_STYLE);
@@ -174,6 +187,11 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     v1Lay->addWidget(leHostTimeOut);
     v1Lay->addWidget(lbUserTimeOut);
     v1Lay->addWidget(leUserTimeOut);
+
+    v1Lay->addWidget(lbErrMsgTimeOut);
+    v1Lay->addWidget(leErrMsgTimeOut);
+    v1Lay->addWidget(lbPaperTearTimeOut);
+    v1Lay->addWidget(lePaperTearTimeOut);
 
     v1Lay->addWidget(lbInvoiceLogo);
     v1Lay->addWidget(cbInvoiceLogo);
@@ -221,7 +239,6 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     h1Lay->addWidget(btnCancel);
     h1Lay->addWidget(btnSubmit);
     h1Lay->addSpacing(10);
-
 
     // ---------------ScrollArea----------- //
     scArea=new QScrollArea();
@@ -283,6 +300,9 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
 
 
+    this->initialSettings();
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 
 }
 
@@ -298,13 +318,18 @@ void UIConfigTer::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Escape:
         this->close();
         break;
+    case Qt::Key_Enter:
+        break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -334,8 +359,21 @@ void UIConfigTer::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void UIConfigTer::initialSettings()
+{
+    // timeout
+    leHostTimeOut->setText(QString::number(g_changeParam.TIMEOUT_HOST/1000));
+    leUserTimeOut->setText(QString::number(g_changeParam.TIMEOUT_UI/1000));
+    leErrMsgTimeOut->setText(QString::number(g_changeParam.TIMEOUT_ERRMSG/1000));
+    lePaperTearTimeOut->setText(QString::number(g_changeParam.TIMEOUT_PAPERTEAR/1000));
+
+}
+
 void UIConfigTer::slotSubmitClicked()
 {
+    // 模拟选项
+    closeTimer->stop();
+
     if(chkCard->isChecked())
         g_changeParam.simCard=true;
     else
@@ -347,7 +385,28 @@ void UIConfigTer::slotSubmitClicked()
         g_changeParam.simTrans=false;
 
 
-    xDATA::WriteValidFile(xDATA::DataSaveChange);
+    // timeout
+    g_changeParam.TIMEOUT_HOST=leHostTimeOut->text().toUInt()*1000;
+    g_changeParam.TIMEOUT_UI=leUserTimeOut->text().toUInt()*1000;
+    g_changeParam.TIMEOUT_ERRMSG=leErrMsgTimeOut->text().toUInt()*1000;
+    g_changeParam.TIMEOUT_PAPERTEAR=lePaperTearTimeOut->text().toUInt()*1000;
 
+
+
+    xDATA::WriteValidFile(xDATA::DataSaveChange);
     UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
+}
+
+void UIConfigTer::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitCfg()));
+    closeTimer->start(timeout);
+}
+
+void UIConfigTer::slotQuitCfg()
+{
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
 }

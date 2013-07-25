@@ -35,7 +35,9 @@ unsigned char SendReceive_Test(unsigned char *pucOutData,unsigned short *puiOutL
         iBufLen = sprintf((char*)aucBuf, "%s", (char *)
                           "0210703801000E808000187060010000521705120100000000000000010000081730570702000130303030313639333337313830303439373630304D42425230313031303530");
         break;
-    case TransMode_CashVoid:         //撤销
+    case TransMode_AdvanceVoid:         //撤销
+        break;
+    case TransMode_DepositVoid:         //撤销
         break;
     case TransMode_BalanceInquiry:   //查余
         iBufLen = sprintf((char*)aucBuf, "%s", (char *)

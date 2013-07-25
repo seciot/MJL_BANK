@@ -5,12 +5,12 @@
 #include <QAction>
 
 
-class uiConfigCardTable : public QDialog
+class UIConfigCardTable : public QDialog
 {
     Q_OBJECT
 public:
-    explicit uiConfigCardTable(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
-    ~uiConfigCardTable();
+    explicit UIConfigCardTable(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
+    ~UIConfigCardTable();
 
 
     QLabel *lbHead;
@@ -40,6 +40,12 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
 //    void mouseReleaseEvent(QMouseEvent *);
+private:
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+
 };
 
 #endif // UICONFIGCARDTABLE_H

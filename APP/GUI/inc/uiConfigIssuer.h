@@ -5,12 +5,12 @@
 #include <QAction>
 
 
-class uiConfigIssuer : public QDialog
+class UIConfigIssuer : public QDialog
 {
     Q_OBJECT
 public:
-    explicit uiConfigIssuer(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
-    ~uiConfigIssuer();
+    explicit UIConfigIssuer(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
+    ~UIConfigIssuer();
 
 
     QLabel *lbHead;
@@ -42,6 +42,12 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
 //    void mouseReleaseEvent(QMouseEvent *);
+private:
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+
 };
 
 #endif //

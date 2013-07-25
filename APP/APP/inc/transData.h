@@ -54,10 +54,13 @@ typedef enum TRANS_MODE
     TransMode_DownEWK,          //签到(传输密钥)
     TransMode_CashDeposit,      //存钱
     TransMode_CashAdvance,      //取钱
-    TransMode_CashVoid,         //撤销
+    TransMode_AdvanceVoid,         //取钱撤销
+    TransMode_DepositVoid,         //存钱撤销
     TransMode_BalanceInquiry,   //查余
-    TransMode_CardTransfer,     //转账
-    TransMode_Settle,           //结算
+    TransMode_CardTransfer,         //转账
+    TransMode_Adjust,                   //调整
+    TransMode_PINChange,            //改密
+    TransMode_Settle,                   //结算
     TramsMode_MaxIndex
 }TransMode;
 

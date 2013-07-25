@@ -9,7 +9,7 @@ class UIReportDetail : public QDialog
 {
     Q_OBJECT
 public:
-    explicit UIReportDetail(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
+    explicit UIReportDetail(int type=0,QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
     ~UIReportDetail();
 
     QLabel *lbHead;
@@ -17,17 +17,25 @@ public:
     QTableWidget *tbDetailList;
 
     QPushButton *btnCancel;
-//    QPushButton *btnSubmit;
+    QPushButton *btnVOID;
 private:
-
+    QTimer *closeTimer;
+    bool FLAG_NEEDVOID;
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
     void slotSetDetailList(QString transType, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo);
+    void slotSetVOID();
+    void slotVOIDClicked();
+    void slotQuitMenu();
 private slots:
+    void restartTimeOut();
+    void setAutoClose(int timeout);
 
 signals:
+    void sigVOID();
 };
 
 #endif  

@@ -269,9 +269,8 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
 
-
-
     this->initialSettings();
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIConfigAcq::~UIConfigAcq()
@@ -286,13 +285,18 @@ void UIConfigAcq::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Escape:
         this->close();
         break;
+    case Qt::Key_Enter:
+        break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -381,6 +385,7 @@ void UIConfigAcq::warning()
 
 void UIConfigAcq::slotSubmitClicked()
 {
+    closeTimer->stop();
     // Nii
     QString nii=leNII->text();
     memcpy(g_constantParam.aucNii, nii.toAscii().data(), 4);
@@ -441,4 +446,19 @@ void UIConfigAcq::slotSubmitClicked()
         UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
     }
 
+}
+
+
+void UIConfigAcq::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitCfg()));
+    closeTimer->start(timeout);
+}
+
+void UIConfigAcq::slotQuitCfg()
+{
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
 }

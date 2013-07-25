@@ -17,15 +17,19 @@ public:
     QPushButton *btnCancel;
 private:
 
-
+    QTimer *closeTimer;
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
+    void slotQuitMenu();
 
     void setTransTotal();
 private slots:
 
+    void restartTimeOut();
+    void setAutoClose(int timeout);
 
 
 signals:

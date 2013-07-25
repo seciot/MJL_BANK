@@ -115,5 +115,5 @@ void UIPrint::slotFinishTrans()
 void UIPrint::slotTearPrint()
 {
     qDebug()<<Q_FUNC_INFO;
-    UIMsg::showNoticeMsgWithAutoClose("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
 }

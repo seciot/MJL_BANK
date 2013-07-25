@@ -5,6 +5,8 @@
 UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
+
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -58,6 +60,8 @@ UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
     leUserId->setFont(font);
     leUserNewPass->setFont(font);
     leUserRePass->setFont(font);
+
+    lbNotice->setAlignment(Qt::AlignCenter);
 
     // 特殊处理
     leUserId->setMaxLength(2);
@@ -127,10 +131,17 @@ UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
     // -------- input cashier password ------------//
     uiIP=new UIInputPassword();
     connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(slotAllowEdit(UserType,QString)));
-    connect(uiIP,SIGNAL(sigQuitTrans()),this,SLOT(quitFromInputPass()));
+    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(quitFromInputPass()));
     passThread=new QThread(this);
     connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
     passThread->start();
+
+    setTabOrder(leUserId,leUserNewPass);
+    setTabOrder(leUserNewPass,leUserRePass);
+    setTabOrder(leUserRePass,btnSubmit);
+    setTabOrder(btnSubmit,btnCancel);
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIUserManager::~UIUserManager()
@@ -143,16 +154,15 @@ void UIUserManager::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
     case Qt::Key_Escape:
-        //        emit sigQuitTrans();
         this->close();
         break;
     case Qt::Key_Enter:
         focusNextChild();
         break;
     case Qt::Key_F4:
-        //        vBar->setValue(vBar->value()+150);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -161,6 +171,8 @@ void UIUserManager::keyPressEvent(QKeyEvent *event)
 void UIUserManager::slotProcessUserManager()
 {
     qDebug() << Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
+
     unsigned char ucI = 0;
     unsigned char * aucCashierNo = NULL;
     unsigned char * aucCashierPass = NULL;
@@ -199,7 +211,7 @@ void UIUserManager::slotProcessUserManager()
     int userID=leUserId->text().toInt();
     if(userID==0 || userID==99)
     {
-         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -244,11 +256,6 @@ void UIUserManager::slotProcessUserManager()
     }
 
     return;
-}
-void UIUserManager::slotQuitTrans()
-{
-    //    emit sigQuitTrans();
-
 }
 
 void UIUserManager::setPasswdWidgetLen(int user)
@@ -296,18 +303,51 @@ void UIUserManager::slotAllowEdit(UserType ut, QString ID)
     {
         uiIP->close();
     }
-    else if(ut=typeCashier)
+    else if(ut==typeCashier)
     {
         leUserId->setText(ID);
         leUserId->setReadOnly(true);
+        leUserNewPass->setFocus();
         uiIP->close();
     }
     else
     {
         qDebug()<<"不支持超级管理员管理员用户做用户设置";
 
-         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        uiIP->resetLine();
 
         return;
     }
+}
+
+void UIUserManager::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIUserManager::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIUserManager::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

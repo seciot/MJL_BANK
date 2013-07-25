@@ -47,12 +47,17 @@ public:
 
     QPushButton *btnCancel;
     QPushButton *btnSubmit;
-private:
 protected:
     void keyPressEvent(QKeyEvent *event);
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
 //    void mouseReleaseEvent(QMouseEvent *);
+private:
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+
 };
 
 #endif  

@@ -7,6 +7,7 @@
 UIReport::UIReport(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -75,9 +76,9 @@ UIReport::UIReport(QDialog *parent,Qt::WindowFlags f) :
     v1Lay->addItem(sp2);
 
     QHBoxLayout *h2Lay=new QHBoxLayout();
-//    h2Lay->addSpacing(10);
+    //    h2Lay->addSpacing(10);
     h2Lay->addWidget(btnCancel);
-//    h2Lay->addSpacing(10);
+    //    h2Lay->addSpacing(10);
 
     QVBoxLayout *layout=new QVBoxLayout(this);
     layout->addWidget(lbHead);
@@ -98,6 +99,8 @@ UIReport::UIReport(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEndValue(mapToParent(QPoint(0, 0)));
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIReport::~UIReport()
@@ -115,6 +118,7 @@ void UIReport::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -124,9 +128,17 @@ void UIReport::slotShowQueryTrans()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiRQ=new UIReportQuery();
-    uiRQ->exec();
-
+    if(g_transInfo.TransTotal.uiTotalNb==0)
+    {
+        UIMsg::showNoticeMsgWithAutoClose("No Transaction",g_changeParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        return;
+    }
+    else
+    {
+        uiRQ=new UIReportQuery();
+        uiRQ->exec();
+    }
 }
 
 void UIReport::slotShowSummary()
@@ -141,4 +153,35 @@ void UIReport::slotShowSearchTrans()
     qDebug()<<Q_FUNC_INFO;
     uiRSearch=new UIReportSearch();
     uiRSearch->exec();
+}
+
+void UIReport::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIReport::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIReport::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

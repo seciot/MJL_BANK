@@ -12,6 +12,7 @@ extern "C"{
 UIReportSummary::UIReportSummary(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -63,7 +64,9 @@ UIReportSummary::UIReportSummary(QDialog *parent,Qt::WindowFlags f) :
     layout->addLayout(h2Lay);
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
-
+    connect(tbSummary,SIGNAL(viewportEntered()),this,SLOT(restartTimeOut()));
+    connect(tbSummary,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
+    connect(tbSummary->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
     //Animation
     QPropertyAnimation *animation1 = new QPropertyAnimation(this, "pos");
     animation1->setDuration(100);
@@ -74,6 +77,7 @@ UIReportSummary::UIReportSummary(QDialog *parent,Qt::WindowFlags f) :
 
 //    setTestInfo(); // 设置测试数据
     this->setTransTotal();
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIReportSummary::~UIReportSummary()
@@ -253,8 +257,47 @@ void UIReportSummary::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
+}
+
+void UIReportSummary::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIReportSummary::slotQuitMenu()
+{
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
+}
+
+bool UIReportSummary::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
+}
+
+void UIReportSummary::restartTimeOut()
+{
+    qDebug()<<Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }
 

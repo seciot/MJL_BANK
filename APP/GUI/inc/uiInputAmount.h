@@ -25,6 +25,7 @@ public:
 private:
     QString AMOUNT;
     void addDot();
+    QTimer *closeTimer;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -37,6 +38,7 @@ public slots:
     void FormAmount(unsigned char *pucOut,unsigned long ulAmount,unsigned char ucDecimalPos);
     QString QStringAmountFormular(const QString &arg1,unsigned long ulMaxAmt);
     void Remove(unsigned char str[],char remove);
+    void setAutoClose(int timeout);
 
 signals:
     void sigAmountInputComplete(QString);

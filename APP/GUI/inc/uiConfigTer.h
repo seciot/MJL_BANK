@@ -36,10 +36,17 @@ public:
     QComboBox *cbDialType;
     QLabel *lbTechPass;
     QLineEdit *leTechPass;
+
     QLabel *lbHostTimeOut;
     QLineEdit *leHostTimeOut;
     QLabel *lbUserTimeOut;
     QLineEdit *leUserTimeOut;
+
+    QLabel *lbErrMsgTimeOut;
+    QLineEdit *leErrMsgTimeOut;
+    QLabel *lbPaperTearTimeOut;
+    QLineEdit *lePaperTearTimeOut;
+
     QLabel *lbInvoiceLogo;
     QComboBox *cbInvoiceLogo;
     QLabel *lbScreenLogo;
@@ -78,7 +85,12 @@ protected:
 //    void mouseReleaseEvent(QMouseEvent *);
 
 public slots:
+    void initialSettings();
     void slotSubmitClicked();
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+private:
+    QTimer *closeTimer;
 };
 
 #endif  

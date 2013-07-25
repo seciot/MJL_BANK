@@ -86,6 +86,13 @@ private slots:
     void warning();
 
     void slotSubmitClicked();
+
+private:
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+
 };
 
 #endif  

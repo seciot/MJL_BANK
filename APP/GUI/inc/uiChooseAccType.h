@@ -32,6 +32,7 @@ private:
     bool FLAG_SENDER;
     bool FLAG_RECEIVER;
 
+    QTimer *closeTimer;
 protected:
     void keyPressEvent(QKeyEvent *event);
 
@@ -40,13 +41,18 @@ public slots:
     void btnSavingsClicked();
     void btnCheckClicked();
     void btnCreditClicked();
+    void setAutoClose(int timeout);
 
     void setSender();
     void setReceiver();
 
+    void slotQuitTrans();
+
 signals:
     void sigChooseReceiverTypeComplete();
     void sigChooseTypeComplete(AccType);
+
+    void sigQuitTrans();
 };
 
 #endif

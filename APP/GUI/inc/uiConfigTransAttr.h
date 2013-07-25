@@ -62,11 +62,15 @@ private slots:
     void slotSubmitClicked();
 private:
     void initialAttr();
+    QTimer *closeTimer;
 protected:
     void keyPressEvent(QKeyEvent *event);
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
-//    void mouseReleaseEvent(QMouseEvent *);
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+    void restartTimer();
 };
 
 #endif  

@@ -26,15 +26,18 @@ public:
     QPushButton *btnSubmit;
 
     unsigned char *qstring_auc(QString);
-private:
-    //    void initWidget();
-    //    void setWidgetText();
-    //    void setDialogLayout();
+
 private slots:
     void setDateTime();
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+private:
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitCfg();
+
 };
 
 #endif  

@@ -1,5 +1,6 @@
 #include "uiInput.h"
 #include <QDesktopWidget>
+#include "global.h"
 
 UIInput::UIInput(QString title, QString showMsg, QDialog *parent, Qt::WindowFlags f):
     QDialog(parent,f)
@@ -182,6 +183,9 @@ UIInput::UIInput(QString title, QString showMsg, QString regExp, int length, QDi
     // connect
     connect(btnCancel,SIGNAL(clicked()),this,SLOT(slotCancel()));
     connect(btnSubmit,SIGNAL(clicked()),this,SLOT(slotSubmit()));
+    connect(leInput,SIGNAL(textChanged(QString)),this,SLOT(restartTimer()));
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 bool UIInput::flagFinish = false;
@@ -213,7 +217,10 @@ void UIInput::slotConfirm()
     this->close();
 }
 
-
+void UIInput::slotSetPINMode()
+{
+    leInput->setEchoMode(QLineEdit::Password);
+}
 
 UIInput::~UIInput()
 {
@@ -237,9 +244,10 @@ void UIInput::keyPressEvent(QKeyEvent *event)
     }
 }
 
-QString UIInput::getText(QString title, QString showMsg, QString regExp, bool *ok)
+QString UIInput::getText(QString title, QString showMsg, QString regExp, int length, bool *ok)
 {
-    int length=20;
+    if(length==0)
+        length=50;
     UIInput *uiInput=new UIInput(title,showMsg,regExp,length);
     uiInput->exec();
 
@@ -254,7 +262,27 @@ QString UIInput::getText(QString title, QString showMsg, QString regExp, bool *o
     return returnText;
 }
 
-int UIInput::getInt(QString title, QString showMsg, QString regExp, int length, bool *ok)
+QString UIInput::getPIN(QString title, QString showMsg, QString regExp, int length, bool *ok)
+{
+    if(length==0)
+        length=50;
+    UIInput *uiInput=new UIInput(title,showMsg,regExp,length);
+    uiInput->slotSetPINMode();
+    uiInput->exec();
+
+    if(flagFinish == true)
+        *ok=true;
+    else if(flagFinish == false)
+        *ok=false;
+
+    QString returnText=inputedText;
+    inputedText.clear();
+    flagFinish=false;
+    return returnText;
+}
+
+
+unsigned int UIInput::getInt(QString title, QString showMsg, QString regExp, int length, bool *ok)
 {
     UIInput *uiInput=new UIInput(title,showMsg,regExp,length);
     uiInput->exec();
@@ -284,4 +312,17 @@ bool UIInput::getConfirm(QString title, QString showMsg)
 
     flagFinish=false;
     return ok;
+}
+
+void UIInput::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(close()));
+    closeTimer->start(timeout);
+}
+
+void UIInput::restartTimer()
+{
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

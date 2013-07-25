@@ -138,7 +138,8 @@ unsigned char TRANS_ONLINE_CheckResponseValid(TransMode m_transMode)
     case TransMode_CashAdvance:      //取钱
         if(!ucResult)
             ucResult = ISO8583_CompareSentBit(4);
-    case TransMode_CashVoid:         //撤销
+    case TransMode_AdvanceVoid:         //撤销
+    case TransMode_DepositVoid:         //撤销
     case TransMode_BalanceInquiry:   //查余
     case TransMode_CardTransfer:     //转账
         if(!ucResult)

@@ -34,6 +34,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void pageOneNextClicked();
@@ -44,9 +45,16 @@ private slots:
     void Balance_Inquiry_Click();
     void P2P_Card_Trans_Click();
     void Payment_Click();
-    void showLogon();
+    void Logon_Click();
+    void VOID_Click();
+    void PIN_Change_Click();
+
 private:
     static void styleWidget(QWidget * btn,int iFontSize=13);
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
 };
 
 #endif  

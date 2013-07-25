@@ -272,8 +272,10 @@ UIConfigTransAttr::UIConfigTransAttr(QDialog *parent,Qt::WindowFlags f) :
     layout->setContentsMargins(0,0,0,5);
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
+    connect(vBar,SIGNAL(valueChanged(int)),this,SLOT(restartTimer()));
 
     this->initialAttr();
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 
 }
 
@@ -310,10 +312,32 @@ void UIConfigTransAttr::initialAttr()
         chkP2PPin->setChecked(true);
     if(g_changeParam.p2p.MANUAL_ENABLE==true)
         chkP2PMan->setChecked(true);
+
+    if(g_changeParam.transvoid.TRANS_ENABLE==true)
+        chkVOIDTrans->setChecked(true);
+    if(g_changeParam.transvoid.PIN_ENABLE==true)
+        chkVOIDPin->setChecked(true);
+    if(g_changeParam.transvoid.MANUAL_ENABLE==true)
+        chkVOIDMan->setChecked(true);
+
+    if(g_changeParam.adjust.TRANS_ENABLE==true)
+        chkAdjustTrans->setChecked(true);
+    if(g_changeParam.adjust.PIN_ENABLE==true)
+        chkAdjustPin->setChecked(true);
+    if(g_changeParam.adjust.MANUAL_ENABLE==true)
+        chkAdjustMan->setChecked(true);
+
+    if(g_changeParam.pinchange.TRANS_ENABLE==true)
+        chkPinTrans->setChecked(true);
+    if(g_changeParam.pinchange.PIN_ENABLE==true)
+        chkPinPin->setChecked(true);
+    if(g_changeParam.pinchange.MANUAL_ENABLE==true)
+        chkPinMan->setChecked(true);
 }
 
 void UIConfigTransAttr::slotSubmitClicked()
 {
+    closeTimer->stop();
     //cash advance
     if(chkCashAdTrans->isChecked())
         g_changeParam.advance.TRANS_ENABLE=true;
@@ -370,6 +394,48 @@ void UIConfigTransAttr::slotSubmitClicked()
     else
         g_changeParam.p2p.MANUAL_ENABLE=false;
 
+    // VOID
+    if(chkVOIDTrans->isChecked())
+        g_changeParam.transvoid.TRANS_ENABLE=true;
+    else
+        g_changeParam.transvoid.TRANS_ENABLE=false;
+    if(chkVOIDPin->isChecked())
+        g_changeParam.transvoid.PIN_ENABLE=true;
+    else
+        g_changeParam.transvoid.PIN_ENABLE=false;
+    if(chkVOIDMan->isChecked())
+        g_changeParam.transvoid.MANUAL_ENABLE=true;
+    else
+        g_changeParam.transvoid.MANUAL_ENABLE=false;
+
+    // Adjust
+    if(chkAdjustTrans->isChecked())
+        g_changeParam.adjust.TRANS_ENABLE=true;
+    else
+        g_changeParam.adjust.TRANS_ENABLE=false;
+    if(chkAdjustPin->isChecked())
+        g_changeParam.adjust.PIN_ENABLE=true;
+    else
+        g_changeParam.adjust.PIN_ENABLE=false;
+    if(chkAdjustMan->isChecked())
+        g_changeParam.adjust.MANUAL_ENABLE=true;
+    else
+        g_changeParam.adjust.MANUAL_ENABLE=false;
+
+    // PIN Change
+    if(chkPinTrans->isChecked())
+        g_changeParam.pinchange.TRANS_ENABLE=true;
+    else
+        g_changeParam.pinchange.TRANS_ENABLE=false;
+    if(chkPinPin->isChecked())
+        g_changeParam.pinchange.PIN_ENABLE=true;
+    else
+        g_changeParam.pinchange.PIN_ENABLE=false;
+    if(chkPinMan->isChecked())
+        g_changeParam.pinchange.MANUAL_ENABLE=true;
+    else
+        g_changeParam.pinchange.MANUAL_ENABLE=false;
+
     unsigned char ucResult=xDATA::WriteValidFile(xDATA::DataSaveChange);
     if(!ucResult)
         UIMsg::showNoticeMsgWithAutoClose("Save Success",g_changeParam.TIMEOUT_ERRMSG);
@@ -389,11 +455,17 @@ void UIConfigTransAttr::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        break;
+    case Qt::Key_Enter:
+        this->slotSubmitClicked();
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -422,4 +494,24 @@ void UIConfigTransAttr::mouseMoveEvent(QMouseEvent *event)
         vBar->setValue(vBar->value()-13);
         saveVValue=event->pos().y();
     }
+}
+
+
+void UIConfigTransAttr::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitCfg()));
+    closeTimer->start(timeout);
+}
+
+void UIConfigTransAttr::slotQuitCfg()
+{
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
+}
+
+void UIConfigTransAttr::restartTimer()
+{
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

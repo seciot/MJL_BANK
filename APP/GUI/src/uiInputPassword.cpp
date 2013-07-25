@@ -90,7 +90,7 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
     layout->addLayout(v1Lay);
     layout->addLayout(h2Lay);
 
-    connect(btnCancel, SIGNAL(clicked()), this, SLOT(slotQuitTrans()));
+    connect(btnCancel, SIGNAL(clicked()), this, SLOT(slotFinishTrans()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(startAuthorize()));
     //    layout->setContentsMargins();
 
@@ -105,6 +105,8 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
    animation1->setEndValue(mapToParent(QPoint(0, 0)));
    animation1->setEasingCurve(QEasingCurve::OutQuint);
    animation1->start();
+
+   this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIInputPassword::~UIInputPassword()
@@ -117,15 +119,15 @@ void UIInputPassword::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
     case Qt::Key_Escape:
-        this->slotQuitTrans();
+        this->slotFinishTrans();
         break;
     case Qt::Key_Enter:
         focusNextChild();
         break;
     case Qt::Key_F4:
-        //        vBar->setValue(vBar->value()+150);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -135,6 +137,8 @@ void UIInputPassword::keyPressEvent(QKeyEvent *event)
 void UIInputPassword::startAuthorize()
 {
     qDebug() << Q_FUNC_INFO;
+    closeTimer->stop();
+
     // 检查交易是否已满
     unsigned char ucResult=SAV_CheckNormalTransIndex();
     if(ucResult!=SUCCESS)
@@ -142,6 +146,7 @@ void UIInputPassword::startAuthorize()
         UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
         slotFinishTrans();
 
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         return;
     }
 
@@ -158,6 +163,8 @@ void UIInputPassword::startAuthorize()
         UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
 
         this->resetLine();
+
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
 
         return;
     }
@@ -187,6 +194,7 @@ void UIInputPassword::startAuthorize()
 
             UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
             this->resetLine();
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
 
             return;
         }
@@ -209,6 +217,7 @@ void UIInputPassword::startAuthorize()
 
                 UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
                 this->resetLine();
+                closeTimer->start(g_changeParam.TIMEOUT_UI);
 
                 return;
             }
@@ -222,6 +231,7 @@ void UIInputPassword::startAuthorize()
 
                 UIMsg::showErrMsgWithAutoClose(ERR_CASH_NOTEXIST,g_changeParam.TIMEOUT_ERRMSG);
                 this->resetLine();
+                closeTimer->start(g_changeParam.TIMEOUT_UI);
 
                 return;
             }
@@ -240,18 +250,13 @@ void UIInputPassword::startAuthorize()
 
                     UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
                     this->resetLine();
+                    closeTimer->start(g_changeParam.TIMEOUT_UI);
 
                     return;
                 }
             }
         }
     }
-}
-
-void UIInputPassword::slotQuitTrans()
-{
-    emit sigQuitTrans();
-
 }
 
 void UIInputPassword::slotFinishTrans()
@@ -267,3 +272,10 @@ void UIInputPassword::resetLine()
     leCashier->setFocus();
 }
 
+void UIInputPassword::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    closeTimer->start(timeout);
+}

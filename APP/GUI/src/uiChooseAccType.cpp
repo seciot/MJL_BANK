@@ -108,6 +108,8 @@ UIChooseAccType::UIChooseAccType(QDialog *parent,Qt::WindowFlags f) :
    animation1->setEndValue(mapToParent(QPoint(0, 0)));
    animation1->setEasingCurve(QEasingCurve::OutQuint);
    animation1->start();
+
+   this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 void UIChooseAccType::setSender()
@@ -153,6 +155,8 @@ void UIChooseAccType::keyPressEvent(QKeyEvent *event)
 void UIChooseAccType::setAccType(const AccType type)
 {
     qDebug() << Q_FUNC_INFO<<type;
+    closeTimer->stop();
+
     if(FLAG_RECEIVER==true)
     {
         privateAccType=type;
@@ -195,4 +199,19 @@ void UIChooseAccType::btnCreditClicked()
     qDebug() << Q_FUNC_INFO;
     setAccType(creditAcc);
 
+}
+
+void UIChooseAccType::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    closeTimer->start(timeout);
+}
+
+void UIChooseAccType::slotQuitTrans()
+{
+    qDebug()<<Q_FUNC_INFO;
+
+    emit sigQuitTrans();
 }

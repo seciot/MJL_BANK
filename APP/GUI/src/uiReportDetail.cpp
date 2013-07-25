@@ -10,11 +10,15 @@ extern "C"{
 void Uart_Printf(char *fmt,...);
 }
 
-UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
+// type 0 full window
+// type 1 intergrate in transaction
+UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
+    FLAG_NEEDVOID=false;
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -22,8 +26,17 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
     this->setPalette(palette);
     this->setAutoFillBackground(true);
     this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setGeometry(0,FRAME420_THVALUE,FRAME420_WIDTH,FRAME420_HEIGHT);
-    this->setFixedSize(FRAME420_WIDTH,FRAME420_HEIGHT);
+    if(type==1)
+    {
+        this->setGeometry(0,FRAME420_THVALUE+40,FRAME420_WIDTH,FRAME420_HEIGHT-40);
+        this->setFixedSize(FRAME420_WIDTH,FRAME420_HEIGHT-40);
+    }
+    else
+    {
+        this->setGeometry(0,FRAME420_THVALUE,FRAME420_WIDTH,FRAME420_HEIGHT);
+        this->setFixedSize(FRAME420_WIDTH,FRAME420_HEIGHT);
+    }
+
     QFont font("Helvetica",12,QFont::Bold);
     QFont font2("Helvetica",14,QFont::Bold);
     QFont font3("Helvetica",14);
@@ -55,18 +68,19 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
 
     //    ----------------------------------  //
     btnCancel=new QPushButton;
-//    btnSubmit=new QPushButton;
+    btnVOID=new QPushButton;
     btnCancel->setText(tr("Cancel"));
-//    btnSubmit->setText(tr("Detail"));
+    btnVOID->setText(tr("VOID"));
     btnCancel->setFont(font2);
-//    btnSubmit->setFont(font2);
+    btnVOID->setFont(font2);
     btnCancel->setMinimumHeight(30);
-//    btnSubmit->setMinimumHeight(30);
+    btnVOID->setMinimumHeight(30);
     btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-//    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnVOID->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnVOID->hide();
 
-//    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
-//    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
+    //    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
+    //    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     QVBoxLayout *v1Lay=new QVBoxLayout();
     //    v1Lay->addItem(sp1);
@@ -76,7 +90,7 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
     QHBoxLayout *h2Lay=new QHBoxLayout();
     //    h2Lay->addSpacing(10);
     h2Lay->addWidget(btnCancel);
-//    h2Lay->addWidget(btnSubmit);
+    h2Lay->addWidget(btnVOID);
     //    h2Lay->addSpacing(10);
 
     QVBoxLayout *layout=new QVBoxLayout(this);
@@ -86,8 +100,11 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
 
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
-//    connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotTransClicked()));
-//    connect(tbDetailList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(close()));
+    connect(tbDetailList,SIGNAL(viewportEntered()),this,SLOT(restartTimeOut()));
+    connect(tbDetailList,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
+    connect(tbDetailList->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
+
+    connect(btnVOID, SIGNAL(clicked()), this, SLOT(slotVOIDClicked()));
 
     //Animation
     QPropertyAnimation *animation1 = new QPropertyAnimation(this, "pos");
@@ -97,6 +114,7 @@ UIReportDetail::UIReportDetail(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 
@@ -180,4 +198,55 @@ void UIReportDetail::slotSetDetailList(QString transType, QString cardNo, QStrin
 
     tbDetailList->setItem(10,0,itmOperator);
     tbDetailList->setItem(11,0,itmOperatorData);
+}
+
+void UIReportDetail::slotSetVOID()
+{
+    FLAG_NEEDVOID=true;
+
+    btnVOID->show();
+}
+
+void UIReportDetail::slotVOIDClicked()
+{
+    qDebug()<<Q_FUNC_INFO;
+    emit sigVOID();
+}
+
+void UIReportDetail::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIReportDetail::slotQuitMenu()
+{
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
+}
+
+bool UIReportDetail::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
+}
+
+void UIReportDetail::restartTimeOut()
+{
+    qDebug()<<Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

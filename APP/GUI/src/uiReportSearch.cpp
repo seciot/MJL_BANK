@@ -7,6 +7,7 @@
 UIReportSearch::UIReportSearch(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -97,6 +98,8 @@ UIReportSearch::UIReportSearch(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEndValue(mapToParent(QPoint(0, 0)));
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIReportSearch::~UIReportSearch()
@@ -115,6 +118,7 @@ void UIReportSearch::keyPressEvent(QKeyEvent *event)
         this->slotSearchTransaction();
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -129,6 +133,7 @@ void UIReportSearch::slotSearchTransaction()
         qDebug()<<"fill in the blank";
 
         UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         return;
     }
 
@@ -168,8 +173,11 @@ void UIReportSearch::slotSearchTransaction()
                 case TransMode_CashAdvance:      //取钱
                     transType="Cash Advance";
                     break;
-                case TransMode_CashVoid:         //撤销
-                    transType="Cash VOID";
+                case TransMode_AdvanceVoid:         //撤销
+                    transType="Cash Advance VOID";
+                    break;
+                case TransMode_DepositVoid:         //撤销
+                    transType="Cash Deposit VOID";
                     break;
                 case TransMode_BalanceInquiry:   //查余
                     transType="Balance Inquiry";
@@ -211,8 +219,39 @@ void UIReportSearch::slotSearchTransaction()
         else
         {
             UIMsg::showErrMsgWithAutoClose("No Match Transaction",g_changeParam.TIMEOUT_ERRMSG);
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
             break;
     }
     }
 }
 
+void UIReportSearch::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIReportSearch::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIReportSearch::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
+}

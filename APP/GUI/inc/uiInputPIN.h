@@ -31,6 +31,8 @@ public:
     QString showPIN;
 private:
     bool FLAG_HASPIN;
+    QTimer *closeTimer;
+
 protected:
     void keyPressEvent(QKeyEvent *event);
 
@@ -42,6 +44,7 @@ public slots:
     void slotSetCardNo(const QString);
     void slotIdentityCard(const QString);
     void slotDisablePIN();
+    void setAutoClose(int timeout);
 
 signals:
     void sigQuitTrans();

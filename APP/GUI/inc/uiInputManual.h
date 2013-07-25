@@ -25,6 +25,7 @@ public:
 private:
     bool FLAG_SENDER;
     bool FLAG_RECEIVER;
+    QTimer *closeTimer;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -34,6 +35,7 @@ public slots:
     void slotInputComplete();
 
     void setEnterReceiver();
+    void setAutoClose(int timeout);
 
 signals:
     void sigInputComplete();

@@ -11,6 +11,8 @@
 UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
+
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -170,6 +172,9 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     connect(btnCashierManager,SIGNAL(clicked()),this,SLOT(showCashierManager()));
     connect(btnReport,SIGNAL(clicked()),this,SLOT(showReport()));
     connect(btnSettle,SIGNAL(clicked()),this,SLOT(showSettle()));
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+
 }
 
 UIMenuPos::~UIMenuPos()
@@ -186,11 +191,16 @@ void UIMenuPos::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F1:
         this->pageTwoBackClicked();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
+
         break;
     case Qt::Key_F2:
         this->pageOneNextClicked();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
+
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -243,7 +253,6 @@ void UIMenuPos::showCashierManager()
 {
     UIUserManager *uiUM=new UIUserManager();
     uiUM->exec();
-
 }
 
 void UIMenuPos::showReport()
@@ -258,4 +267,35 @@ void UIMenuPos::showSettle()
     qDebug() << Q_FUNC_INFO;
     UISettle *uiStl = new UISettle();
     uiStl->exec();
+}
+
+void UIMenuPos::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIMenuPos::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIMenuPos::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

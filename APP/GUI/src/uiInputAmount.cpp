@@ -107,6 +107,8 @@ UIInputAmount::UIInputAmount(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEndValue(mapToParent(QPoint(0, 0)));
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIInputAmount::~UIInputAmount()
@@ -125,20 +127,15 @@ void UIInputAmount::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         this->slotAmountInputComplete();
         break;
-        //    case KEY_00_PT:
+        ///  00 键加小数点
+        //    case Qt::Key_F9:
         //    {
         //        event->ignore();
         //        this->addDot();
         //        break;
         //    }
-    case Qt::Key_F9:
-    {
-        event->ignore();
-        this->addDot();
-        break;
-    }
     default:
-        //        qDebug()<<event->key();
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -176,6 +173,8 @@ void UIInputAmount::addDot()
 
 void UIInputAmount::slotAmountInputComplete()
 {
+    closeTimer->stop();
+
     if(AMOUNT!="0" && AMOUNT!="" && !AMOUNT.isEmpty())
     {
         if(AMOUNT.toDouble()<=g_constantParam.ulMaxAmount && AMOUNT.toDouble()>=g_constantParam.ulMinAmount)
@@ -189,6 +188,7 @@ void UIInputAmount::slotAmountInputComplete()
             errMsg.append(QString::number(g_constantParam.ulMaxAmount));
 
             UIMsg::showNoticeMsgWithAutoClose(errMsg,g_changeParam.TIMEOUT_ERRMSG);
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
             return;
         }
     }
@@ -258,4 +258,12 @@ void UIInputAmount::Remove(unsigned char str[],char remove)
         p++;
     }
     str[t]='\0';
+}
+
+void UIInputAmount::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    closeTimer->start(timeout);
 }

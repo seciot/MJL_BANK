@@ -653,7 +653,7 @@ void xDATA::LoadConstantDefaultData(void)
 void xDATA::LoadChangeDefaultData(void)
 {
     g_changeParam.simCard=true;
-    g_changeParam.simTrans=false;
+    g_changeParam.simTrans=true;
 
     g_changeParam.ulTransNum = 0;
     g_changeParam.ulBatchNumber = 1;
@@ -674,11 +674,23 @@ void xDATA::LoadChangeDefaultData(void)
     g_changeParam.p2p.PIN_ENABLE=true;
     g_changeParam.p2p.MANUAL_ENABLE=true;
 
-    g_changeParam.boolCashierLogonFlag = false;
+    g_changeParam.transvoid.TRANS_ENABLE=true;
+    g_changeParam.transvoid.PIN_ENABLE=true;
+    g_changeParam.transvoid.MANUAL_ENABLE=true;
+
+    g_changeParam.adjust.TRANS_ENABLE=true;
+    g_changeParam.adjust.PIN_ENABLE=true;
+    g_changeParam.adjust.MANUAL_ENABLE=true;
+
+    g_changeParam.pinchange.TRANS_ENABLE=true;
+    g_changeParam.pinchange.PIN_ENABLE=true;
+    g_changeParam.pinchange.MANUAL_ENABLE=true;
+
+    g_changeParam.boolCashierLogonFlag = true;
 
     // timeout
-   g_changeParam.TIMEOUT_PAPERTEAR=3*1000;   // 打印撕纸等待时间
-   g_changeParam.TIMEOUT_ERRMSG=5*1000;         // 报错窗口自动关闭时间
+   g_changeParam.TIMEOUT_PAPERTEAR=5*1000;   // 打印撕纸等待时间
+   g_changeParam.TIMEOUT_ERRMSG=10*1000;         // 报错窗口自动关闭时间
    g_changeParam.TIMEOUT_HOST=30*1000;    // 主机超时
    g_changeParam.TIMEOUT_UI=60*1000;    // 界面超时
 

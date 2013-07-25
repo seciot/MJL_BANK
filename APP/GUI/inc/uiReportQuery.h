@@ -20,14 +20,17 @@ public:
     QPushButton *btnSubmit;
 private:
     QVector<QLabel*> listVector;
-
+    QTimer *closeTimer;
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
 private slots:
     void slotTransClicked();
-
+    void restartTimeOut();
     void ergodicTrans();
 
 signals:

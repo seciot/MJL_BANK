@@ -44,7 +44,8 @@ unsigned char SAV_TransSave(void)
     //置交易保存类型
     switch(NormalTransData.transType)
     {
-    case TransMode_CashVoid:
+    case TransMode_AdvanceVoid:
+    case TransMode_DepositVoid:
         g_transInfo.auiTransIndex[sg_uiTransIndex] = SAV_TRANS_NORMAL;
         g_transInfo.auiTransIndex[sg_uiOldTransIndex] = SAV_TRANS_NIIVOID;
         break;
@@ -79,7 +80,7 @@ unsigned char SAV_TransSave(void)
             ++pTransTotal->uiTransferNb;
             pTransTotal->ulTransferAmount += NormalTransData.ulAmount;
             break;
-        case TransMode_CashVoid:        //撤销
+        case TransMode_AdvanceVoid:        //撤销
             ++pTransTotal->uiVoidNb;
             pTransTotal->ulVoidAmount += NormalTransData.ulAmount;
             break;

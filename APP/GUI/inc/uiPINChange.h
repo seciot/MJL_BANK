@@ -1,5 +1,5 @@
-#ifndef UICASHADVANCE_H_
-#define UICASHADVANCE_H_
+#ifndef UIPINCHANGE_H_
+#define UIPINCHANGE_H_
 #include "ui.h"
 #include <QAction>
 #include <QThread>
@@ -11,16 +11,18 @@
 #include "uiInputPIN.h"
 #include "uiTransOnline.h"
 #include "uiInputManual.h"
+#include "uiReportDetail.h"
 #include "uiPrint.h"
 
-class UICashAdvance : public QDialog
+class UIPINChange : public QDialog
 {
     Q_OBJECT
 public:
-    explicit UICashAdvance(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
-    ~UICashAdvance();
+    explicit UIPINChange(QDialog *parent = 0,Qt::WindowFlags f = Qt::FramelessWindowHint);
+    ~UIPINChange();
 
     QLabel *lbHead;
+    UIReportDetail *uiRDetail;
 
 private:
 
@@ -30,7 +32,7 @@ private:
     QThread *swipeThread;
 
 
-    UIInputPassword *uiIP;
+    UIInputPassword *uiIPass;
     UIInputAmount *uiIA;
     UISwipeCard *uiSC;
     UIChooseAccType *uiCAT;
@@ -41,28 +43,24 @@ private:
 
 
     bool FLAG_InputPassword;
-    bool FLAG_AccountType;
     bool FLAG_SwipeCard;
-    bool FLAG_InputAmount;
     bool FLAG_InputManual;
     bool FLAG_InputPIN;
     bool FLAG_TransOnline;
-    bool FLAG_PrintReceipt;
 
 
 protected:
     void keyPressEvent(QKeyEvent *event);
 private slots:
-    void chooseAccountType(UserType,QString);
-    void setAccountType(AccType);
+    void checkAuth(UserType,QString);
     void swipeCard();
-    void inputAmount();
     void inputManual();
-    void inputPIN(QString);
+    void inputPIN();
+    void inputNewPIN();
     void transOnline();
-    void printReceipt();
+    void changePINSuccess();
 
-    void inputAmountAndExit();
+    void inputPINAndExit();
     void quitFromSwipeCard();
     void quitFromFlow();
     void finishFromFlow();

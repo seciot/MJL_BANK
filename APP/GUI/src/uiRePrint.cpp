@@ -7,6 +7,7 @@
 UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -105,6 +106,8 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEndValue(mapToParent(QPoint(0, 0)));
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIRePrint::~UIRePrint()
@@ -130,6 +133,7 @@ void UIRePrint::keyPressEvent(QKeyEvent *event)
 void UIRePrint::slotReprintLast()
 {
     qDebug()<<Q_FUNC_INFO;
+    closeTimer->stop();
 
     memset(&NormalTransData,0,sizeof(NORMAL_TRANS));
     int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans,  g_transInfo.ulLastTransNumber);
@@ -165,8 +169,10 @@ void UIRePrint::slotReprintWhich()
 {
     qDebug()<<Q_FUNC_INFO;
 
+    closeTimer->stop();
+
     bool ok;
-    int traceNo=UIInput::getInt("TRACE NO","Please Input\n Trace No. :",REGEX_NUMBER,6,&ok);
+    unsigned int traceNo=UIInput::getInt("TRACE NO","Please Input\n Trace No. :",REGEX_NUMBER,6,&ok);
     if(ok)
     {
         qDebug()<<traceNo;
@@ -220,6 +226,7 @@ void UIRePrint::slotReprintWhich()
 void UIRePrint::slotPrintAudit()
 {
     qDebug()<<Q_FUNC_INFO;
+    closeTimer->stop();
 
     // 打印线程
     threadPrint=new QThread(this);
@@ -235,6 +242,7 @@ void UIRePrint::slotPrintAudit()
 void UIRePrint::slotPrintSettle()
 {
     qDebug()<<Q_FUNC_INFO;
+    closeTimer->stop();
     // 打印线程
     threadPrint=new QThread(this);
     pPrint = new objPrint;
@@ -258,6 +266,7 @@ void UIRePrint::slotFinishPrint()
         threadPrint->deleteLater();
         qDebug(" --- After deleteLater--- !\n");
     }
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }
 
 // 撕纸
@@ -265,6 +274,37 @@ void UIRePrint::slotTearPrint()
 {
     qDebug()<<Q_FUNC_INFO;
     Os__gif_stop();
-    UIMsg::showNoticeMsgWithAutoClose("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
     Os__gif_start((char*)"BigLoad.gif", 60, 80, 124, 124);
+}
+
+void UIRePrint::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIRePrint::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIRePrint::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

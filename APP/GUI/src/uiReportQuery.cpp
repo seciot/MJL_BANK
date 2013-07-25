@@ -14,6 +14,7 @@ void Uart_Printf(char *fmt,...);
 UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -82,11 +83,11 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     layout->addLayout(v1Lay);
     layout->addLayout(h2Lay);
 
-
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotTransClicked()));
-    //    connect(tbTransList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(close()));
-
+    connect(tbTransList,SIGNAL(viewportEntered()),this,SLOT(restartTimeOut()));
+    connect(tbTransList,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
+    connect(tbTransList->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
     //Animation
     QPropertyAnimation *animation1 = new QPropertyAnimation(this, "pos");
     animation1->setDuration(100);
@@ -96,6 +97,7 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     animation1->start();
 
     this->ergodicTrans();  //遍历交易
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 void UIReportQuery::ergodicTrans()
@@ -145,8 +147,11 @@ void UIReportQuery::ergodicTrans()
             case TransMode_CashAdvance:      //取钱
                 transType="Cash Advance";
                 break;
-            case TransMode_CashVoid:         //撤销
-                transType="Cash VOID";
+            case TransMode_AdvanceVoid:         //撤销
+                transType="Cash Advance VOID";
+                break;
+            case TransMode_DepositVoid:         //撤销
+                transType="Cash Deposit VOID";
                 break;
             case TransMode_BalanceInquiry:   //查余
                 transType="Balance Inquiry";
@@ -218,6 +223,7 @@ void UIReportQuery::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -257,8 +263,11 @@ void UIReportQuery::slotTransClicked()
         case TransMode_CashAdvance:      //取钱
             transType="Cash Advance";
             break;
-        case TransMode_CashVoid:         //撤销
-            transType="Cash VOID";
+        case TransMode_AdvanceVoid:         //撤销
+            transType="Cash Advance VOID";
+            break;
+        case TransMode_DepositVoid:         //撤销
+            transType="Cash Deposit VOID";
             break;
         case TransMode_BalanceInquiry:   //查余
             transType="Balance Inquiry";
@@ -295,4 +304,41 @@ void UIReportQuery::slotTransClicked()
         uiRDetail->exec();
 
     }
+}
+
+void UIReportQuery::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitMenu()));
+    closeTimer->start(timeout);
+}
+
+void UIReportQuery::slotQuitMenu()
+{
+    this->close();
+}
+
+bool UIReportQuery::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_changeParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
+}
+
+void UIReportQuery::restartTimeOut()
+{
+    qDebug()<<Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

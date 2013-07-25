@@ -30,7 +30,6 @@ public:
     QPushButton *btnPayment;
     QPushButton *btnSetDateTime;
     QPushButton *btnClearReversal;
-    QPushButton *btnPass;
     QPushButton *btnSuvCharge;
     QPushButton *btnTransAttr;
 
@@ -46,6 +45,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void pageOneNextClicked();
@@ -59,7 +59,6 @@ private slots:
     void Date_Config_Click();
     void Sur_Config_Click();
     void Trans_Config_Click();
-    void Password_Click();
 
     void quitFromInputPass();
     void slotAllowEdit(UserType,QString);
@@ -68,6 +67,11 @@ private:
     QThread *passThread;
 
     static void styleWidget(QWidget * btn,int iFontSize=13);
+
+    QTimer *closeTimer;
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
 };
 
 #endif  

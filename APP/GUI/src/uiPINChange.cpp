@@ -1,26 +1,27 @@
-#include "uiBalanceInquiry.h"
+#include "uiPINChange.h"
+#include "sav.h"
 #include "xdata.h"
+#include "commontools.h"
 #include "global.h"
 
 static void TRANS_CleanTransData(void);
 
-UIBalanceInquiry::UIBalanceInquiry(QDialog *parent,Qt::WindowFlags f) :
+UIPINChange::UIPINChange(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
     TRANS_CleanTransData();
-    NormalTransData.transType = TransMode_BalanceInquiry;
     RemoveKeyEventBug();
-    xDATA::ReadValidFile(xDATA::DataSaveConstant);
+    NormalTransData.transType=TransMode_PINChange;
+
     xDATA::ReadValidFile(xDATA::DataSaveChange);
+    xDATA::ReadValidFile(xDATA::DataSaveConstant);
 
     FLAG_InputPassword=false;
-    FLAG_AccountType=false;
     FLAG_SwipeCard=false;
     FLAG_InputManual=false;
     FLAG_InputPIN=false;
     FLAG_TransOnline=false;
-    FLAG_ShowBalance=false;
 
     QPixmap bg;
     bg.load(":/images/commonbg.png");
@@ -30,14 +31,13 @@ UIBalanceInquiry::UIBalanceInquiry(QDialog *parent,Qt::WindowFlags f) :
     this->setAutoFillBackground(true);
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setGeometry(0,FRAME420_THVALUE,FRAME420_WIDTH,FRAME420_HEIGHT);
-
     this->setFixedSize(FRAME420_WIDTH,FRAME420_HEIGHT);
     QFont font("Helvetica",12,QFont::Bold);
     QFont font2("Helvetica",14,QFont::Bold);
     QFont font3("Helvetica",8,QFont::Bold);
 
     lbHead=new QLabel();
-    lbHead->setText(tr("Balance Inquiry"));
+    lbHead->setText(tr("PIN CHANGE"));
     QFont fontH("Helvetica",18,QFont::Bold);
     lbHead->setFont(fontH);
     lbHead->setAlignment(Qt::AlignCenter);
@@ -59,21 +59,21 @@ UIBalanceInquiry::UIBalanceInquiry(QDialog *parent,Qt::WindowFlags f) :
     // -------- input cashier password ------------//
     FLAG_InputPassword=true;
 
-    uiIP=new UIInputPassword();
-    connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(chooseAccountType(UserType,QString)));
-    connect(uiIP,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
+    uiIPass=new UIInputPassword();
+    connect(uiIPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(checkAuth(UserType,QString)));
+    connect(uiIPass,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiIPass,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiIPass, SLOT(exec()));
     passThread->start();
 }
 
-UIBalanceInquiry::~UIBalanceInquiry()
+UIPINChange::~UIPINChange()
 {
     qDebug() <<"delete:: "<< Q_FUNC_INFO;
 }
 
-void UIBalanceInquiry::keyPressEvent(QKeyEvent *event)
+void UIPINChange::keyPressEvent(QKeyEvent *event)
 {
     switch(event->key())
     {
@@ -81,10 +81,8 @@ void UIBalanceInquiry::keyPressEvent(QKeyEvent *event)
         this->close();
         break;
     case Qt::Key_F3:
-        //        vBar->setValue(vBar->value()-150);
         break;
     case Qt::Key_F4:
-        //        vBar->setValue(vBar->value()+150);
         break;
     default:
         event->ignore();
@@ -92,13 +90,14 @@ void UIBalanceInquiry::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void UIBalanceInquiry::chooseAccountType(UserType ut,QString ID)
+void UIPINChange::checkAuth(UserType ut,QString ID)
 {
-    qDebug()<<ut<<ID;
-    //--------------------------------------- //
-    if(g_changeParam.balance.TRANS_ENABLE==false)
+    // 交易关闭
+    qDebug()<<ut<<ID<<g_changeParam.boolCashierLogonFlag;
+    if(g_changeParam.pinchange.TRANS_ENABLE==false)
     {
         UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
@@ -106,54 +105,45 @@ void UIBalanceInquiry::chooseAccountType(UserType ut,QString ID)
         UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
         return;
     }
+    //--------------------------------------- //
     if(ut==typeCashier)
     {
-        FLAG_AccountType=true;
         memcpy(NormalTransData.aucCashier , ID.toAscii().data() , 2);
-        uiCAT=new UIChooseAccType();
-        connect(uiCAT,SIGNAL(sigChooseTypeComplete(AccType)),this,SLOT(setAccountType(AccType)));
-        connect(uiCAT,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-        uiCAT->exec();
+
+        this->swipeCard();
     }
     else
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
-
-        uiIP->resetLine();
+        uiIPass->resetLine();
 
         return;
     }
 }
 
-void UIBalanceInquiry::setAccountType(AccType type)
-{
-    qDebug() << Q_FUNC_INFO<<type;
-    // ---------- -------------//
-    this->swipeCard();
-}
-
-void UIBalanceInquiry::swipeCard()
+void UIPINChange::swipeCard()
 {
     qDebug() << Q_FUNC_INFO;
 
     FLAG_SwipeCard=true;
     uiSC=new UISwipeCard();
-    if(g_changeParam.p2p.MANUAL_ENABLE==false)
+    if(g_changeParam.pinchange.MANUAL_ENABLE==false)
     {
-            uiSC->setNoManual();
+        qDebug()<<"设置不可手动";
+        uiSC->setNoManual();
     }
     connect(uiSC,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
-    connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
-    connect(uiSC,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPinAndExit()));
+    connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputPIN()));
+    connect(uiSC,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPINAndExit()));
     connect(uiSC,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
 
 
     uiSC->exec();
 }
 
-void UIBalanceInquiry::inputManual()
+void UIPINChange::inputManual()
 {
     qDebug() << Q_FUNC_INFO;
 
@@ -165,7 +155,7 @@ void UIBalanceInquiry::inputManual()
     uiIM->exec();
 }
 
-void UIBalanceInquiry::inputPinAndExit()
+void UIPINChange::inputPINAndExit()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
@@ -173,64 +163,81 @@ void UIBalanceInquiry::inputPinAndExit()
     this->quitFromFlow();
 }
 
-void UIBalanceInquiry::inputPIN()
+void UIPINChange::inputPIN()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
 
     uiIPIN=new UIInputPIN();
-    if(g_changeParam.balance.PIN_ENABLE==false)
+    if(g_changeParam.pinchange.PIN_ENABLE==false)
         uiIPIN->slotDisablePIN();
     connect(uiIPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
+    connect(uiIPIN,SIGNAL(sigSubmit()),this,SLOT(inputNewPIN()));
     uiIPIN->exec();
 }
 
-void UIBalanceInquiry::transOnline()
+void UIPINChange::inputNewPIN()
+{
+    bool ok1;
+    bool ok2;
+    QString newPIN=UIInput::getPIN("New PIN","Please Input\nNew PIN:",REGEX_NUMBER,6,&ok1);
+    if(ok1)
+    {
+        QString newPINConfirm=UIInput::getPIN("Confirm PIN","Please Input\nNew PIN Again:",REGEX_NUMBER,6,&ok2);
+        if(ok2)
+        {
+            // 匹配一样则上送
+            int x = QString::compare(newPIN, newPINConfirm, Qt::CaseInsensitive);
+            if(x==0)
+            {
+                this->transOnline();
+            }
+        }
+        else
+            this->quitFromFlow();
+    }
+    else
+        this->quitFromFlow();
+}
+
+void UIPINChange::transOnline()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_TransOnline=true;
 
     uiTO=new UITransOnline();
     uiTO->slotStartTrans(NormalTransData.transType);
-    connect(uiTO,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(showBalance()));
-//    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(finishFromFlow()));
+    connect(uiTO,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
+    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(changePINSuccess()));
 
     uiTO->exec();
-
 }
 
-void UIBalanceInquiry::showBalance()
+void UIPINChange::changePINSuccess()
 {
-    qDebug()<<Q_FUNC_INFO;
-    FLAG_ShowBalance=true;
-
-    uiSB=new UIShowBalance();
-    connect(uiSB,SIGNAL(sigFinishFlow()),this,SLOT(finishFromFlow()));
-
-    uiSB->exec();
+    UIMsg::showNoticeMsgWithAutoClose("PIN Change/nSuccess",g_changeParam.TIMEOUT_ERRMSG);
+    this->finishFromFlow();
 }
+
 
 // ----------------------------------------------------------------------------------------------- //
-void UIBalanceInquiry::quitFromSwipeCard()
+void UIPINChange::quitFromSwipeCard()
 {
     qDebug()<<Q_FUNC_INFO;
 
     uiSC->close();
-    uiCAT->close();
-    uiIP->close();
+    uiRDetail->close();
+    uiIPass->close();
 
     this->close();
 }
 
 
-void UIBalanceInquiry::quitFromFlow()
+void UIPINChange::quitFromFlow()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    if(FLAG_ShowBalance==true)
-        uiSB->close();
+
     if(FLAG_TransOnline==true)
     {
         uiTO->close();
@@ -251,14 +258,9 @@ void UIBalanceInquiry::quitFromFlow()
         uiSC->close();
         FLAG_SwipeCard=false;
     }
-    if(FLAG_AccountType==true)
-    {
-        uiCAT->close();
-        FLAG_AccountType=false;
-    }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiIPass->close();
         FLAG_InputPassword=false;
     }
 
@@ -267,12 +269,10 @@ void UIBalanceInquiry::quitFromFlow()
     this->close();
 }
 
-void UIBalanceInquiry::finishFromFlow()
+void UIPINChange::finishFromFlow()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    if(FLAG_ShowBalance==true)
-        uiSB->close();
     if(FLAG_TransOnline==true)
     {
         uiTO->close();
@@ -293,14 +293,9 @@ void UIBalanceInquiry::finishFromFlow()
         uiSC->close();
         FLAG_SwipeCard=false;
     }
-    if(FLAG_AccountType==true)
-    {
-        uiCAT->close();
-        FLAG_AccountType=false;
-    }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiIPass->close();
         FLAG_InputPassword=false;
     }
 

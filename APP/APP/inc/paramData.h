@@ -75,6 +75,27 @@ typedef struct BALANCE_INQUIRY
     bool  MANUAL_ENABLE;
 }BalanceInquiry;
 
+typedef struct TRANS_VOID
+{
+    bool  TRANS_ENABLE;
+    bool  PIN_ENABLE;
+    bool  MANUAL_ENABLE;
+}TransVoid;
+
+typedef struct ADJUST
+{
+    bool  TRANS_ENABLE;
+    bool  PIN_ENABLE;
+    bool  MANUAL_ENABLE;
+}Adjust;
+
+typedef struct PIN_CHANGE
+{
+    bool  TRANS_ENABLE;
+    bool  PIN_ENABLE;
+    bool  MANUAL_ENABLE;
+}PinChange;
+
 typedef struct CHANGE_PARAM
 {
     /*========== test ======*/
@@ -85,6 +106,9 @@ typedef struct CHANGE_PARAM
     CashDeposit deposit;
     P2P p2p;
     BalanceInquiry balance;
+    TransVoid transvoid;
+    Adjust adjust;
+    PinChange pinchange;
 
     bool            boolMacKeyFlag;           //用于标注MAC KEY是否有下发
     unsigned long   ulTransNum;             //交易流水号(注:长度6位)

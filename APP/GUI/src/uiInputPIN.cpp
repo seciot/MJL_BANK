@@ -136,6 +136,8 @@ UIInputPIN::UIInputPIN(QDialog *parent,Qt::WindowFlags f) :
     animation1->start();
 
     FLAG_HASPIN=true;
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 UIInputPIN::~UIInputPIN()
@@ -154,6 +156,7 @@ void UIInputPIN::keyPressEvent(QKeyEvent *event)
         slotSubmitClicked();
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -166,6 +169,7 @@ void UIInputPIN::slotQuitTrans()
 
 void UIInputPIN::slotSubmitClicked()
 {
+    closeTimer->stop();
     // 完成输入密码
     if(savePIN.isEmpty() || savePIN.length()==0 || FLAG_HASPIN==false)
     {
@@ -294,4 +298,12 @@ void UIInputPIN::slotDisablePIN()
 
     btnSubmit->setFocus();
     FLAG_HASPIN=false;
+}
+
+void UIInputPIN::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    closeTimer->start(timeout);
 }

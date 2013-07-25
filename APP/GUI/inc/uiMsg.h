@@ -50,9 +50,10 @@ public:
     static void showHostErrMsgWithAutoClose(const HostErrIndex longErrorCode,int timeout);
     static void showNoticeMsgWithAutoClose(const MsgTabIndex index,int timeout);
     static void showNoticeMsgWithAutoClose(QString,int);
+    static void showNoticeMsgWithAutoCloseNoBeep(QString,int);
 
 private:
-    QTimer *noticeTimer;
+    QTimer *closeTimer;
 
     /// ----------错误代码大全-------------///
     QHash<ErrIndex,QString> hashError;

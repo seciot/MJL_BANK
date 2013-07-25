@@ -30,17 +30,22 @@ private:
     UIInputPassword *uiIP;
     QThread *passThread;
 
+    QTimer *closeTimer;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
     void slotAllowEdit(UserType,QString ID);
     void slotProcessUserManager();
-    void slotQuitTrans();
 
     void setPasswdWidgetLen(int);
     void quitFromInputPass();
+
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
+
 
 signals:
     void sigLogInSuccess();

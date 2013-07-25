@@ -62,24 +62,37 @@ unsigned char objPutCard::putCardProcess()
                 // 没有手动
                 if(NormalTransData.transType==TransMode_CashAdvance && g_changeParam.advance.MANUAL_ENABLE==false)
                 {
-                    //do nothing
                      ucResult = 0;
                 }
                 if(NormalTransData.transType==TransMode_CashDeposit && g_changeParam.deposit.MANUAL_ENABLE==false)
                 {
-                    //do nothing
                      ucResult = 0;
                 }
                 if(NormalTransData.transType==TransMode_BalanceInquiry && g_changeParam.balance.MANUAL_ENABLE==false)
                 {
-                    //do nothing
                      ucResult = 0;
                 }
                 if(NormalTransData.transType==TransMode_CardTransfer && g_changeParam.p2p.MANUAL_ENABLE==false)
                 {
-                    //do nothing
                      ucResult = 0;
                 }
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.p2p.MANUAL_ENABLE==false)
+                {
+                     ucResult = 0;
+                }
+                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.p2p.MANUAL_ENABLE==false)
+                {
+                     ucResult = 0;
+                }
+                if(NormalTransData.transType==TransMode_Adjust && g_changeParam.p2p.MANUAL_ENABLE==false)
+                {
+                     ucResult = 0;
+                }
+                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.p2p.MANUAL_ENABLE==false)
+                {
+                     ucResult = 0;
+                }
+
 
                 // 进入手动
                 if(NormalTransData.transType==TransMode_CashAdvance && g_changeParam.advance.MANUAL_ENABLE==true)
@@ -95,6 +108,22 @@ unsigned char objPutCard::putCardProcess()
                     break;
                 }
                 if(NormalTransData.transType==TransMode_CardTransfer && g_changeParam.p2p.MANUAL_ENABLE==true)
+                {
+                    break;
+                }
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.p2p.MANUAL_ENABLE==true)
+                {
+                    break;
+                }
+                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.p2p.MANUAL_ENABLE==true)
+                {
+                    break;
+                }
+                if(NormalTransData.transType==TransMode_Adjust && g_changeParam.p2p.MANUAL_ENABLE==true)
+                {
+                    break;
+                }
+                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.p2p.MANUAL_ENABLE==true)
                 {
                     break;
                 }

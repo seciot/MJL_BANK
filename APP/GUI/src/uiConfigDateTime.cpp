@@ -75,6 +75,9 @@ UIConfigDateTime::UIConfigDateTime(QDialog *parent,Qt::WindowFlags f) :
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit,SIGNAL(clicked()),this,SLOT(setDateTime()));
+
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+
 }
 
 UIConfigDateTime::~UIConfigDateTime()
@@ -89,13 +92,14 @@ void UIConfigDateTime::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Escape:
         this->close();
         break;
+    case Qt::Key_Enter:
+        break;
     case Qt::Key_F3:
-//        vBar->setValue(vBar->value()-150);
         break;
     case Qt::Key_F4:
-//        vBar->setValue(vBar->value()+150);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -104,12 +108,12 @@ void UIConfigDateTime::keyPressEvent(QKeyEvent *event)
 void UIConfigDateTime::setDateTime()
 {
     qDebug() << Q_FUNC_INFO;
+    closeTimer->stop();
+
     QString dateEd=dateEdit->dateTime().toString("ddMMyy");
     QString timeEd=timeEdit->time().toString("hhmm");
 
     qWarning("%s: %s", qPrintable(dateEd), qPrintable(timeEd));
-
-
 
     qDebug()<<"OS fun";
     Os__write_time(qstring_auc(timeEd));
@@ -125,4 +129,18 @@ unsigned char *UIConfigDateTime::qstring_auc(QString str)
     unsigned char* ptr;
     ptr=(unsigned char*)ch;
     return ptr;
+}
+
+void UIConfigDateTime::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitCfg()));
+    closeTimer->start(timeout);
+}
+
+void UIConfigDateTime::slotQuitCfg()
+{
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
 }

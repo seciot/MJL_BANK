@@ -116,6 +116,7 @@ void UICashDeposit::chooseAccountType(UserType ut,QString ID)
         memcpy(NormalTransData.aucCashier , ID.toAscii().data() , 2);
         uiCAT=new UIChooseAccType();
         connect(uiCAT,SIGNAL(sigChooseTypeComplete(AccType)),this,SLOT(setAccountType(AccType)));
+        connect(uiCAT,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
         uiCAT->exec();
     }
     else

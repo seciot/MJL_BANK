@@ -20,16 +20,21 @@ public:
     QPushButton *btnSerachByNumber;
 
     QPushButton *btnCancel;
-//    QPushButton *btnSubmit;
+    //    QPushButton *btnSubmit;
 private:
     UIReportQuery *uiRQ;
     UIReportSearch *uiRSearch;
     UIReportSummary *uiRSum;
 
+    QTimer *closeTimer;
+
 protected:
+    bool eventFilter(QObject *obj, QEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 public slots:
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
 private slots:
     void slotShowQueryTrans();
     void slotShowSummary();

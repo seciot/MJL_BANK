@@ -120,6 +120,7 @@ UIInputManual::UIInputManual(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
 void UIInputManual::setEnterReceiver()
@@ -146,9 +147,9 @@ void UIInputManual::keyPressEvent(QKeyEvent *event)
         focusNextChild();
         break;
     case Qt::Key_F4:
-        //        vBar->setValue(vBar->value()+150);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -164,11 +165,13 @@ void UIInputManual::slotQuitTrans()
 void UIInputManual::slotInputComplete()
 {
     qDebug()<<Q_FUNC_INFO;
+    closeTimer->stop();
     // 检查都有输入
     if(leCardNo->text().isEmpty() && FLAG_RECEIVER==true)
     {
         qDebug()<<"fill in the blank";
         UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         return;
     }
 
@@ -177,6 +180,7 @@ void UIInputManual::slotInputComplete()
         qDebug()<<"fill in the blank";
 
         UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
 
         return;
     }
@@ -184,6 +188,7 @@ void UIInputManual::slotInputComplete()
     if(leEXP->text().length()<4 && FLAG_RECEIVER==false)
     {
         UIMsg::showNoticeMsgWithAutoClose(WRONG_EXP,g_changeParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
 
         return;
     }
@@ -231,4 +236,10 @@ void UIInputManual::slotInputComplete()
     emit sigInputComplete();
 }
 
-
+void UIInputManual::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    closeTimer->start(timeout);
+}

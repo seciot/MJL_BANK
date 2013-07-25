@@ -385,14 +385,14 @@ UIMsg::UIMsg(ErrorType errortype, QString errMsg, bool needBeep, QDialog *parent
 void UIMsg::setAutoClose(int timeout)
 {
     qDebug()<<timeout;
-    noticeTimer= new QTimer(this);
-    connect(noticeTimer, SIGNAL(timeout()), this, SLOT(thisClose()));
-    noticeTimer->start(timeout);
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(thisClose()));
+    closeTimer->start(timeout);
 }
 
 void UIMsg::thisClose()
 {
-    noticeTimer->stop();
+    closeTimer->stop();
     this->close();
 }
 
@@ -551,6 +551,13 @@ void UIMsg::showNoticeMsgWithAutoClose(const MsgTabIndex index, int timeout)
 }
 
 void UIMsg::showNoticeMsgWithAutoClose(QString str, int timeout)
+{
+    UIMsg *msg=new UIMsg(NOTICE_ERROR,str,true);
+    msg->setAutoClose(timeout);
+    msg->exec();
+}
+
+void UIMsg::showNoticeMsgWithAutoCloseNoBeep(QString str, int timeout)
 {
     UIMsg *msg=new UIMsg(NOTICE_ERROR,str,false);
     msg->setAutoClose(timeout);

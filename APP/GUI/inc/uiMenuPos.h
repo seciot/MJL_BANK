@@ -34,6 +34,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void pageOneNextClicked();
@@ -44,8 +45,14 @@ private slots:
     void showCashierManager();
     void showReport();
     void showSettle();
+
 private:
     static void styleWidget(QWidget * btn,int iFontSize=13);
+    QTimer *closeTimer;
+
+public slots:
+    void setAutoClose(int timeout);
+    void slotQuitMenu();
 };
 
 #endif  

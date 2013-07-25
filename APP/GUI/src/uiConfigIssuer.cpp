@@ -1,7 +1,7 @@
-#include "uiconfigissuer.h"
+#include "UIConfigIssuer.h"
 #include "global.h"
 
-uiConfigIssuer::uiConfigIssuer(QDialog *parent,Qt::WindowFlags f) :
+UIConfigIssuer::UIConfigIssuer(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     QPixmap bg;
@@ -141,33 +141,40 @@ uiConfigIssuer::uiConfigIssuer(QDialog *parent,Qt::WindowFlags f) :
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
 
+    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+
 }
 
-uiConfigIssuer::~uiConfigIssuer()
+UIConfigIssuer::~UIConfigIssuer()
 {
     qDebug() << Q_FUNC_INFO;
 }
 
-void uiConfigIssuer::keyPressEvent(QKeyEvent *event)
+void UIConfigIssuer::keyPressEvent(QKeyEvent *event)
 {
     switch(event->key())
     {
     case Qt::Key_Escape:
         this->close();
         break;
+    case Qt::Key_Enter:
+        break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         break;
     default:
+        closeTimer->start(g_changeParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
 }
 
-void uiConfigIssuer::mousePressEvent(QMouseEvent *event)
+void UIConfigIssuer::mousePressEvent(QMouseEvent *event)
 {
 //    qDebug()<<"mousePressEvent"<<event->pos().x()<<event->pos().y();
     saveVValue=event->pos().y();
@@ -175,7 +182,7 @@ void uiConfigIssuer::mousePressEvent(QMouseEvent *event)
 
 }
 
-void uiConfigIssuer::mouseMoveEvent(QMouseEvent *event)
+void UIConfigIssuer::mouseMoveEvent(QMouseEvent *event)
 {
 
 //    qDebug()<<"mouseMoveEvent"<<event->pos().x()<<event->pos().y()<<vBar->value();
@@ -192,3 +199,16 @@ void uiConfigIssuer::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void UIConfigIssuer::setAutoClose(int timeout)
+{
+    qDebug()<<timeout;
+    closeTimer= new QTimer(this);
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitCfg()));
+    closeTimer->start(timeout);
+}
+
+void UIConfigIssuer::slotQuitCfg()
+{
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    this->close();
+}
