@@ -204,7 +204,7 @@ void UIPINChange::inputNewPIN()
                 printf("ucPIN:: %s\n",ucChangePIN);
 
                 unsigned char ucResult;
-                ucResult=KEY_EncryptPIN_X98(ucChangePIN,G_NORMALTRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucChangePINData);
+                ucResult=KEY_EncryptPIN_X98(ucChangePIN,G_EXTRATRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucChangePINData);
                 if(ucResult==ERR_DRIVER)
                 {
                     qDebug()<<"加密密码出错";

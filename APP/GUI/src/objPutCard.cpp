@@ -255,17 +255,15 @@ unsigned char GetTrackInfo(unsigned char *pucTrack)
             memcpy(G_NORMALTRANS_aucSourceAcc, G_EXTRATRANS_aucISO2, ucJ);
             memcpy(NormalTransData.ucExpiredDate, &G_EXTRATRANS_aucISO2[ucJ+1], 4);
             if(ucJ>=13)
-                asc_bcd(G_NORMALTRANS_aucCardPan_UnAssign,6,&G_EXTRATRANS_aucISO2[ucJ-13],12);
+                asc_bcd(G_EXTRATRANS_aucCardPan_UnAssign,6,&G_EXTRATRANS_aucISO2[ucJ-13],12);
             else
-                asc_bcd(G_NORMALTRANS_aucCardPan_UnAssign,6,&G_EXTRATRANS_aucISO2[0],12);
+                asc_bcd(G_EXTRATRANS_aucCardPan_UnAssign,6,&G_EXTRATRANS_aucISO2[0],12);
             break;
         }
     }
 
     qDebug("Card Number = %s", G_NORMALTRANS_aucSourceAcc);
-    qDebug("Card Pan = %s", G_NORMALTRANS_aucCardPan_UnAssign);
+    qDebug("Card Pan = %s", G_EXTRATRANS_aucCardPan_UnAssign);
 
     return(SUCCESS);
 }
-
-

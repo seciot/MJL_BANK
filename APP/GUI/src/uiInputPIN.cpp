@@ -193,7 +193,7 @@ void UIInputPIN::slotSubmitClicked()
         printf("ucPIN:: %s\n",ucPIN);
 
         unsigned char ucResult;
-        ucResult=KEY_EncryptPIN_X98(ucPIN,G_NORMALTRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucPINData);
+        ucResult=KEY_EncryptPIN_X98(ucPIN,G_EXTRATRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucPINData);
         if(ucResult==ERR_DRIVER)
         {
             qDebug()<<"加密密码出错";

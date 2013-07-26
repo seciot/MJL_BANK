@@ -229,9 +229,9 @@ void UIInputManual::slotInputComplete()
                                              "%s",(char *)"706001000004340825");
 
         if(NormalTransData.ucSourceAccLen >= 13)
-            asc_bcd(G_NORMALTRANS_aucCardPan_UnAssign,6,&NormalTransData.aucSourceAcc[NormalTransData.ucSourceAccLen - 13], 12);
+            asc_bcd(G_EXTRATRANS_aucCardPan_UnAssign,6,&NormalTransData.aucSourceAcc[NormalTransData.ucSourceAccLen - 13], 12);
         else
-            asc_bcd(G_NORMALTRANS_aucCardPan_UnAssign,6,NormalTransData.aucSourceAcc,12);
+            asc_bcd(G_EXTRATRANS_aucCardPan_UnAssign,6,NormalTransData.aucSourceAcc,12);
     }
     emit sigInputComplete();
 }

@@ -112,6 +112,7 @@ typedef struct EXTRA_TRANS
     MagData         magData;
     unsigned char   aucPINData[TRANS_PINDATALEN];
     unsigned char   aucChangePINData[TRANS_PINDATALEN];
+    unsigned char   aucCardPan_UnAssign[6 + 1];
 }ExtraTrans;
 
 typedef struct NORMAL_TRANS
@@ -135,36 +136,20 @@ typedef struct NORMAL_TRANS
     unsigned char   aucRefNum[TRANS_REFNUM_LEN + 1];        //参考号
 
     unsigned long   ulAmount;                               //消费金额
-    unsigned long   ulAdjustAmount;                               //调整金额
+    unsigned long   ulAdjustAmount;                         //调整金额
     unsigned long   ulBalance;                              //余额
     unsigned char   aucDate[TRANS_DATE_LEN + 1];
     unsigned char   aucTime[TRANS_TIME_LEN + 1];
 
     //added by xtf
-    unsigned char   aucCardPan_UnAssign[6 + 1];
     unsigned char   aucCashier[TRANS_CASHIERLEN + 1];
 }NormalTrans;
 
-// 柜员管理
 typedef struct
 {
-    unsigned char   aucSuperNo[CASH_MAXSUPERNO];
-    unsigned char   aucSuperPSW[9];
-    unsigned char   ucSYSCashierExitFlag;
-    unsigned char   aucSYSCashierNo[CASH_SYSCASHIERNOLEN];
-    unsigned char   aucSYSCashierPass[CASH_SYSCASHIERPASSLEN];
-    unsigned char   aucCashierNo[CASH_MAXCASHIER][CASH_CASHIERNOLEN];
-    unsigned char   aucCashierPass[CASH_MAXCASHIER][CASH_CASHIERPASSLEN];
-    unsigned char   aucSuperPassWord[7];
-    unsigned char   aucSafePSW[7];
-}SYSCASHIER;
-
-typedef struct
-{
-    unsigned short  ucErrorExtCode;
-    unsigned char   ucTerminalType;
-    unsigned char   bReversalFlag;              //:- 开始交易时设置的冲正标志
-}RUNDATA;//临时使用.
+    unsigned int    uiNb;           //笔数
+    unsigned long   ulAmount;       //金额
+}Total;
 
 //:- 统计信息
 typedef struct
@@ -196,7 +181,7 @@ typedef struct
     unsigned long   ulVoidAmount;               //:- 撤销总金额
 }TRANSTOTAL;
 
-typedef struct 
+typedef struct
 {
     unsigned long   ulLastTransNumber;                  //上笔流水
     unsigned long   ulTransNumber;                      //交易流水
@@ -212,5 +197,26 @@ typedef struct
     unsigned char   ucLasSettleData[TRANS_DATE_LEN];        //:- 上一批次结算日期
     unsigned char   ucLastSettleFlag;                       //:- 上一批次结算成功标志
 }TRANSINFO;
+
+// 柜员管理
+typedef struct
+{
+    unsigned char   aucSuperNo[CASH_MAXSUPERNO];
+    unsigned char   aucSuperPSW[9];
+    unsigned char   ucSYSCashierExitFlag;
+    unsigned char   aucSYSCashierNo[CASH_SYSCASHIERNOLEN];
+    unsigned char   aucSYSCashierPass[CASH_SYSCASHIERPASSLEN];
+    unsigned char   aucCashierNo[CASH_MAXCASHIER][CASH_CASHIERNOLEN];
+    unsigned char   aucCashierPass[CASH_MAXCASHIER][CASH_CASHIERPASSLEN];
+    unsigned char   aucSuperPassWord[7];
+    unsigned char   aucSafePSW[7];
+}SYSCASHIER;
+
+typedef struct
+{
+    unsigned short  ucErrorExtCode;
+//    unsigned char   ucTerminalType;
+    unsigned char   bReversalFlag;              //:- 开始交易时设置的冲正标志
+}RUNDATA;//临时使用.
 
 #endif // TRANSDATA_H
