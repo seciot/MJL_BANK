@@ -298,6 +298,7 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
+    connect(vBar,SIGNAL(valueChanged(int)),this,SLOT(restartTimer()));
 
 
     this->initialSettings();
@@ -409,4 +410,10 @@ void UIConfigTer::slotQuitCfg()
 {
     UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
     this->close();
+}
+
+void UIConfigTer::restartTimer()
+{
+    qDebug()<<Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

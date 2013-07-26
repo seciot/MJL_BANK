@@ -45,11 +45,21 @@ void getFormDate(unsigned char *pInDate, unsigned char *pOutDate)
 
     memset(aucBuf, 0, sizeof(aucBuf));
     bcd_asc(aucBuf, pInDate, 8);
+#if 0
+    //YYYYMMDD
     memcpy(&pOutDate[0], &aucBuf[0], 4);
     pOutDate[4] = '/';
     memcpy(&pOutDate[5], &aucBuf[4], 2);
     pOutDate[7] = '/';
     memcpy(&pOutDate[8], &aucBuf[6], 2);
+#else
+    //DDMMYYYY
+    memcpy(&pOutDate[0], &aucBuf[6], 2);
+    pOutDate[2] = '/';
+    memcpy(&pOutDate[3], &aucBuf[4], 2);
+    pOutDate[5] = '/';
+    memcpy(&pOutDate[6], &aucBuf[0], 4);
+#endif
 }
 
 // 字符串ip转ul

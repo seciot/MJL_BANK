@@ -5,6 +5,7 @@
 #include "uiUserManager.h"
 #include "uiReport.h"
 #include "uiSettle.h"
+#include <QSettings>
 
 #include "global.h"
 
@@ -173,6 +174,8 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     connect(btnReport,SIGNAL(clicked()),this,SLOT(showReport()));
     connect(btnSettle,SIGNAL(clicked()),this,SLOT(showSettle()));
 
+    connect(btnParDown,SIGNAL(clicked()),this,SLOT(Param_Down_Click()));
+
     this->setAutoClose(g_changeParam.TIMEOUT_UI);
 
 }
@@ -267,6 +270,27 @@ void UIMenuPos::showSettle()
     qDebug() << Q_FUNC_INFO;
     UISettle *uiStl = new UISettle();
     uiStl->exec();
+}
+
+void UIMenuPos::Param_Down_Click()
+{
+    qDebug()<<Q_FUNC_INFO;
+    QSettings *settings=new QSettings("/app/text.ini",QSettings::IniFormat);
+    settings->beginGroup("NormalTrans");
+    settings->setValue("NormalTrans.param1", 68);
+    settings->setValue("NormalTrans.param2", 612);
+    settings->setValue("NormalTrans.param3", 68123);
+    settings->setValue("NormalTrans.param4", "我了个打草");
+    settings->endGroup();
+
+    settings->beginGroup("ExtraTrans");
+    settings->setValue("ExtraTrans.param1", 68);
+    settings->setValue("ExtraTrans.param2", 612);
+    settings->setValue("ExtraTrans.param3", 68123);
+    settings->setValue("ExtraTrans.param4", "我了个打草");
+    settings->endGroup();
+
+    UIMsg::showNoticeMsgWithAutoClose("Param Download/nComplete.",9000);
 }
 
 void UIMenuPos::setAutoClose(int timeout)

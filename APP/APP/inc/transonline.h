@@ -26,6 +26,10 @@ unsigned char TRANS_ONLINE_Advance_unpack(NormalTrans *pNormalTrans);
 unsigned char TRANS_ONLINE_BalanceInquiry_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans);
 unsigned char TRANS_ONLINE_BalanceInquiry_unpack(NormalTrans *pNormalTrans);
 
+//改密 Change PIN
+unsigned char TRANS_ONLINE_PINChange_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans);
+unsigned char TRANS_ONLINE_PINChange_unpack(NormalTrans *pNormalTrans);
+
 //卡卡转帐 P2P Transfer
 unsigned char TRANS_ONLINE_Transfer_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans);
 unsigned char TRANS_ONLINE_Transfer_unpack(NormalTrans *pNormalTrans);

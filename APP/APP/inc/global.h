@@ -36,6 +36,7 @@ EXTGLOBAL   REVERSEDISO8583     g_reversedTrans;            //冲正
 #define G_EXTRATRANS_aucISO2						ExtraTransData.magData.aucISO2
 #define G_EXTRATRANS_aucISO3						ExtraTransData.magData.aucISO3
 #define G_EXTRATRANS_aucPINData						ExtraTransData.aucPINData
+#define G_EXTRATRANS_aucChangePINData						ExtraTransData.aucChangePINData
 
 //:- RUNDATA
 #define G_RUNDATA_bReversalFlag						RunData.bReversalFlag					//:- 开始交易时设置的冲正标志

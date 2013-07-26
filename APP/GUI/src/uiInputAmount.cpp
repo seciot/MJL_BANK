@@ -267,3 +267,8 @@ void UIInputAmount::setAutoClose(int timeout)
     connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
     closeTimer->start(timeout);
 }
+
+void UIInputAmount::slotSetAdjust()
+{
+    lbInput->setText("Please Enter The Adjust Amount:");
+}

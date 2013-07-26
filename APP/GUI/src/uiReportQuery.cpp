@@ -299,9 +299,9 @@ void UIReportQuery::slotTransClicked()
 
 
         // Display the detail
-        UIReportDetail *uiRDetail=new UIReportDetail();
-        uiRDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
-        uiRDetail->exec();
+        UIReportDetail *uiRepDetail=new UIReportDetail();
+        uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
+        uiRepDetail->exec();
 
     }
 }

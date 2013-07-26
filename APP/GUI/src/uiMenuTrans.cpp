@@ -7,6 +7,8 @@
 #include "uiLogon.h"
 #include "uiVOID.h"
 #include "uiPINChange.h"
+#include "uiAdjust.h"
+#include <QSettings>
 
 #include "global.h"
 
@@ -176,6 +178,7 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     connect(btnLogOn,SIGNAL(clicked()),this,SLOT(Logon_Click()));
     connect(btnVOID,SIGNAL(clicked()),this,SLOT(VOID_Click()));
     connect(btnPIN,SIGNAL(clicked()),this,SLOT(PIN_Change_Click()));
+    connect(btnAdjust,SIGNAL(clicked()),this,SLOT(Adjust_Click()));
 
 
     this->setAutoClose(g_changeParam.TIMEOUT_UI);
@@ -276,8 +279,8 @@ void UIMenuTrans::Payment_Click()
 {
     qDebug() << Q_FUNC_INFO;
 
-    UIPayment *uiP = new UIPayment();
-    uiP->exec();
+    UIPayment *uiPrint = new UIPayment();
+    uiPrint->exec();
 }
 
 void UIMenuTrans::Logon_Click()
@@ -298,6 +301,14 @@ void UIMenuTrans::PIN_Change_Click()
     UIPINChange *uiPINChange=new UIPINChange;
     uiPINChange->exec();
 }
+
+void UIMenuTrans::Adjust_Click()
+{
+    UIAdjust *uiAdj=new UIAdjust;
+    uiAdj->exec();
+}
+
+
 
 void UIMenuTrans::setAutoClose(int timeout)
 {

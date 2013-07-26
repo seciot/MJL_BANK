@@ -63,7 +63,7 @@ private slots:
     void quitFromInputPass();
     void slotAllowEdit(UserType,QString);
 private:
-    UIInputPassword *uiIP;
+    UIInputPassword *uiInPass;
     QThread *passThread;
 
     static void styleWidget(QWidget * btn,int iFontSize=13);

@@ -209,9 +209,9 @@ void UIReportSearch::slotSearchTransaction()
                 //operator
                 operatorNo=QString::fromAscii((const char *)NormalTransData.aucCashier);
 
-                uiRDetail=new UIReportDetail();
-                uiRDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
-                uiRDetail->exec();
+                uiRepDetail=new UIReportDetail();
+                uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
+                uiRepDetail->exec();
 
                 break;
             }

@@ -17,7 +17,7 @@ public:
     QTableWidget *tbDetailList;
 
     QPushButton *btnCancel;
-    QPushButton *btnVOID;
+    QPushButton *btnSubmit;
 private:
     QTimer *closeTimer;
     bool FLAG_NEEDVOID;
@@ -27,15 +27,15 @@ protected:
 
 public slots:
     void slotSetDetailList(QString transType, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo);
-    void slotSetVOID();
-    void slotVOIDClicked();
+    void slotSetFun(QString);
+    void slotFunClicked();
     void slotQuitMenu();
 private slots:
     void restartTimeOut();
     void setAutoClose(int timeout);
 
 signals:
-    void sigVOID();
+    void sigFun();
 };
 
 #endif  

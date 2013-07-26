@@ -1,4 +1,4 @@
-#include "uiVOID.h"
+#include "uiAdjust.h"
 #include "sav.h"
 #include "xdata.h"
 #include "commontools.h"
@@ -6,7 +6,7 @@
 
 static void TRANS_CleanTransData(void);
 
-UIVOID::UIVOID(QDialog *parent,Qt::WindowFlags f) :
+UIAdjust::UIAdjust(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
@@ -18,6 +18,10 @@ UIVOID::UIVOID(QDialog *parent,Qt::WindowFlags f) :
 
     FLAG_InputPassword=false;
     FLAG_Detail=false;
+    FLAG_SwipeCard=false;
+    FLAG_InputAmount=false;
+    FLAG_InputManual=false;
+    FLAG_InputPIN=false;
     FLAG_TransOnline=false;
     FLAG_PrintReceipt=false;
 
@@ -35,7 +39,7 @@ UIVOID::UIVOID(QDialog *parent,Qt::WindowFlags f) :
     QFont font3("Helvetica",8,QFont::Bold);
 
     lbHead=new QLabel();
-    lbHead->setText(tr("VOID"));
+    lbHead->setText(tr("Adjust"));
     QFont fontH("Helvetica",18,QFont::Bold);
     lbHead->setFont(fontH);
     lbHead->setAlignment(Qt::AlignCenter);
@@ -65,12 +69,12 @@ UIVOID::UIVOID(QDialog *parent,Qt::WindowFlags f) :
     passThread->start();
 }
 
-UIVOID::~UIVOID()
+UIAdjust::~UIAdjust()
 {
     qDebug() <<"delete:: "<< Q_FUNC_INFO;
 }
 
-void UIVOID::keyPressEvent(QKeyEvent *event)
+void UIAdjust::keyPressEvent(QKeyEvent *event)
 {
     switch(event->key())
     {
@@ -87,7 +91,7 @@ void UIVOID::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void UIVOID::checkAuth(UserType ut,QString ID)
+void UIAdjust::checkAuth(UserType ut,QString ID)
 {
     // 交易关闭
     qDebug()<<ut<<ID<<g_changeParam.boolCashierLogonFlag;
@@ -120,7 +124,7 @@ void UIVOID::checkAuth(UserType ut,QString ID)
     }
 }
 
-void UIVOID::inputTraceNo()
+void UIAdjust::inputTraceNo()
 {
     qDebug() << Q_FUNC_INFO;
     QString transType;
@@ -160,15 +164,15 @@ void UIVOID::inputTraceNo()
                     {
                     case TransMode_CashDeposit:      //存钱
                         transType="Cash Deposit";
-                        NormalTransData.transType=TransMode_AdvanceVoid;
+                        NormalTransData.transType=TransMode_DepositAdjust;
                         break;
                     case TransMode_CashAdvance:      //取钱
                         transType="Cash Advance";
-                        NormalTransData.transType=TransMode_DepositVoid;
+                        NormalTransData.transType=TransMode_AdvanceAdjust;
                         break;
                     default:
-                        qDebug()<<"不支持撤销";
-                        UIMsg::showErrMsgWithAutoClose("This Transaction\nNot Support\nFor Adjust",g_changeParam.TIMEOUT_ERRMSG);
+                        qDebug()<<"不支持调整";
+                        UIMsg::showErrMsgWithAutoClose("This Transaction/nNot Support/nFor Adjust",g_changeParam.TIMEOUT_ERRMSG);
                         return;
                     }
 
@@ -194,9 +198,9 @@ void UIVOID::inputTraceNo()
 
                     FLAG_Detail=true;
                     uiRepDetail=new UIReportDetail(1);
-                    uiRepDetail->slotSetFun("VOID");
+                    uiRepDetail->slotSetFun("Adjust");
                     uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
-                    connect(uiRepDetail,SIGNAL(sigFun()),this,SLOT(confirmVOID()));
+                    connect(uiRepDetail,SIGNAL(sigFun()),this,SLOT(swipeCard()));
                     uiRepDetail->exec();
 
                     break;
@@ -215,13 +219,72 @@ void UIVOID::inputTraceNo()
     }
 }
 
-void UIVOID::confirmVOID()
+void UIAdjust::swipeCard()
 {
-    if(UIInput::getConfirm("VOID","Really VOID?"))
-        this->transOnline();
+    qDebug() << Q_FUNC_INFO;
+
+    FLAG_SwipeCard=true;
+    uiSwipeCard=new UISwipeCard();
+    if(g_changeParam.transvoid.MANUAL_ENABLE==false)
+    {
+        uiSwipeCard->setNoManual();
+    }
+    connect(uiSwipeCard,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputAmountAndExit()));
+    connect(uiSwipeCard,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
+
+
+    uiSwipeCard->exec();
 }
 
-void UIVOID::transOnline()
+void UIAdjust::inputManual()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    FLAG_InputManual=true;
+    uiInMan=new UIInputManual();
+    connect(uiInMan,SIGNAL(sigInputComplete()),this,SLOT(inputAmount()));
+    connect(uiInMan,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+
+    uiInMan->exec();
+}
+
+void UIAdjust::inputAmount()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    FLAG_InputAmount=true;
+    uiInAmt=new UIInputAmount();
+    uiInAmt->slotSetAdjust();
+    connect(uiInAmt,SIGNAL(sigAmountInputComplete(QString)),this,SLOT(inputPIN(QString)));
+    connect(uiInAmt,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    uiInAmt->exec();
+}
+
+void UIAdjust::inputAmountAndExit()
+{
+    qDebug() << Q_FUNC_INFO;
+    FLAG_InputAmount=true;
+    uiInAmt=new UIInputAmount();
+    this->quitFromFlow();
+}
+
+void UIAdjust::inputPIN(QString strAmt)
+{
+    qDebug() << Q_FUNC_INFO;
+    FLAG_InputPIN=true;
+
+    uiInPIN=new UIInputPIN();
+    uiInPIN->slotSetAmount(strAmt);
+    if(g_changeParam.transvoid.PIN_ENABLE==false)
+        uiInPIN->slotDisablePIN();
+    connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
+    uiInPIN->exec();
+}
+
+void UIAdjust::transOnline()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_TransOnline=true;
@@ -235,7 +298,7 @@ void UIVOID::transOnline()
 
 }
 
-void UIVOID::printReceipt()
+void UIAdjust::printReceipt()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_PrintReceipt=true;
@@ -245,8 +308,20 @@ void UIVOID::printReceipt()
     uiPrint->exec();
 }
 
+// ----------------------------------------------------------------------------------------------- //
+void UIAdjust::quitFromSwipeCard()
+{
+    qDebug()<<Q_FUNC_INFO;
 
-void UIVOID::quitFromFlow()
+    uiSwipeCard->close();
+    uiRepDetail->close();
+    uiInPass->close();
+
+    this->close();
+}
+
+
+void UIAdjust::quitFromFlow()
 {
     qDebug()<<Q_FUNC_INFO;
 
@@ -260,7 +335,26 @@ void UIVOID::quitFromFlow()
         uiTransOn->close();
         FLAG_TransOnline=false;
     }
-
+    if(FLAG_InputPIN==true)
+    {
+        uiInPIN->close();
+        FLAG_InputPIN=false;
+    }
+    if(FLAG_InputAmount==true)
+    {
+        FLAG_InputAmount=false;
+        uiInAmt->close();
+    }
+    if(FLAG_InputManual==true)
+    {
+        uiInMan->close();
+        FLAG_InputManual=false;
+    }
+    if(FLAG_SwipeCard==true)
+    {
+        uiSwipeCard->close();
+        FLAG_SwipeCard=false;
+    }
     if(FLAG_Detail==true)
     {
         uiRepDetail->close();
@@ -277,7 +371,7 @@ void UIVOID::quitFromFlow()
     this->close();
 }
 
-void UIVOID::finishFromFlow()
+void UIAdjust::finishFromFlow()
 {
     qDebug()<<Q_FUNC_INFO;
 
@@ -291,7 +385,26 @@ void UIVOID::finishFromFlow()
         uiTransOn->close();
         FLAG_TransOnline=false;
     }
-
+    if(FLAG_InputPIN==true)
+    {
+        uiInPIN->close();
+        FLAG_InputPIN=false;
+    }
+    if(FLAG_InputAmount==true)
+    {
+        FLAG_InputAmount=false;
+        uiInAmt->close();
+    }
+    if(FLAG_InputManual==true)
+    {
+        uiInMan->close();
+        FLAG_InputManual=false;
+    }
+    if(FLAG_SwipeCard==true)
+    {
+        uiSwipeCard->close();
+        FLAG_SwipeCard=false;
+    }
     if(FLAG_Detail==true)
     {
         uiRepDetail->close();

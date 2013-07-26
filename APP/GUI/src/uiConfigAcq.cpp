@@ -268,6 +268,7 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     layout->setContentsMargins(0,0,0,5);
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotSubmitClicked()));
+    connect(vBar,SIGNAL(valueChanged(int)),this,SLOT(restartTimer()));
 
     this->initialSettings();
     this->setAutoClose(g_changeParam.TIMEOUT_UI);
@@ -461,4 +462,10 @@ void UIConfigAcq::slotQuitCfg()
 {
     UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
     this->close();
+}
+
+void UIConfigAcq::restartTimer()
+{
+    qDebug()<<Q_FUNC_INFO;
+    closeTimer->start(g_changeParam.TIMEOUT_UI);
 }

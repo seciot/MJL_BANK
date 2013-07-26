@@ -59,12 +59,11 @@ UIBalanceInquiry::UIBalanceInquiry(QDialog *parent,Qt::WindowFlags f) :
     // -------- input cashier password ------------//
     FLAG_InputPassword=true;
 
-    uiIP=new UIInputPassword();
-    connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(chooseAccountType(UserType,QString)));
-    connect(uiIP,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
+    uiInPass=new UIInputPassword();
+    connect(uiInPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(chooseAccountType(UserType,QString)));
+    connect(uiInPass,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 }
 
@@ -121,7 +120,7 @@ void UIBalanceInquiry::chooseAccountType(UserType ut,QString ID)
 
         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
 
-        uiIP->resetLine();
+        uiInPass->resetLine();
 
         return;
     }
@@ -139,18 +138,18 @@ void UIBalanceInquiry::swipeCard()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_SwipeCard=true;
-    uiSC=new UISwipeCard();
+    uiSwipeCard=new UISwipeCard();
     if(g_changeParam.p2p.MANUAL_ENABLE==false)
     {
-            uiSC->setNoManual();
+            uiSwipeCard->setNoManual();
     }
-    connect(uiSC,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
-    connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
-    connect(uiSC,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPinAndExit()));
-    connect(uiSC,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
+    connect(uiSwipeCard,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPinAndExit()));
+    connect(uiSwipeCard,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
 
 
-    uiSC->exec();
+    uiSwipeCard->exec();
 }
 
 void UIBalanceInquiry::inputManual()
@@ -158,18 +157,18 @@ void UIBalanceInquiry::inputManual()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_InputManual=true;
-    uiIM=new UIInputManual();
-    connect(uiIM,SIGNAL(sigInputComplete()),this,SLOT(inputPIN()));
-    connect(uiIM,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    uiInMan=new UIInputManual();
+    connect(uiInMan,SIGNAL(sigInputComplete()),this,SLOT(inputPIN()));
+    connect(uiInMan,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
 
-    uiIM->exec();
+    uiInMan->exec();
 }
 
 void UIBalanceInquiry::inputPinAndExit()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
-    uiIPIN=new UIInputPIN();
+    uiInPIN=new UIInputPIN();
     this->quitFromFlow();
 }
 
@@ -178,12 +177,12 @@ void UIBalanceInquiry::inputPIN()
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
 
-    uiIPIN=new UIInputPIN();
+    uiInPIN=new UIInputPIN();
     if(g_changeParam.balance.PIN_ENABLE==false)
-        uiIPIN->slotDisablePIN();
-    connect(uiIPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
-    uiIPIN->exec();
+        uiInPIN->slotDisablePIN();
+    connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
+    uiInPIN->exec();
 }
 
 void UIBalanceInquiry::transOnline()
@@ -191,13 +190,13 @@ void UIBalanceInquiry::transOnline()
     qDebug() << Q_FUNC_INFO;
     FLAG_TransOnline=true;
 
-    uiTO=new UITransOnline();
-    uiTO->slotStartTrans(NormalTransData.transType);
-    connect(uiTO,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(showBalance()));
-//    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(finishFromFlow()));
+    uiTransOn=new UITransOnline();
+    uiTransOn->slotStartTrans(NormalTransData.transType);
+    connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(showBalance()));
+//    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(finishFromFlow()));
 
-    uiTO->exec();
+    uiTransOn->exec();
 
 }
 
@@ -217,9 +216,9 @@ void UIBalanceInquiry::quitFromSwipeCard()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiSC->close();
+    uiSwipeCard->close();
     uiCAT->close();
-    uiIP->close();
+    uiInPass->close();
 
     this->close();
 }
@@ -233,22 +232,22 @@ void UIBalanceInquiry::quitFromFlow()
         uiSB->close();
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_AccountType==true)
@@ -258,7 +257,7 @@ void UIBalanceInquiry::quitFromFlow()
     }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 
@@ -275,22 +274,22 @@ void UIBalanceInquiry::finishFromFlow()
         uiSB->close();
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_AccountType==true)
@@ -300,7 +299,7 @@ void UIBalanceInquiry::finishFromFlow()
     }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 

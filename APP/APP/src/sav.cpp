@@ -80,7 +80,7 @@ unsigned char SAV_TransSave(void)
             ++pTransTotal->uiTransferNb;
             pTransTotal->ulTransferAmount += NormalTransData.ulAmount;
             break;
-        case TransMode_AdvanceVoid:        //撤销
+        case TransMode_AdvanceVoid:     //撤销
             ++pTransTotal->uiVoidNb;
             pTransTotal->ulVoidAmount += NormalTransData.ulAmount;
             break;

@@ -48,6 +48,7 @@ private slots:
     void Logon_Click();
     void VOID_Click();
     void PIN_Change_Click();
+    void Adjust_Click();
 
 private:
     static void styleWidget(QWidget * btn,int iFontSize=13);

@@ -45,6 +45,7 @@ private slots:
     void showCashierManager();
     void showReport();
     void showSettle();
+    void Param_Down_Click();
 
 private:
     static void styleWidget(QWidget * btn,int iFontSize=13);

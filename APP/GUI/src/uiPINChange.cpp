@@ -2,6 +2,12 @@
 #include "sav.h"
 #include "xdata.h"
 #include "commontools.h"
+
+extern "C"
+{
+    #include "key.h"
+}
+
 #include "global.h"
 
 static void TRANS_CleanTransData(void);
@@ -59,12 +65,11 @@ UIPINChange::UIPINChange(QDialog *parent,Qt::WindowFlags f) :
     // -------- input cashier password ------------//
     FLAG_InputPassword=true;
 
-    uiIPass=new UIInputPassword();
-    connect(uiIPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(checkAuth(UserType,QString)));
-    connect(uiIPass,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIPass,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
+    uiInPass=new UIInputPassword();
+    connect(uiInPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(checkAuth(UserType,QString)));
+    connect(uiInPass,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIPass, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 }
 
@@ -117,7 +122,7 @@ void UIPINChange::checkAuth(UserType ut,QString ID)
         qDebug()<<"不支持柜员以外的用户做交易";
 
         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
-        uiIPass->resetLine();
+        uiInPass->resetLine();
 
         return;
     }
@@ -128,19 +133,19 @@ void UIPINChange::swipeCard()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_SwipeCard=true;
-    uiSC=new UISwipeCard();
+    uiSwipeCard=new UISwipeCard();
     if(g_changeParam.pinchange.MANUAL_ENABLE==false)
     {
         qDebug()<<"设置不可手动";
-        uiSC->setNoManual();
+        uiSwipeCard->setNoManual();
     }
-    connect(uiSC,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
-    connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputPIN()));
-    connect(uiSC,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPINAndExit()));
-    connect(uiSC,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
+    connect(uiSwipeCard,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputPIN()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPINAndExit()));
+    connect(uiSwipeCard,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
 
 
-    uiSC->exec();
+    uiSwipeCard->exec();
 }
 
 void UIPINChange::inputManual()
@@ -148,18 +153,18 @@ void UIPINChange::inputManual()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_InputManual=true;
-    uiIM=new UIInputManual();
-    connect(uiIM,SIGNAL(sigInputComplete()),this,SLOT(inputPIN()));
-    connect(uiIM,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    uiInMan=new UIInputManual();
+    connect(uiInMan,SIGNAL(sigInputComplete()),this,SLOT(inputPIN()));
+    connect(uiInMan,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
 
-    uiIM->exec();
+    uiInMan->exec();
 }
 
 void UIPINChange::inputPINAndExit()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
-    uiIPIN=new UIInputPIN();
+    uiInPIN=new UIInputPIN();
     this->quitFromFlow();
 }
 
@@ -168,12 +173,12 @@ void UIPINChange::inputPIN()
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
 
-    uiIPIN=new UIInputPIN();
+    uiInPIN=new UIInputPIN();
     if(g_changeParam.pinchange.PIN_ENABLE==false)
-        uiIPIN->slotDisablePIN();
-    connect(uiIPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIPIN,SIGNAL(sigSubmit()),this,SLOT(inputNewPIN()));
-    uiIPIN->exec();
+        uiInPIN->slotDisablePIN();
+    connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(inputNewPIN()));
+    uiInPIN->exec();
 }
 
 void UIPINChange::inputNewPIN()
@@ -190,6 +195,26 @@ void UIPINChange::inputNewPIN()
             int x = QString::compare(newPIN, newPINConfirm, Qt::CaseInsensitive);
             if(x==0)
             {
+                unsigned char *ucChangePIN=NULL;
+                ucChangePIN  = (unsigned char *)malloc(sizeof(unsigned char)*50);
+                memset(ucChangePIN,0,50);
+                memcpy(ucChangePIN,newPIN.toAscii().data(),newPIN.length());
+
+                qDebug()<<"ucPIN::"<<ucChangePIN;
+                printf("ucPIN:: %s\n",ucChangePIN);
+
+                unsigned char ucResult;
+                ucResult=KEY_EncryptPIN_X98(ucChangePIN,G_NORMALTRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucChangePINData);
+                if(ucResult==ERR_DRIVER)
+                {
+                    qDebug()<<"加密密码出错";
+                }
+                else
+                {
+                    printf("G_EXTRATRANS_aucPINData:: %s\n",G_EXTRATRANS_aucPINData);
+                }
+
+                // 上送
                 this->transOnline();
             }
         }
@@ -205,12 +230,12 @@ void UIPINChange::transOnline()
     qDebug() << Q_FUNC_INFO;
     FLAG_TransOnline=true;
 
-    uiTO=new UITransOnline();
-    uiTO->slotStartTrans(NormalTransData.transType);
-    connect(uiTO,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
-    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(changePINSuccess()));
+    uiTransOn=new UITransOnline();
+    uiTransOn->slotStartTrans(NormalTransData.transType);
+    connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
+    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(changePINSuccess()));
 
-    uiTO->exec();
+    uiTransOn->exec();
 }
 
 void UIPINChange::changePINSuccess()
@@ -225,9 +250,9 @@ void UIPINChange::quitFromSwipeCard()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiSC->close();
-    uiRDetail->close();
-    uiIPass->close();
+    uiSwipeCard->close();
+    uiRepDetail->close();
+    uiInPass->close();
 
     this->close();
 }
@@ -240,27 +265,27 @@ void UIPINChange::quitFromFlow()
 
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_InputPassword==true)
     {
-        uiIPass->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 
@@ -275,27 +300,27 @@ void UIPINChange::finishFromFlow()
 
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_InputPassword==true)
     {
-        uiIPass->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 

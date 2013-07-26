@@ -52,20 +52,25 @@ void TransOnlinePro::run()
     case TransMode_DownEWK:             //签到(传输密钥)
         ucResult = DownEWK();
         break;
-    case TransMode_CashDeposit:         //存钱
+    case TransMode_Settle:              //结算 Settlement
+        ucResult = SettlementPro();
+        break;
+    case TransMode_CashDeposit:         //存款 Deposit
+    case TransMode_DepositVoid:         //存款撤销 Deposit Void
         ucResult = DepositPro();
         break;
-    case TransMode_CashAdvance:         //取钱
+    case TransMode_CashAdvance:         //取款 Advance
+    case TransMode_AdvanceVoid:         //取款撤销 Advance Void
         ucResult = AdvancePro();
         break;
-    case TransMode_BalanceInquiry:      //查余
+    case TransMode_BalanceInquiry:      //查余 Balance Inquiry
         ucResult = BalanceInquiryPro();
         break;
-    case TransMode_CardTransfer:        //转账
-        ucResult = TransferPro();
+    case TransMode_PINChange:
+        ucResult = PINChangePro();      //改密 PIN Change
         break;
-    case TransMode_Settle:              //结算
-        ucResult = SettlementPro();
+    case TransMode_CardTransfer:        //转账 P2P Transfer
+        ucResult = TransferPro();
         break;
     default:
         ucResult = ERR_UNKNOWTRANSTYPE;
@@ -165,6 +170,24 @@ unsigned char TransOnlinePro::BalanceInquiryPro(void)
         ucResult = GenSendReceive();
     if(!ucResult)
         ucResult = TRANS_ONLINE_BalanceInquiry_unpack(&NormalTransData);
+    return ucResult;
+}
+
+//改密 PIN Change
+unsigned char TransOnlinePro::PINChangePro(void)
+{
+    unsigned char ucResult;
+
+    ucResult = ReversalPro();
+    if(!ucResult)
+    {
+        NormalTransData.ulTraceNumber = g_changeParam.ulTransNum;
+        ucResult = TRANS_ONLINE_PINChange_pack(&NormalTransData, &ExtraTransData);
+    }
+    if(!ucResult)
+        ucResult = GenSendReceive();
+    if(!ucResult)
+        ucResult = TRANS_ONLINE_PINChange_unpack(&NormalTransData);
     return ucResult;
 }
 

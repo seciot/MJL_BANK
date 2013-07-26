@@ -10,8 +10,6 @@ extern "C"
 #include "key.h"
 }
 
-#define OUT_DATA
-#define ERR_STOPCOMM        0xFD
 #define COMMS_CHECK_GPRS_TIMEOUT    100 //1000
 
 unsigned char SendReceive_Test(unsigned char *pucOutData,unsigned short *puiOutLen)
@@ -369,6 +367,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
             memset(aucReceiveBuff, 0x00, ISO8583_MAXCOMMBUFLEN);
             qDebug("Recv Data");
             ucResult = TCP_Recv(iTCPHandle,aucReceiveBuff, puiOutLen, 1);
+            qDebug("Recv Data Len %02x", puiOutLen);
             qDebug("Recv Data result is %02x", ucResult);
             if(!ucResult)
             {
@@ -382,6 +381,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
     //赋数据
     if(!ucResult)
     {
+        qDebug("Recv Data is SUCCESS!");
         usOffSet = 2 + ucTPDULen;
         if(aucReceiveBuff[0] == 0x60 || aucReceiveBuff[0] == 0x80) //first byte of APTU
             usOffSet -= 2;
@@ -389,6 +389,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
         memcpy(pucOutData, &aucReceiveBuff[usOffSet], *puiOutLen);
     }
 
+    qDebug("SendReceive exit!");
     TCP_Close(iTCPHandle);
     if(g_constantParam.commMode == PARAM_COMMMODE_GPRS
     || g_constantParam.commMode == PARAM_COMMMODE_CDMA)

@@ -98,14 +98,6 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
     setTabOrder(lePass,btnSubmit);
     setTabOrder(btnSubmit,btnCancel);
 
-    //Animation
-   QPropertyAnimation *animation1 = new QPropertyAnimation(this, "pos");
-   animation1->setDuration(100);
-   animation1->setStartValue(mapToParent(QPoint(FRAME420_WIDTH, 0)));
-   animation1->setEndValue(mapToParent(QPoint(0, 0)));
-   animation1->setEasingCurve(QEasingCurve::OutQuint);
-   animation1->start();
-
    this->setAutoClose(g_changeParam.TIMEOUT_UI);
 }
 
@@ -262,7 +254,6 @@ void UIInputPassword::startAuthorize()
 void UIInputPassword::slotFinishTrans()
 {
     emit sigFinishTrans();
-
 }
 
 void UIInputPassword::resetLine()
@@ -276,6 +267,6 @@ void UIInputPassword::setAutoClose(int timeout)
 {
     qDebug()<<timeout;
     closeTimer= new QTimer(this);
-    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
+    connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotFinishTrans()));
     closeTimer->start(timeout);
 }

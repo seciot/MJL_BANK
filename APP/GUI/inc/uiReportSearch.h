@@ -19,7 +19,7 @@ public:
     QPushButton *btnCancel;
     QPushButton *btnSubmit;
 
-    UIReportDetail *uiRDetail;
+    UIReportDetail *uiRepDetail;
 private:
     QTimer *closeTimer;
 

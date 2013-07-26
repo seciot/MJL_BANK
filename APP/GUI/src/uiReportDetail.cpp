@@ -68,16 +68,16 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
 
     //    ----------------------------------  //
     btnCancel=new QPushButton;
-    btnVOID=new QPushButton;
+    btnSubmit=new QPushButton;
     btnCancel->setText(tr("Cancel"));
-    btnVOID->setText(tr("VOID"));
+    btnSubmit->setText(tr("VOID"));
     btnCancel->setFont(font2);
-    btnVOID->setFont(font2);
+    btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
-    btnVOID->setMinimumHeight(30);
+    btnSubmit->setMinimumHeight(30);
     btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnVOID->setStyleSheet(BTN_SUBMIT_STYLE);
-    btnVOID->hide();
+    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnSubmit->hide();
 
     //    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     //    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -90,7 +90,7 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     QHBoxLayout *h2Lay=new QHBoxLayout();
     //    h2Lay->addSpacing(10);
     h2Lay->addWidget(btnCancel);
-    h2Lay->addWidget(btnVOID);
+    h2Lay->addWidget(btnSubmit);
     //    h2Lay->addSpacing(10);
 
     QVBoxLayout *layout=new QVBoxLayout(this);
@@ -104,7 +104,7 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     connect(tbDetailList,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
     connect(tbDetailList->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
 
-    connect(btnVOID, SIGNAL(clicked()), this, SLOT(slotVOIDClicked()));
+    connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotFunClicked()));
 
     //Animation
     QPropertyAnimation *animation1 = new QPropertyAnimation(this, "pos");
@@ -131,6 +131,7 @@ void UIReportDetail::keyPressEvent(QKeyEvent *event)
         this->close();
         break;
     case Qt::Key_Enter:
+        this->slotFunClicked();
         break;
     default:
         event->ignore();
@@ -200,17 +201,18 @@ void UIReportDetail::slotSetDetailList(QString transType, QString cardNo, QStrin
     tbDetailList->setItem(11,0,itmOperatorData);
 }
 
-void UIReportDetail::slotSetVOID()
+void UIReportDetail::slotSetFun(QString text)
 {
     FLAG_NEEDVOID=true;
 
-    btnVOID->show();
+    btnSubmit->setText(text);
+    btnSubmit->show();
 }
 
-void UIReportDetail::slotVOIDClicked()
+void UIReportDetail::slotFunClicked()
 {
     qDebug()<<Q_FUNC_INFO;
-    emit sigVOID();
+    emit sigFun();
 }
 
 void UIReportDetail::setAutoClose(int timeout)

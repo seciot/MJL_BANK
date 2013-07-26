@@ -169,27 +169,30 @@ void UIInputPIN::slotQuitTrans()
 
 void UIInputPIN::slotSubmitClicked()
 {
+    qDebug()<<Q_FUNC_INFO;
     closeTimer->stop();
     // 完成输入密码
     if(savePIN.isEmpty() || savePIN.length()==0 || FLAG_HASPIN==false)
     {
         // 没密码
         qDebug()<<"No Password";
-        ExtraTransData.ucInputPINLen=0;
+        NormalTransData.isInputPin=false;
     }
     else
     {
         // 有密码
         qDebug()<<"Has Password";
-        ulong ulPIN=savePIN.toULong();
-        int pinLen=savePIN.length();
+        NormalTransData.isInputPin=true;
+
         unsigned char *ucPIN=NULL;
         ucPIN  = (unsigned char *)malloc(sizeof(unsigned char)*50);
         memset(ucPIN,0,50);
-        long_asc(ucPIN,pinLen,&ulPIN);
+        memcpy(ucPIN,savePIN.toAscii().data(),savePIN.length());
+
+        qDebug()<<"ucPIN::"<<ucPIN;
         printf("ucPIN:: %s\n",ucPIN);
-        ExtraTransData.ucInputPINLen=savePIN.length();
-        int ucResult;
+
+        unsigned char ucResult;
         ucResult=KEY_EncryptPIN_X98(ucPIN,G_NORMALTRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucPINData);
         if(ucResult==ERR_DRIVER)
         {

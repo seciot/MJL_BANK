@@ -22,7 +22,7 @@ public:
     ~UIPINChange();
 
     QLabel *lbHead;
-    UIReportDetail *uiRDetail;
+    UIReportDetail *uiRepDetail;
 
 private:
 
@@ -32,14 +32,14 @@ private:
     QThread *swipeThread;
 
 
-    UIInputPassword *uiIPass;
-    UIInputAmount *uiIA;
-    UISwipeCard *uiSC;
+    UIInputPassword *uiInPass;
+    UIInputAmount *uiInAmt;
+    UISwipeCard *uiSwipeCard;
     UIChooseAccType *uiCAT;
-    UIInputPIN *uiIPIN;
-    UITransOnline *uiTO;
-    UIInputManual *uiIM;
-    UIPrint *uiP;
+    UIInputPIN *uiInPIN;
+    UITransOnline *uiTransOn;
+    UIInputManual *uiInMan;
+    UIPrint *uiPrint;
 
 
     bool FLAG_InputPassword;

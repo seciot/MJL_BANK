@@ -129,11 +129,11 @@ UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
 
     // ----------------- 验证用户身份----------------- //
     // -------- input cashier password ------------//
-    uiIP=new UIInputPassword();
-    connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(slotAllowEdit(UserType,QString)));
-    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(quitFromInputPass()));
+    uiInPass=new UIInputPassword();
+    connect(uiInPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(slotAllowEdit(UserType,QString)));
+    connect(uiInPass,SIGNAL(sigFinishTrans()),this,SLOT(quitFromInputPass()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 
     setTabOrder(leUserId,leUserNewPass);
@@ -290,7 +290,7 @@ void UIUserManager::quitFromInputPass()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiIP->close();
+    uiInPass->close();
     this->close();
 }
 
@@ -301,21 +301,21 @@ void UIUserManager::slotAllowEdit(UserType ut, QString ID)
 
     if(ut==typeManager)
     {
-        uiIP->close();
+        uiInPass->close();
     }
     else if(ut==typeCashier)
     {
         leUserId->setText(ID);
         leUserId->setReadOnly(true);
         leUserNewPass->setFocus();
-        uiIP->close();
+        uiInPass->close();
     }
     else
     {
         qDebug()<<"不支持超级管理员管理员用户做用户设置";
 
         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
-        uiIP->resetLine();
+        uiInPass->resetLine();
 
         return;
     }

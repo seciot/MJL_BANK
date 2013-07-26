@@ -87,6 +87,7 @@ private slots:
 
     void slotSubmitClicked();
 
+    void restartTimer();
 private:
     QTimer *closeTimer;
 public slots:

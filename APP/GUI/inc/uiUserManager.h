@@ -27,7 +27,7 @@ public:
     QPushButton *btnCancel;
     QPushButton *btnSubmit;
 private:
-    UIInputPassword *uiIP;
+    UIInputPassword *uiInPass;
     QThread *passThread;
 
     QTimer *closeTimer;

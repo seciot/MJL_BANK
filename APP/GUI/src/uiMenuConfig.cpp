@@ -176,11 +176,11 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
 
     // ----------------- 验证用户身份----------------- //
     // -------- input cashier password ------------//
-    uiIP=new UIInputPassword();
-    connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(slotAllowEdit(UserType,QString)));
-    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(quitFromInputPass()));
+    uiInPass=new UIInputPassword();
+    connect(uiInPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(slotAllowEdit(UserType,QString)));
+    connect(uiInPass,SIGNAL(sigFinishTrans()),this,SLOT(quitFromInputPass()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 
     this->setAutoClose(g_changeParam.TIMEOUT_UI);
@@ -313,7 +313,7 @@ void UIMenuConfig::quitFromInputPass()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiIP->close();
+    uiInPass->close();
     this->close();
 }
 
@@ -325,7 +325,7 @@ void UIMenuConfig::slotAllowEdit(UserType ut,QString ID)
 
     if(ut==typeAdmin)
     {
-        uiIP->close();
+        uiInPass->close();
     }
     else
     {

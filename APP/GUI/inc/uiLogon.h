@@ -29,7 +29,7 @@ public:
 
 private:
     QThread *passThread;
-    UIInputPassword *uiIP;
+    UIInputPassword *uiInPass;
 
     QMovie * movie;
     TransOnlinePro * transOnlineProcess;

@@ -33,7 +33,6 @@
 #define CASH_SYSCASHIERPASSLEN          6
 #define CASH_MAXTime                    4
 #define CASH_MINTime                    4
-#define CASH_LOGONFLAG                  0x55
 
 /*
 银行POS：
@@ -52,15 +51,16 @@ typedef enum TRANS_MODE
 {
     TransMode_DownWK,           //签到(工作密钥)
     TransMode_DownEWK,          //签到(传输密钥)
-    TransMode_CashDeposit,      //存钱
-    TransMode_CashAdvance,      //取钱
-    TransMode_AdvanceVoid,         //取钱撤销
-    TransMode_DepositVoid,         //存钱撤销
+    TransMode_Settle,           //结算
     TransMode_BalanceInquiry,   //查余
-    TransMode_CardTransfer,         //转账
-    TransMode_Adjust,                   //调整
-    TransMode_PINChange,            //改密
-    TransMode_Settle,                   //结算
+    TransMode_CashDeposit,      //存款
+    TransMode_DepositVoid,      //存款撤销
+    TransMode_DepositAdjust,    //存款调整
+    TransMode_CashAdvance,      //取款
+    TransMode_AdvanceVoid,      //取款撤销
+    TransMode_AdvanceAdjust,    //取款调整
+    TransMode_CardTransfer,     //转账
+    TransMode_PINChange,        //改密
     TramsMode_MaxIndex
 }TransMode;
 
@@ -111,7 +111,7 @@ typedef struct EXTRA_TRANS
 {
     MagData         magData;
     unsigned char   aucPINData[TRANS_PINDATALEN];
-    unsigned char   ucInputPINLen;
+    unsigned char   aucChangePINData[TRANS_PINDATALEN];
 }ExtraTrans;
 
 typedef struct NORMAL_TRANS
@@ -127,6 +127,7 @@ typedef struct NORMAL_TRANS
     unsigned char   ucExpiredDate[TRANS_DATE_LEN + 1];      //账号有效期
     unsigned char   aucToAcc[TRANS_ACCLEN + 1];             //接收账号
     unsigned char   ucToAccLen;                             //接收账号长度
+    bool            isInputPin;                             //主账号是否带密码
 
     unsigned long   ulBatchNumber;                          //批次号
     unsigned long   ulTraceNumber;                          //POS流水号
@@ -134,6 +135,7 @@ typedef struct NORMAL_TRANS
     unsigned char   aucRefNum[TRANS_REFNUM_LEN + 1];        //参考号
 
     unsigned long   ulAmount;                               //消费金额
+    unsigned long   ulAdjustAmount;                               //调整金额
     unsigned long   ulBalance;                              //余额
     unsigned char   aucDate[TRANS_DATE_LEN + 1];
     unsigned char   aucTime[TRANS_TIME_LEN + 1];

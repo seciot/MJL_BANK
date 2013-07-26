@@ -76,19 +76,21 @@ unsigned char objPutCard::putCardProcess()
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.p2p.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.transvoid.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.p2p.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.transvoid.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_Adjust && g_changeParam.p2p.MANUAL_ENABLE==false)
+                if(g_changeParam.adjust.MANUAL_ENABLE == false
+                && (NormalTransData.transType == TransMode_AdvanceAdjust
+                 || NormalTransData.transType == TransMode_DepositAdjust))
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.p2p.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.pinchange.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
@@ -111,19 +113,21 @@ unsigned char objPutCard::putCardProcess()
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.p2p.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.transvoid.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.p2p.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.transvoid.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_Adjust && g_changeParam.p2p.MANUAL_ENABLE==true)
+                if(g_changeParam.adjust.MANUAL_ENABLE == true
+                && (NormalTransData.transType == TransMode_AdvanceAdjust
+                 || NormalTransData.transType == TransMode_DepositAdjust))
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.p2p.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.pinchange.MANUAL_ENABLE==true)
                 {
                     break;
                 }

@@ -42,6 +42,7 @@ UILogon::UILogon(QDialog *parent,Qt::WindowFlags f) :
 
     lbGif->setAlignment(Qt::AlignCenter);
     lbNotice->setAlignment(Qt::AlignCenter);
+    lbNotice2->setAlignment(Qt::AlignCenter);
 
     lbGif->setFont(font2);
     lbNotice->setFont(font2);
@@ -69,11 +70,10 @@ UILogon::UILogon(QDialog *parent,Qt::WindowFlags f) :
     layout->setContentsMargins(0,0,0,5);
 
     // -------- input cashier password ------------//
-//    uiIP=new UIInputPassword();
-//    connect(uiIP,SIGNAL(sigLogInSuccess()),this,SLOT(slotStartLogon()));
-//    connect(uiIP,SIGNAL(sigQuitTrans()),this,SLOT(quitFromInputPass()));
+//    uiInPass=new UIInputPassword();
+//    connect(uiInPass,SIGNAL(sigLogInSuccess()),this,SLOT(slotStartLogon()));
 //    passThread=new QThread(this);
-//    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+//    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
 //    passThread->start();
 
     pUpdateTimer = new QTimer(this);
@@ -97,8 +97,8 @@ void UILogon::slotStartLogon()
 {
     qDebug()<<Q_FUNC_INFO;
 
-//    uiIP->close();
-//    uiIP=NULL;
+//    uiInPass->close();
+//    uiInPass=NULL;
 //    delete passThread;
 
     this->startLogon();

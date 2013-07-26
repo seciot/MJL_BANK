@@ -30,12 +30,12 @@ private:
     QThread *swipeThread;
 
 
-    UIInputPassword *uiIP;
-    UISwipeCard *uiSC;
+    UIInputPassword *uiInPass;
+    UISwipeCard *uiSwipeCard;
     UIChooseAccType *uiCAT;
-    UIInputPIN *uiIPIN;
-    UITransOnline *uiTO;
-    UIInputManual *uiIM;
+    UIInputPIN *uiInPIN;
+    UITransOnline *uiTransOn;
+    UIInputManual *uiInMan;
     UIShowBalance *uiSB;
 
     bool FLAG_InputPassword;

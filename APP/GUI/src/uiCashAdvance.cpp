@@ -61,12 +61,11 @@ UICashAdvance::UICashAdvance(QDialog *parent,Qt::WindowFlags f) :
     // -------- input cashier password ------------//
     FLAG_InputPassword=true;
 
-    uiIP=new UIInputPassword();
-    connect(uiIP,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(chooseAccountType(UserType,QString)));
-    connect(uiIP,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIP,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
+    uiInPass=new UIInputPassword();
+    connect(uiInPass,SIGNAL(sigLogInSuccess(UserType,QString)),this,SLOT(chooseAccountType(UserType,QString)));
+    connect(uiInPass,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
     passThread=new QThread(this);
-    connect(passThread, SIGNAL(started()), uiIP, SLOT(exec()));
+    connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 }
 
@@ -125,7 +124,7 @@ void UICashAdvance::chooseAccountType(UserType ut,QString ID)
         qDebug()<<"不支持柜员以外的用户做交易";
 
         UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
-        uiIP->resetLine();
+        uiInPass->resetLine();
 
         return;
     }
@@ -143,18 +142,18 @@ void UICashAdvance::swipeCard()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_SwipeCard=true;
-    uiSC=new UISwipeCard();
+    uiSwipeCard=new UISwipeCard();
     if(g_changeParam.advance.MANUAL_ENABLE==false)
     {
-        uiSC->setNoManual();
+        uiSwipeCard->setNoManual();
     }
-    connect(uiSC,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
-    connect(uiSC,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
-    connect(uiSC,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputAmountAndExit()));
-    connect(uiSC,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
+    connect(uiSwipeCard,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputAmountAndExit()));
+    connect(uiSwipeCard,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
 
 
-    uiSC->exec();
+    uiSwipeCard->exec();
 }
 
 void UICashAdvance::inputManual()
@@ -162,11 +161,11 @@ void UICashAdvance::inputManual()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_InputManual=true;
-    uiIM=new UIInputManual();
-    connect(uiIM,SIGNAL(sigInputComplete()),this,SLOT(inputAmount()));
-    connect(uiIM,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    uiInMan=new UIInputManual();
+    connect(uiInMan,SIGNAL(sigInputComplete()),this,SLOT(inputAmount()));
+    connect(uiInMan,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
 
-    uiIM->exec();
+    uiInMan->exec();
 }
 
 void UICashAdvance::inputAmount()
@@ -174,17 +173,17 @@ void UICashAdvance::inputAmount()
     qDebug() << Q_FUNC_INFO;
 
     FLAG_InputAmount=true;
-    uiIA=new UIInputAmount();
-    connect(uiIA,SIGNAL(sigAmountInputComplete(QString)),this,SLOT(inputPIN(QString)));
-    connect(uiIA,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    uiIA->exec();
+    uiInAmt=new UIInputAmount();
+    connect(uiInAmt,SIGNAL(sigAmountInputComplete(QString)),this,SLOT(inputPIN(QString)));
+    connect(uiInAmt,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    uiInAmt->exec();
 }
 
 void UICashAdvance::inputAmountAndExit()
 {
     qDebug() << Q_FUNC_INFO;
     FLAG_InputAmount=true;
-    uiIA=new UIInputAmount();
+    uiInAmt=new UIInputAmount();
     this->quitFromFlow();
 }
 
@@ -193,13 +192,13 @@ void UICashAdvance::inputPIN(QString strAmt)
     qDebug() << Q_FUNC_INFO;
     FLAG_InputPIN=true;
 
-    uiIPIN=new UIInputPIN();
-    uiIPIN->slotSetAmount(strAmt);
+    uiInPIN=new UIInputPIN();
+    uiInPIN->slotSetAmount(strAmt);
     if(g_changeParam.advance.PIN_ENABLE==false)
-        uiIPIN->slotDisablePIN();
-    connect(uiIPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
-    connect(uiIPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
-    uiIPIN->exec();
+        uiInPIN->slotDisablePIN();
+    connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
+    uiInPIN->exec();
 }
 
 void UICashAdvance::transOnline()
@@ -207,12 +206,12 @@ void UICashAdvance::transOnline()
     qDebug() << Q_FUNC_INFO;
     FLAG_TransOnline=true;
 
-    uiTO=new UITransOnline();
-    uiTO->slotStartTrans(NormalTransData.transType);
-    connect(uiTO,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
-    connect(uiTO,SIGNAL(sigTransSuccess()),this,SLOT(printReceipt()));
+    uiTransOn=new UITransOnline();
+    uiTransOn->slotStartTrans(NormalTransData.transType);
+    connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
+    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(printReceipt()));
 
-    uiTO->exec();
+    uiTransOn->exec();
 
 }
 
@@ -221,9 +220,9 @@ void UICashAdvance::printReceipt()
     qDebug() << Q_FUNC_INFO;
     FLAG_PrintReceipt=true;
 
-    uiP=new UIPrint();
-    connect(uiP,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
-    uiP->exec();
+    uiPrint=new UIPrint();
+    connect(uiPrint,SIGNAL(sigFinishTrans()),this,SLOT(finishFromFlow()));
+    uiPrint->exec();
 }
 
 // ----------------------------------------------------------------------------------------------- //
@@ -231,9 +230,9 @@ void UICashAdvance::quitFromSwipeCard()
 {
     qDebug()<<Q_FUNC_INFO;
 
-    uiSC->close();
+    uiSwipeCard->close();
     uiCAT->close();
-    uiIP->close();
+    uiInPass->close();
 
     this->close();
 }
@@ -245,32 +244,32 @@ void UICashAdvance::quitFromFlow()
 
     if(FLAG_PrintReceipt==true)
     {
-        uiP->close();
+        uiPrint->close();
         FLAG_PrintReceipt=false;
     }
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputAmount==true)
     {
         FLAG_InputAmount=false;
-        uiIA->close();
+        uiInAmt->close();
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_AccountType==true)
@@ -280,7 +279,7 @@ void UICashAdvance::quitFromFlow()
     }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 
@@ -295,32 +294,32 @@ void UICashAdvance::finishFromFlow()
 
     if(FLAG_PrintReceipt==true)
     {
-        uiP->close();
+        uiPrint->close();
         FLAG_PrintReceipt=false;
     }
     if(FLAG_TransOnline==true)
     {
-        uiTO->close();
+        uiTransOn->close();
         FLAG_TransOnline=false;
     }
     if(FLAG_InputPIN==true)
     {
-        uiIPIN->close();
+        uiInPIN->close();
         FLAG_InputPIN=false;
     }
     if(FLAG_InputAmount==true)
     {
         FLAG_InputAmount=false;
-        uiIA->close();
+        uiInAmt->close();
     }
     if(FLAG_InputManual==true)
     {
-        uiIM->close();
+        uiInMan->close();
         FLAG_InputManual=false;
     }
     if(FLAG_SwipeCard==true)
     {
-        uiSC->close();
+        uiSwipeCard->close();
         FLAG_SwipeCard=false;
     }
     if(FLAG_AccountType==true)
@@ -330,7 +329,7 @@ void UICashAdvance::finishFromFlow()
     }
     if(FLAG_InputPassword==true)
     {
-        uiIP->close();
+        uiInPass->close();
         FLAG_InputPassword=false;
     }
 

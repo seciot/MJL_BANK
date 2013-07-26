@@ -39,6 +39,7 @@ public slots:
     QString QStringAmountFormular(const QString &arg1,unsigned long ulMaxAmt);
     void Remove(unsigned char str[],char remove);
     void setAutoClose(int timeout);
+    void slotSetAdjust();
 
 signals:
     void sigAmountInputComplete(QString);
