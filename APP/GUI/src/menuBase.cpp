@@ -35,7 +35,7 @@ MenuBase::MenuBase(bool isMainMenu, QDialog *parent, Qt::WindowFlags f) :
     QToolButton *tbPageDn = new QToolButton(this);
     QToolButton *tbClose = new QToolButton(this);
     QFont fontH("Helvetica",16,QFont::Bold);
-    tbClose->setStyleSheet("color: rgb(255, 255, 255);	background-color: rgb(96, 96, 96);border-radius: 6px;");
+    tbClose->setStyleSheet("color: rgb(255, 255, 255);	background-color: rgba(96, 96, 96, 50%);border-radius: 6px;");
     tbClose->setText(tr("Exit"));
     tbClose->setFont(fontH);
     tbClose->setMinimumHeight(30);

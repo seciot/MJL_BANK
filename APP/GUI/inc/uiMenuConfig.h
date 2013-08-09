@@ -4,8 +4,7 @@
 
 #include "uiConfigTer.h"
 #include "uiConfigAcq.h"
-#include "uiConfigcardTable.h"
-#include "uiConfigIssuer.h"
+#include "uiConfigCardBIN.h"
 #include "uiConfigPay.h"
 #include "uiConfigDateTime.h"
 #include "uiConfigSurCharge.h"
@@ -26,7 +25,6 @@ public:
     QPushButton *btnTerminal;
     QPushButton *btnAcquirer;
     QPushButton *btnCardTable;
-    QPushButton *btnIssuer;
     QPushButton *btnPayment;
     QPushButton *btnSetDateTime;
     QPushButton *btnClearReversal;
@@ -54,7 +52,6 @@ private slots:
     void Terminal_Config_Click();
     void Acquirer_Config_Click();
     void CardTable_Config_Click();
-    void Issuer_Config_Click();
     void Payment_Config_Click();
     void Date_Config_Click();
     void Sur_Config_Click();

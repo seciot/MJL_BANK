@@ -275,7 +275,7 @@ UIConfigTransAttr::UIConfigTransAttr(QDialog *parent,Qt::WindowFlags f) :
     connect(vBar,SIGNAL(valueChanged(int)),this,SLOT(restartTimer()));
 
     this->initialAttr();
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -283,55 +283,55 @@ void UIConfigTransAttr::initialAttr()
 {
     unsigned char ucResult=xDATA::ReadValidFile(xDATA::DataSaveChange);
 //    if(ucResult)
-//    UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
+//    UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_constantParam.TIMEOUT_ERRMSG);
 
-    if(g_changeParam.advance.TRANS_ENABLE==true)
+    if(g_constantParam.advance.TRANS_ENABLE==true)
         chkCashAdTrans->setChecked(true);
-    if(g_changeParam.advance.PIN_ENABLE==true)
+    if(g_constantParam.advance.PIN_ENABLE==true)
         chkCashAdPin->setChecked(true);
-    if(g_changeParam.advance.MANUAL_ENABLE==true)
+    if(g_constantParam.advance.MANUAL_ENABLE==true)
         chkCashAdMan->setChecked(true);
 
-    if(g_changeParam.deposit.TRANS_ENABLE==true)
+    if(g_constantParam.deposit.TRANS_ENABLE==true)
         chkCashDeTrans->setChecked(true);
-    if(g_changeParam.deposit.PIN_ENABLE==true)
+    if(g_constantParam.deposit.PIN_ENABLE==true)
         chkCashDePin->setChecked(true);
-    if(g_changeParam.deposit.MANUAL_ENABLE==true)
+    if(g_constantParam.deposit.MANUAL_ENABLE==true)
         chkCashDeMan->setChecked(true);
 
-    if(g_changeParam.balance.TRANS_ENABLE==true)
+    if(g_constantParam.balance.TRANS_ENABLE==true)
         chkBalanceInqTrans->setChecked(true);
-    if(g_changeParam.balance.PIN_ENABLE==true)
+    if(g_constantParam.balance.PIN_ENABLE==true)
         chkBalanceInqPin->setChecked(true);
-    if(g_changeParam.balance.MANUAL_ENABLE==true)
+    if(g_constantParam.balance.MANUAL_ENABLE==true)
         chkBalanceInqMan->setChecked(true);
 
-    if(g_changeParam.p2p.TRANS_ENABLE==true)
+    if(g_constantParam.p2p.TRANS_ENABLE==true)
         chkP2PTrans->setChecked(true);
-    if(g_changeParam.p2p.PIN_ENABLE==true)
+    if(g_constantParam.p2p.PIN_ENABLE==true)
         chkP2PPin->setChecked(true);
-    if(g_changeParam.p2p.MANUAL_ENABLE==true)
+    if(g_constantParam.p2p.MANUAL_ENABLE==true)
         chkP2PMan->setChecked(true);
 
-    if(g_changeParam.transvoid.TRANS_ENABLE==true)
+    if(g_constantParam.transvoid.TRANS_ENABLE==true)
         chkVOIDTrans->setChecked(true);
-    if(g_changeParam.transvoid.PIN_ENABLE==true)
+    if(g_constantParam.transvoid.PIN_ENABLE==true)
         chkVOIDPin->setChecked(true);
-    if(g_changeParam.transvoid.MANUAL_ENABLE==true)
+    if(g_constantParam.transvoid.MANUAL_ENABLE==true)
         chkVOIDMan->setChecked(true);
 
-    if(g_changeParam.adjust.TRANS_ENABLE==true)
+    if(g_constantParam.adjust.TRANS_ENABLE==true)
         chkAdjustTrans->setChecked(true);
-    if(g_changeParam.adjust.PIN_ENABLE==true)
+    if(g_constantParam.adjust.PIN_ENABLE==true)
         chkAdjustPin->setChecked(true);
-    if(g_changeParam.adjust.MANUAL_ENABLE==true)
+    if(g_constantParam.adjust.MANUAL_ENABLE==true)
         chkAdjustMan->setChecked(true);
 
-    if(g_changeParam.pinchange.TRANS_ENABLE==true)
+    if(g_constantParam.pinchange.TRANS_ENABLE==true)
         chkPinTrans->setChecked(true);
-    if(g_changeParam.pinchange.PIN_ENABLE==true)
+    if(g_constantParam.pinchange.PIN_ENABLE==true)
         chkPinPin->setChecked(true);
-    if(g_changeParam.pinchange.MANUAL_ENABLE==true)
+    if(g_constantParam.pinchange.MANUAL_ENABLE==true)
         chkPinMan->setChecked(true);
 }
 
@@ -340,105 +340,105 @@ void UIConfigTransAttr::slotSubmitClicked()
     closeTimer->stop();
     //cash advance
     if(chkCashAdTrans->isChecked())
-        g_changeParam.advance.TRANS_ENABLE=true;
+        g_constantParam.advance.TRANS_ENABLE=true;
     else
-        g_changeParam.advance.TRANS_ENABLE=false;
+        g_constantParam.advance.TRANS_ENABLE=false;
     if(chkCashAdPin->isChecked())
-        g_changeParam.advance.PIN_ENABLE=true;
+        g_constantParam.advance.PIN_ENABLE=true;
     else
-        g_changeParam.advance.PIN_ENABLE=false;
+        g_constantParam.advance.PIN_ENABLE=false;
     if(chkCashAdMan->isChecked())
-        g_changeParam.advance.MANUAL_ENABLE=true;
+        g_constantParam.advance.MANUAL_ENABLE=true;
     else
-        g_changeParam.advance.MANUAL_ENABLE=false;
+        g_constantParam.advance.MANUAL_ENABLE=false;
 
     // cash deposit
     if(chkCashDeTrans->isChecked())
-        g_changeParam.deposit.TRANS_ENABLE=true;
+        g_constantParam.deposit.TRANS_ENABLE=true;
     else
-        g_changeParam.deposit.TRANS_ENABLE=false;
+        g_constantParam.deposit.TRANS_ENABLE=false;
     if(chkCashDePin->isChecked())
-        g_changeParam.deposit.PIN_ENABLE=true;
+        g_constantParam.deposit.PIN_ENABLE=true;
     else
-        g_changeParam.deposit.PIN_ENABLE=false;
+        g_constantParam.deposit.PIN_ENABLE=false;
     if(chkCashDeMan->isChecked())
-        g_changeParam.deposit.MANUAL_ENABLE=true;
+        g_constantParam.deposit.MANUAL_ENABLE=true;
     else
-        g_changeParam.deposit.MANUAL_ENABLE=false;
+        g_constantParam.deposit.MANUAL_ENABLE=false;
 
     // balance inquiry
     if(chkBalanceInqTrans->isChecked())
-        g_changeParam.balance.TRANS_ENABLE=true;
+        g_constantParam.balance.TRANS_ENABLE=true;
     else
-        g_changeParam.balance.TRANS_ENABLE=false;
+        g_constantParam.balance.TRANS_ENABLE=false;
     if(chkBalanceInqPin->isChecked())
-        g_changeParam.balance.PIN_ENABLE=true;
+        g_constantParam.balance.PIN_ENABLE=true;
     else
-        g_changeParam.balance.PIN_ENABLE=false;
+        g_constantParam.balance.PIN_ENABLE=false;
     if(chkBalanceInqMan->isChecked())
-        g_changeParam.balance.MANUAL_ENABLE=true;
+        g_constantParam.balance.MANUAL_ENABLE=true;
     else
-        g_changeParam.balance.MANUAL_ENABLE=false;
+        g_constantParam.balance.MANUAL_ENABLE=false;
 
     // p2p transfer
     if(chkP2PTrans->isChecked())
-        g_changeParam.p2p.TRANS_ENABLE=true;
+        g_constantParam.p2p.TRANS_ENABLE=true;
     else
-        g_changeParam.p2p.TRANS_ENABLE=false;
+        g_constantParam.p2p.TRANS_ENABLE=false;
     if(chkP2PPin->isChecked())
-        g_changeParam.p2p.PIN_ENABLE=true;
+        g_constantParam.p2p.PIN_ENABLE=true;
     else
-        g_changeParam.p2p.PIN_ENABLE=false;
+        g_constantParam.p2p.PIN_ENABLE=false;
     if(chkP2PMan->isChecked())
-        g_changeParam.p2p.MANUAL_ENABLE=true;
+        g_constantParam.p2p.MANUAL_ENABLE=true;
     else
-        g_changeParam.p2p.MANUAL_ENABLE=false;
+        g_constantParam.p2p.MANUAL_ENABLE=false;
 
     // VOID
     if(chkVOIDTrans->isChecked())
-        g_changeParam.transvoid.TRANS_ENABLE=true;
+        g_constantParam.transvoid.TRANS_ENABLE=true;
     else
-        g_changeParam.transvoid.TRANS_ENABLE=false;
+        g_constantParam.transvoid.TRANS_ENABLE=false;
     if(chkVOIDPin->isChecked())
-        g_changeParam.transvoid.PIN_ENABLE=true;
+        g_constantParam.transvoid.PIN_ENABLE=true;
     else
-        g_changeParam.transvoid.PIN_ENABLE=false;
+        g_constantParam.transvoid.PIN_ENABLE=false;
     if(chkVOIDMan->isChecked())
-        g_changeParam.transvoid.MANUAL_ENABLE=true;
+        g_constantParam.transvoid.MANUAL_ENABLE=true;
     else
-        g_changeParam.transvoid.MANUAL_ENABLE=false;
+        g_constantParam.transvoid.MANUAL_ENABLE=false;
 
     // Adjust
     if(chkAdjustTrans->isChecked())
-        g_changeParam.adjust.TRANS_ENABLE=true;
+        g_constantParam.adjust.TRANS_ENABLE=true;
     else
-        g_changeParam.adjust.TRANS_ENABLE=false;
+        g_constantParam.adjust.TRANS_ENABLE=false;
     if(chkAdjustPin->isChecked())
-        g_changeParam.adjust.PIN_ENABLE=true;
+        g_constantParam.adjust.PIN_ENABLE=true;
     else
-        g_changeParam.adjust.PIN_ENABLE=false;
+        g_constantParam.adjust.PIN_ENABLE=false;
     if(chkAdjustMan->isChecked())
-        g_changeParam.adjust.MANUAL_ENABLE=true;
+        g_constantParam.adjust.MANUAL_ENABLE=true;
     else
-        g_changeParam.adjust.MANUAL_ENABLE=false;
+        g_constantParam.adjust.MANUAL_ENABLE=false;
 
     // PIN Change
     if(chkPinTrans->isChecked())
-        g_changeParam.pinchange.TRANS_ENABLE=true;
+        g_constantParam.pinchange.TRANS_ENABLE=true;
     else
-        g_changeParam.pinchange.TRANS_ENABLE=false;
+        g_constantParam.pinchange.TRANS_ENABLE=false;
     if(chkPinPin->isChecked())
-        g_changeParam.pinchange.PIN_ENABLE=true;
+        g_constantParam.pinchange.PIN_ENABLE=true;
     else
-        g_changeParam.pinchange.PIN_ENABLE=false;
+        g_constantParam.pinchange.PIN_ENABLE=false;
     if(chkPinMan->isChecked())
-        g_changeParam.pinchange.MANUAL_ENABLE=true;
+        g_constantParam.pinchange.MANUAL_ENABLE=true;
     else
-        g_changeParam.pinchange.MANUAL_ENABLE=false;
+        g_constantParam.pinchange.MANUAL_ENABLE=false;
 
     unsigned char ucResult=xDATA::WriteValidFile(xDATA::DataSaveChange);
     if(!ucResult)
-        UIMsg::showNoticeMsgWithAutoClose("Save Success",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose("Save Success",g_constantParam.TIMEOUT_ERRMSG);
 }
 
 UIConfigTransAttr::~UIConfigTransAttr()
@@ -455,17 +455,17 @@ void UIConfigTransAttr::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_Enter:
         this->slotSubmitClicked();
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -507,11 +507,11 @@ void UIConfigTransAttr::setAutoClose(int timeout)
 
 void UIConfigTransAttr::slotQuitCfg()
 {
-    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }
 
 void UIConfigTransAttr::restartTimer()
 {
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

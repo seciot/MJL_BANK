@@ -13,9 +13,8 @@
 
 #define TRANS_PINDATALEN            8
 
-//added by xtf
 #define TRANS_ACCLEN                19
-#define TRANS_CASHIERLEN                2
+#define TRANS_CASHIERLEN            2
 
 //:- 交易transinfo统计
 #define TRANS_SAVEMAXNB                 500
@@ -51,7 +50,9 @@ typedef enum TRANS_MODE
 {
     TransMode_DownWK,           //签到(工作密钥)
     TransMode_DownEWK,          //签到(传输密钥)
-    TransMode_Settle,           //结算
+    TransMode_Settle,           //结算(一次)
+    TransMode_Settle2,          //结算(二次)
+    TransMode_BatchUpload,      //批上送
     TransMode_BalanceInquiry,   //查余
     TransMode_CashDeposit,      //存款
     TransMode_DepositVoid,      //存款撤销
@@ -61,7 +62,7 @@ typedef enum TRANS_MODE
     TransMode_AdvanceAdjust,    //取款调整
     TransMode_CardTransfer,     //转账
     TransMode_PINChange,        //改密
-    TramsMode_MaxIndex
+    TransMode_MaxIndex
 }TransMode;
 
 //input type index
@@ -141,8 +142,11 @@ typedef struct NORMAL_TRANS
     unsigned char   aucDate[TRANS_DATE_LEN + 1];
     unsigned char   aucTime[TRANS_TIME_LEN + 1];
 
-    //added by xtf
     unsigned char   aucCashier[TRANS_CASHIERLEN + 1];
+
+    //void
+    unsigned long   ulOrgTraceNumber;                           //原POS流水号
+    unsigned char   aucOrgRefNum[TRANS_REFNUM_LEN + 1];         //原参考号
 }NormalTrans;
 
 typedef struct
@@ -151,34 +155,32 @@ typedef struct
     unsigned long   ulAmount;       //金额
 }Total;
 
-//:- 统计信息
+typedef enum _TotalType
+{
+    TotalDeposit,       //存款
+    TotalDepositVoid,   //存款撤销
+    TotalDepositAdjust, //存款调整
+    TotalAdvance,       //取款
+    TotalAdvanceVoid,   //取款撤销
+    TotalAdvanceAdjust, //取款调整
+    TotalTransfer,      //转账
+    TotalVoid,          //撤销
+    TotalMaxIndex
+}TotalType;
+
+typedef enum _TotalBusinessType
+{
+    TotalCreditBusiness,            //贷记业务
+    TotalDebitBusiness,             //借记业务
+    TotalBusinessMaxIndex
+}TotalBusinessType;
+
+//统计信息
 typedef struct
 {
-    unsigned int    uiTotalNb;                  //:- 交易总笔数
-
-    unsigned int    uiCCreditNb;                //:- 借记卡借记业务总笔数
-    unsigned long   ulCCreditAmount;            //:- 借记卡借记业务总金额
-
-    unsigned int    uiCDebitNb;                 //:- 借记卡贷记业务总笔数
-    unsigned long   ulCDebitAmount;             //:- 借记卡贷记业务总金额
-
-    unsigned int    uiDCreditNb;                //:- 贷记卡借记业务总笔数
-    unsigned long   ulDCreditAmount;            //:- 贷记卡借记业务总金额
-
-    unsigned int    uiDDebitNb;                 //:- 贷记卡贷记业务总笔数
-    unsigned long   ulDDebitAmount;             //:- 贷记卡贷记业务总金额
-
-    unsigned int    uiDepositNb;                //:- 存款总笔数
-    unsigned long   ulDepositAmount;            //:- 存款总金额
-
-    unsigned int    uiAdvanceNb;                //:- 取款总笔数
-    unsigned long   ulAdvanceAmount;            //:- 取款总金额
-
-    unsigned int    uiTransferNb;               //:- 转账总笔数
-    unsigned long   ulTransferAmount;           //:- 转账总金额
-
-    unsigned int    uiVoidNb;                   //:- 撤销总笔数
-    unsigned long   ulVoidAmount;               //:- 撤销总金额
+    unsigned int    uiTotalNb;                  //总笔数
+    Total           total[TotalMaxIndex];
+    Total           totalBusiness[4][TotalBusinessMaxIndex];
 }TRANSTOTAL;
 
 typedef struct
@@ -186,16 +188,15 @@ typedef struct
     unsigned long   ulLastTransNumber;                  //上笔流水
     unsigned long   ulTransNumber;                      //交易流水
 
-    unsigned short  auiTransIndex[TRANS_SAVEMAXNB];     //:- 交易是否存在标志，如果存在设置交易标志种类
-    TRANSTOTAL      TransTotal;                         //:- 当前批次交易统计
+    unsigned short  auiTransIndex[TRANS_SAVEMAXNB];     //交易是否存在标志，如果存在设置交易标志种类
+    TRANSTOTAL      TransTotal;                         //当前批次交易统计
+    TRANSTOTAL      LastTransTotal;                     //上一批次交易统计
 
-    //:- 上一批次相关数据
-    TRANSTOTAL      LastTransTotal;                         //:- 上一批次交易统计
-    unsigned long   ulLastBatchNumber;                      //:- 上一批次号
-    unsigned char   aucLastCashierNo[TRANS_CASHIERLEN];   //:- 上一批次柜员号
-    unsigned char   ucLasSettleTime[TRANS_TIME_LEN];        //:- 上一批次结算时间
-    unsigned char   ucLasSettleData[TRANS_DATE_LEN];        //:- 上一批次结算日期
-    unsigned char   ucLastSettleFlag;                       //:- 上一批次结算成功标志
+    unsigned long   ulLastBatchNumber;                      //上一批次号
+    unsigned char   aucLastCashierNo[TRANS_CASHIERLEN];     //上一批次柜员号
+    unsigned char   ucLasSettleTime[TRANS_TIME_LEN];        //上一批次结算时间
+    unsigned char   ucLasSettleData[TRANS_DATE_LEN];        //上一批次结算日期
+    unsigned char   ucLastSettleFlag;                       //上一批次结算成功标志
 }TRANSINFO;
 
 // 柜员管理

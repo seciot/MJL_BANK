@@ -52,6 +52,9 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     tbTransList->horizontalHeader()->setDefaultSectionSize(130);
     tbTransList->horizontalHeader()->setStretchLastSection(true);
     tbTransList->verticalHeader()->setVisible(false);
+
+    tbTransList->verticalScrollBar()->setStyleSheet(SCROLL_VERTICAL_STYLE);
+
     //    ----------------------------------  //
     btnCancel=new QPushButton;
     btnSubmit=new QPushButton;
@@ -61,8 +64,8 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
 //    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
 //    QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -84,7 +87,7 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     layout->addLayout(h2Lay);
 
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
-    connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotTransClicked()));
+    connect(btnSubmit, SIGNAL(clicked()), this, SLOT(slotDetailClicked()));
     connect(tbTransList,SIGNAL(viewportEntered()),this,SLOT(restartTimeOut()));
     connect(tbTransList,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
     connect(tbTransList->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
@@ -97,7 +100,7 @@ UIReportQuery::UIReportQuery(QDialog *parent,Qt::WindowFlags f) :
     animation1->start();
 
     this->ergodicTrans();  //遍历交易
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 void UIReportQuery::ergodicTrans()
@@ -148,10 +151,10 @@ void UIReportQuery::ergodicTrans()
                 transType="Cash Advance";
                 break;
             case TransMode_AdvanceVoid:         //撤销
-                transType="Cash Advance VOID";
+                transType="Advance VOID";
                 break;
             case TransMode_DepositVoid:         //撤销
-                transType="Cash Deposit VOID";
+                transType="Deposit VOID";
                 break;
             case TransMode_BalanceInquiry:   //查余
                 transType="Balance Inquiry";
@@ -223,17 +226,18 @@ void UIReportQuery::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
 }
 
-void UIReportQuery::slotTransClicked()
+void UIReportQuery::slotDetailClicked()
 {
     qDebug()<<Q_FUNC_INFO<<tbTransList->currentRow();
 
     QString transType;
+    QString transStatus;
     QString cardNo;
     QString amount;
     QString refNo;
@@ -243,12 +247,26 @@ void UIReportQuery::slotTransClicked()
     int index=tbTransList->currentRow();
     if(g_transInfo.auiTransIndex[index])
     {
+        // 已撤销
+        switch(g_transInfo.auiTransIndex[index])
+        {
+        case SAV_TRANS_NORMAL:
+            transStatus="NORMAL";
+            break;
+        case SAV_TRANS_NIIVOID:
+            transStatus="VOID";
+            break;
+        default:
+            transStatus="NULL";
+            break;
+        }
+
         //:- 读取数据保存到NormalTransData
         memset(&NormalTransData,0,sizeof(NORMAL_TRANS));
         int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
         if(ucResult!=0)
         {
-            UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
+            UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_constantParam.TIMEOUT_ERRMSG);
 
             return;
         }
@@ -275,10 +293,17 @@ void UIReportQuery::slotTransClicked()
         case TransMode_CardTransfer:     //转账
             transType="P2P Transfer";
             break;
+        case TransMode_DepositAdjust:     //存款调整
+            transType="Deposit Adjust";
+            break;
+        case TransMode_AdvanceAdjust:     //取款调整
+            transType="Advance Adjust";
+            break;
         default:
             qDebug()<<"This should not be entered";
             break;
         }
+
         qDebug()<<"step2"<<transType;
 
         //Card No
@@ -300,7 +325,7 @@ void UIReportQuery::slotTransClicked()
 
         // Display the detail
         UIReportDetail *uiRepDetail=new UIReportDetail();
-        uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
+        uiRepDetail->slotSetDetailList(transType,transStatus,cardNo,amount,refNo,apprNo,operatorNo);
         uiRepDetail->exec();
 
     }
@@ -326,7 +351,7 @@ bool UIReportQuery::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {
@@ -340,5 +365,5 @@ bool UIReportQuery::eventFilter(QObject *obj, QEvent *event)
 void UIReportQuery::restartTimeOut()
 {
     qDebug()<<Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

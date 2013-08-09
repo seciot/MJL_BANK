@@ -32,7 +32,6 @@ public:
     QLabel *lbBatchNum;
     QLabel *lbNextBatchNum;
     QLabel *lbAPN;
-    QLabel *lbProType;
     QLabel *lbHostAccess;
     QLabel *lbDomainAddr;
     QLabel *lbPriIP;
@@ -57,7 +56,6 @@ public:
     QLineEdit *leBatchNum;
     QLineEdit *leNextBatchNum;
     QLineEdit *leAPN;
-    QComboBox *cbProType;
     QComboBox *cbHostAccess;
     QLineEdit *leDomainAddr;
     MyIpAddrEdit *lePriIP;
@@ -83,7 +81,6 @@ protected:
 
 private slots:
     void initialSettings();
-    void warning();
 
     void slotSubmitClicked();
 

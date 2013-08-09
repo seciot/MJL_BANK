@@ -20,22 +20,25 @@ public:
     QPushButton *btnSubmit;
 private:
     QTimer *closeTimer;
-    bool FLAG_NEEDVOID;
+    bool FLAG_NEEDSUBMIT;
 protected:
     void keyPressEvent(QKeyEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
-    void slotSetDetailList(QString transType, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo);
+    void slotSetDetailList(QString transType, QString transStatus, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo);
     void slotSetFun(QString);
     void slotFunClicked();
     void slotQuitMenu();
+
+    void slotClose();
 private slots:
     void restartTimeOut();
     void setAutoClose(int timeout);
 
 signals:
     void sigFun();
+    void sigClose();
 };
 
 #endif  

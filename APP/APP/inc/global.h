@@ -11,19 +11,22 @@
 #define EXTGLOBAL  extern
 #endif
 
-EXTGLOBAL   CONSTANT_PARAM		g_constantParam;
-EXTGLOBAL   CHANGE_PARAM		g_changeParam;
-EXTGLOBAL   SYSCASHIER			g_cashier;
+EXTGLOBAL   CONSTANT_PARAM      g_constantParam;
+EXTGLOBAL   CHANGE_PARAM        g_changeParam;
+EXTGLOBAL   BIN_DATA        g_binData;
+EXTGLOBAL   BIN_STATUS        g_binStatus;
+EXTGLOBAL   SYSCASHIER          g_cashier;
 
-EXTGLOBAL	RUNDATA				RunData;
-EXTGLOBAL	NORMAL_TRANS		NormalTransData;
-EXTGLOBAL	EXTRA_TRANS			ExtraTransData;
+EXTGLOBAL   RUNDATA             RunData;
+EXTGLOBAL   NORMAL_TRANS        NormalTransData;
+EXTGLOBAL   EXTRA_TRANS         ExtraTransData;
 
-EXTGLOBAL	ISO8583				ISO8583Data;
-EXTGLOBAL   TRANS_8583_DATA		Trans_8583Data;
+EXTGLOBAL   ISO8583             ISO8583Data;
+EXTGLOBAL   TRANS_8583_DATA     Trans_8583Data;
 
-EXTGLOBAL   NORMAL_TRANS		g_saveTrans;				//:- 保存交易
-EXTGLOBAL   TRANSINFO			g_transInfo;				//:- 统计信息
+EXTGLOBAL   NORMAL_TRANS        g_saveTrans;                //保存交易
+EXTGLOBAL   TRANSINFO           g_transInfo;                //统计信息
+EXTGLOBAL   TRANSINFO           g_oldtransInfo;             //统计信息
 EXTGLOBAL   REVERSEDISO8583     g_reversedTrans;            //冲正
 
 // added by xtf

@@ -167,22 +167,22 @@ unsigned char ISO8583_SetBitHexValue(short iBitNo, unsigned char *pucInData, uns
 
 unsigned char ISO8583_CheckBit(short iBitNo)
 {
-	iBitNo --;
-	if(  (iBitNo > ISO8583_MAXBITNUM)
-	   ||(iBitNo < 0)
-	  )
-	{
-		return(ERR_ISO8583_INVALIDBIT);
-	}
+    iBitNo --;
+    if((iBitNo > ISO8583_MAXBITNUM) || (iBitNo < 0) )
+    {
+        return(ERR_ISO8583_INVALIDBIT);
+    }
 
-	if( ISO8583Data.Bit[iBitNo].ucExistFlag == ISO8583_BITEXISTFLAG)
-	{
-		return(SUCCESS);
-	}else
-	{
-		return(ERR_ISO8583_BITNOTEXIST);
-	}
+    if(ISO8583Data.Bit[iBitNo].ucExistFlag == ISO8583_BITEXISTFLAG)
+    {
+        return(SUCCESS);
+    }
+    else
+    {
+        return(ERR_ISO8583_BITNOTEXIST);
+    }
 }
+
 unsigned char ISO8583_RemoveBit(short iBitNo)
 {
 	iBitNo --;
@@ -553,7 +553,6 @@ unsigned char ISO8583_UnpackData(unsigned char *pucInData, short iInDataLen)
 			case ATTR_ANS:
 				uiBitLen = pBitAttr[iI].uiMaxLen;
 				uiPackLen = uiBitLen;
-				qDebug("//:- uiBitLen:[%d], uiPackLen:[%d]", uiBitLen, uiPackLen);
 				memcpy( pucBitBufPtr,pucPtr,uiBitLen);
 				pucPtr += uiPackLen;
 				break;
@@ -633,7 +632,6 @@ unsigned char ISO8583_UnpackData(unsigned char *pucInData, short iInDataLen)
 			ISO8583Data.Bit[iI].uiOffset = (unsigned short)(pucBitBufPtr-pucBitBufStartPtr);
 			pucBitBufPtr += uiBitLen;
 			ISO8583Data.Bit[iI].ucExistFlag = ISO8583_BITEXISTFLAG;
-			qDebug("//:- bitlength:[%d]", ISO8583Data.Bit[iI].uiLen);
 		}
 		ucMask = ucMask >> 1;
 		if( !ucMask )

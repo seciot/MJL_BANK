@@ -1,15 +1,12 @@
 #include "uiInputPIN.h"
-
-extern "C"
-{
 #include "key.h"
-}
 #include "global.h"
 
 UIInputPIN::UIInputPIN(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     //    RemoveKeyEventBug();
+    QObject::installEventFilter(this);
 
     QPixmap bg;
     bg.load(":/images/commonbg.png");
@@ -94,8 +91,8 @@ UIInputPIN::UIInputPIN(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     //    QHBoxLayout *h1Lay=new QHBoxLayout();
     //    h1Lay->addWidget(lbCard);
@@ -137,7 +134,7 @@ UIInputPIN::UIInputPIN(QDialog *parent,Qt::WindowFlags f) :
 
     FLAG_HASPIN=true;
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIInputPIN::~UIInputPIN()
@@ -156,7 +153,7 @@ void UIInputPIN::keyPressEvent(QKeyEvent *event)
         slotSubmitClicked();
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -193,7 +190,14 @@ void UIInputPIN::slotSubmitClicked()
         printf("ucPIN:: %s\n",ucPIN);
 
         unsigned char ucResult;
+#if 1
         ucResult=KEY_EncryptPIN_X98(ucPIN,G_EXTRATRANS_aucCardPan_UnAssign,0,G_EXTRATRANS_aucPINData);
+#else
+        unsigned char aucBuf[10];
+        memset(aucBuf, 0, sizeof(aucBuf));
+        asc_bcd(aucBuf,6, (unsigned char *)"456789012345", 12);
+        ucResult = KEY_EncryptPIN_X98(ucPIN, aucBuf,0,G_EXTRATRANS_aucPINData);
+#endif
         if(ucResult==ERR_DRIVER)
         {
             qDebug()<<"加密密码出错";
@@ -309,4 +313,22 @@ void UIInputPIN::setAutoClose(int timeout)
     closeTimer= new QTimer(this);
     connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
     closeTimer->start(timeout);
+}
+
+bool UIInputPIN::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

@@ -42,6 +42,7 @@ public slots:
     void setNoManual();
 
 
+    void slotPutNotSupportCard();
 signals:
     void sigQuitTrans();
 

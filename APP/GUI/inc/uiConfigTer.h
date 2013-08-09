@@ -23,14 +23,10 @@ public:
     QCheckBox *chkTrans;
     QCheckBox *chkCard;
 
-
     QLabel *lbSTAN;
     QLineEdit *leSTAN;
     QLabel *lbInvoice;
     QLineEdit *leInvoice;
-    QLabel *lbPABXAcCode;
-    QLineEdit *lePABXAcCode;
-    QLabel *lbPABXDelay;
     QLineEdit *lePABXDelay;
     QLabel *lbDialType;
     QComboBox *cbDialType;
@@ -52,7 +48,6 @@ public:
     QLabel *lbScreenLogo;
     QComboBox *cbScreenLogo;
 
-    QCheckBox *chkNoBliendDial;
     QCheckBox *chkSetReceipt;
     QCheckBox *chkSelAccEnable;
     QLabel *lbRLine1;
@@ -93,6 +88,7 @@ private slots:
     void restartTimer();
 private:
     QTimer *closeTimer;
+
 };
 
 #endif  

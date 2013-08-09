@@ -48,7 +48,7 @@ UIReportSummary::UIReportSummary(QDialog *parent,Qt::WindowFlags f) :
     btnCancel->setText(tr("Cancel"));
     btnCancel->setFont(font2);
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_GREY_STYLE);
 
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(tbSummary);
@@ -77,7 +77,7 @@ UIReportSummary::UIReportSummary(QDialog *parent,Qt::WindowFlags f) :
 
 //    setTestInfo(); // 设置测试数据
     this->setTransTotal();
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIReportSummary::~UIReportSummary()
@@ -172,37 +172,37 @@ void UIReportSummary::setTransTotal()
     itmTransNum->setText(QString::number(pTransTotal->uiTotalNb));
     itmTransNum->setTextAlignment(Qt::AlignHCenter);
     QTableWidgetItem *itmAdvanceNum=new QTableWidgetItem();
-    itmAdvanceNum->setText(QString::number(pTransTotal->uiAdvanceNb));
+    itmAdvanceNum->setText(QString::number(pTransTotal->total[TotalAdvance].uiNb));
     itmAdvanceNum->setTextAlignment(Qt::AlignHCenter);
     QTableWidgetItem *itmDepositNum=new QTableWidgetItem();
-    itmDepositNum->setText(QString::number(pTransTotal->uiDepositNb));
+    itmDepositNum->setText(QString::number(pTransTotal->total[TotalDeposit].uiNb));
     itmDepositNum->setTextAlignment(Qt::AlignHCenter);
     QTableWidgetItem *itmTransferNum=new QTableWidgetItem();
-    itmTransferNum->setText(QString::number(pTransTotal->uiTransferNb));
+    itmTransferNum->setText(QString::number(pTransTotal->total[TotalTransfer].uiNb));
     itmTransferNum->setTextAlignment(Qt::AlignHCenter);
     QTableWidgetItem *itmVOIDNum=new QTableWidgetItem();
-    itmVOIDNum->setText(QString::number(pTransTotal->uiVoidNb));
+    itmVOIDNum->setText(QString::number(pTransTotal->total[TotalVoid].uiNb));
     itmVOIDNum->setTextAlignment(Qt::AlignHCenter);
 
     QTableWidgetItem *itmAdvanceAmount=new QTableWidgetItem();
     unsigned char aucBuf[12];
     memset(aucBuf,0,sizeof(aucBuf));
-    getAmount(aucBuf, pTransTotal->ulAdvanceAmount, 2);
+    getAmount(aucBuf, pTransTotal->total[TotalAdvance].ulAmount, 2);
     itmAdvanceAmount->setText(QString::fromAscii((const char *)aucBuf));
 
     QTableWidgetItem *itmDepositAmount=new QTableWidgetItem();
     memset(aucBuf,0,sizeof(aucBuf));
-    getAmount(aucBuf, pTransTotal->ulDepositAmount, 2);
+    getAmount(aucBuf, pTransTotal->total[TotalDeposit].ulAmount, 2);
     itmDepositAmount->setText(QString::fromAscii((const char *)aucBuf));
 
     QTableWidgetItem *itmTransferAmount=new QTableWidgetItem();
     memset(aucBuf,0,sizeof(aucBuf));
-    getAmount(aucBuf, pTransTotal->ulTransferAmount, 2);
+    getAmount(aucBuf, pTransTotal->total[TotalTransfer].ulAmount, 2);
     itmTransferAmount->setText(QString::fromAscii((const char *)aucBuf));
 
     QTableWidgetItem *itmVOIDAmount=new QTableWidgetItem();
     memset(aucBuf,0,sizeof(aucBuf));
-    getAmount(aucBuf, pTransTotal->ulVoidAmount, 2);
+    getAmount(aucBuf, pTransTotal->total[TotalVoid].ulAmount, 2);
     itmVOIDAmount->setText(QString::fromAscii((const char *)aucBuf));
 
 
@@ -257,7 +257,7 @@ void UIReportSummary::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -273,7 +273,7 @@ void UIReportSummary::setAutoClose(int timeout)
 
 void UIReportSummary::slotQuitMenu()
 {
-    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }
 
@@ -284,7 +284,7 @@ bool UIReportSummary::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {
@@ -298,6 +298,6 @@ bool UIReportSummary::eventFilter(QObject *obj, QEvent *event)
 void UIReportSummary::restartTimeOut()
 {
     qDebug()<<Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }
 

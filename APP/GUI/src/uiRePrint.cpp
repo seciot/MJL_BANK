@@ -69,7 +69,7 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     btnCancel->setText(tr("Cancel"));
     btnCancel->setFont(font2);
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_GREY_STYLE);
 
     QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -107,7 +107,7 @@ UIRePrint::UIRePrint(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIRePrint::~UIRePrint()
@@ -139,14 +139,14 @@ void UIRePrint::slotReprintLast()
     int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans,  g_transInfo.ulLastTransNumber);
     if(ucResult!=0)
     {
-        UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
     memcpy(&NormalTransData,&g_saveTrans,sizeof(NORMAL_TRANS));
     if(NormalTransData.ulAmount==0)
     {
-        UIMsg::showErrMsgWithAutoClose("No Transaction",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("No Transaction",g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -187,7 +187,7 @@ void UIRePrint::slotReprintWhich()
                 int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
                 if(ucResult!=0)
                 {
-                    UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
+                    UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_constantParam.TIMEOUT_ERRMSG);
 
                     return;
                 }
@@ -212,7 +212,7 @@ void UIRePrint::slotReprintWhich()
             }
             else
             {
-                UIMsg::showErrMsgWithAutoClose("No Match Trace",g_changeParam.TIMEOUT_ERRMSG);
+                UIMsg::showErrMsgWithAutoClose("No Match Trace",g_constantParam.TIMEOUT_ERRMSG);
                 return;
 
             }
@@ -266,7 +266,7 @@ void UIRePrint::slotFinishPrint()
         threadPrint->deleteLater();
         qDebug(" --- After deleteLater--- !\n");
     }
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }
 
 // 撕纸
@@ -274,7 +274,7 @@ void UIRePrint::slotTearPrint()
 {
     qDebug()<<Q_FUNC_INFO;
     Os__gif_stop();
-    UIMsg::showNoticeMsgWithAutoCloseNoBeep("Tear Receipt",g_changeParam.TIMEOUT_PAPERTEAR);
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("Tear Receipt",g_constantParam.TIMEOUT_PAPERTEAR);
     Os__gif_start((char*)"BigLoad.gif", 60, 80, 124, 124);
 }
 
@@ -298,7 +298,7 @@ bool UIRePrint::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

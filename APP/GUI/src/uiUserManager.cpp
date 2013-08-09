@@ -87,8 +87,8 @@ UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
 
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
     //    ----------------------------------  //
     QHBoxLayout *hLay=new QHBoxLayout();
     hLay->addWidget(lbUserType);
@@ -141,7 +141,7 @@ UIUserManager::UIUserManager(QDialog *parent,Qt::WindowFlags f) :
     setTabOrder(leUserRePass,btnSubmit);
     setTabOrder(btnSubmit,btnCancel);
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIUserManager::~UIUserManager()
@@ -162,7 +162,7 @@ void UIUserManager::keyPressEvent(QKeyEvent *event)
     case Qt::Key_F4:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -171,7 +171,7 @@ void UIUserManager::keyPressEvent(QKeyEvent *event)
 void UIUserManager::slotProcessUserManager()
 {
     qDebug() << Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 
     unsigned char ucI = 0;
     unsigned char * aucCashierNo = NULL;
@@ -192,7 +192,7 @@ void UIUserManager::slotProcessUserManager()
     {
         qDebug()<<"把东西填满咯";
 
-        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -202,7 +202,7 @@ void UIUserManager::slotProcessUserManager()
     {
         qDebug()<<"密码不匹配";
 
-        UIMsg::showNoticeMsgWithAutoClose(PASSWORD_MISMATCHING,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(PASSWORD_MISMATCHING,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -211,7 +211,7 @@ void UIUserManager::slotProcessUserManager()
     int userID=leUserId->text().toInt();
     if(userID==0 || userID==99)
     {
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -229,7 +229,7 @@ void UIUserManager::slotProcessUserManager()
         // 更新用户信息
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsgWithAutoClose(ADD_USER_OK,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(ADD_USER_OK,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -238,7 +238,7 @@ void UIUserManager::slotProcessUserManager()
         qDebug()<<"柜员存在,则更新柜员的密码";
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsgWithAutoClose(CHANGE_PASSWORD_OK,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(CHANGE_PASSWORD_OK,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -250,7 +250,7 @@ void UIUserManager::slotProcessUserManager()
         memset(aucCashierPass,0,(CASH_CASHIERPASSLEN+1));
         xDATA::UpdateCashierData(ucI,aucCashierNo,aucCashierPass);
 
-        UIMsg::showNoticeMsgWithAutoClose(DELETE_USER_OK,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(DELETE_USER_OK,g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
@@ -314,7 +314,7 @@ void UIUserManager::slotAllowEdit(UserType ut, QString ID)
     {
         qDebug()<<"不支持超级管理员管理员用户做用户设置";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
         uiInPass->resetLine();
 
         return;
@@ -341,7 +341,7 @@ bool UIUserManager::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

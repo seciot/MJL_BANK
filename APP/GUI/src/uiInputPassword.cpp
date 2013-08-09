@@ -8,6 +8,7 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     RemoveKeyEventBug();
+    QObject::installEventFilter(this);
 
     QPixmap bg;
     bg.load(":/images/commonbg.png");
@@ -71,8 +72,8 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
     
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(lbCashier);
     v1Lay->addWidget(leCashier);
@@ -98,7 +99,7 @@ UIInputPassword::UIInputPassword(QDialog *parent,Qt::WindowFlags f) :
     setTabOrder(lePass,btnSubmit);
     setTabOrder(btnSubmit,btnCancel);
 
-   this->setAutoClose(g_changeParam.TIMEOUT_UI);
+   this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIInputPassword::~UIInputPassword()
@@ -119,7 +120,7 @@ void UIInputPassword::keyPressEvent(QKeyEvent *event)
     case Qt::Key_F4:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -135,10 +136,10 @@ void UIInputPassword::startAuthorize()
     unsigned char ucResult=SAV_CheckNormalTransIndex();
     if(ucResult!=SUCCESS)
     {
-        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(ucResult),g_constantParam.TIMEOUT_ERRMSG);
         slotFinishTrans();
 
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         return;
     }
 
@@ -152,11 +153,11 @@ void UIInputPassword::startAuthorize()
     {
         qDebug()<<"把东西填满咯";
 
-        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_constantParam.TIMEOUT_ERRMSG);
 
         this->resetLine();
 
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
 
         return;
     }
@@ -184,9 +185,9 @@ void UIInputPassword::startAuthorize()
         {
             qDebug()<<"系统管理员密码错误";
 
-            UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
+            UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_constantParam.TIMEOUT_ERRMSG);
             this->resetLine();
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
 
             return;
         }
@@ -207,9 +208,9 @@ void UIInputPassword::startAuthorize()
             {
                 qDebug()<<"超级密码错误";
 
-                UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
+                UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_constantParam.TIMEOUT_ERRMSG);
                 this->resetLine();
-                closeTimer->start(g_changeParam.TIMEOUT_UI);
+                closeTimer->start(g_constantParam.TIMEOUT_UI);
 
                 return;
             }
@@ -221,9 +222,9 @@ void UIInputPassword::startAuthorize()
             {
                 qDebug()<<"柜员不存在";
 
-                UIMsg::showErrMsgWithAutoClose(ERR_CASH_NOTEXIST,g_changeParam.TIMEOUT_ERRMSG);
+                UIMsg::showErrMsgWithAutoClose(ERR_CASH_NOTEXIST,g_constantParam.TIMEOUT_ERRMSG);
                 this->resetLine();
-                closeTimer->start(g_changeParam.TIMEOUT_UI);
+                closeTimer->start(g_constantParam.TIMEOUT_UI);
 
                 return;
             }
@@ -240,9 +241,9 @@ void UIInputPassword::startAuthorize()
                 {
                     qDebug()<<"密码错误";
 
-                    UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_changeParam.TIMEOUT_ERRMSG);
+                    UIMsg::showErrMsgWithAutoClose(ERR_CASH_PASS,g_constantParam.TIMEOUT_ERRMSG);
                     this->resetLine();
-                    closeTimer->start(g_changeParam.TIMEOUT_UI);
+                    closeTimer->start(g_constantParam.TIMEOUT_UI);
 
                     return;
                 }
@@ -269,4 +270,22 @@ void UIInputPassword::setAutoClose(int timeout)
     closeTimer= new QTimer(this);
     connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotFinishTrans()));
     closeTimer->start(timeout);
+}
+
+bool UIInputPassword::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

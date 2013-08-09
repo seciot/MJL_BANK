@@ -10,6 +10,7 @@ UIInputManual::UIInputManual(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     //    RemoveKeyEventBug();
+    QObject::installEventFilter(this);
     NormalTransData.inputMode = INPUTMODE_Manual;
     FLAG_SENDER=false;
     FLAG_RECEIVER=false;
@@ -83,8 +84,8 @@ UIInputManual::UIInputManual(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(lbCardNo);
     v1Lay->addWidget(leCardNo);
@@ -120,7 +121,7 @@ UIInputManual::UIInputManual(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 void UIInputManual::setEnterReceiver()
@@ -149,7 +150,7 @@ void UIInputManual::keyPressEvent(QKeyEvent *event)
     case Qt::Key_F4:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -170,8 +171,8 @@ void UIInputManual::slotInputComplete()
     if(leCardNo->text().isEmpty() && FLAG_RECEIVER==true)
     {
         qDebug()<<"fill in the blank";
-        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_constantParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         return;
     }
 
@@ -179,16 +180,16 @@ void UIInputManual::slotInputComplete()
     {
         qDebug()<<"fill in the blank";
 
-        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_constantParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
 
         return;
     }
 
     if(leEXP->text().length()<4 && FLAG_RECEIVER==false)
     {
-        UIMsg::showNoticeMsgWithAutoClose(WRONG_EXP,g_changeParam.TIMEOUT_ERRMSG);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        UIMsg::showNoticeMsgWithAutoClose(WRONG_EXP,g_constantParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
 
         return;
     }
@@ -242,4 +243,22 @@ void UIInputManual::setAutoClose(int timeout)
     closeTimer= new QTimer(this);
     connect(closeTimer, SIGNAL(timeout()), this, SLOT(slotQuitTrans()));
     closeTimer->start(timeout);
+}
+
+bool UIInputManual::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

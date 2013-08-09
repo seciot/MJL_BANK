@@ -1,13 +1,16 @@
 #include "comms.h"
-#include "sand_lcd.h"
+#include <QHostInfo>
+#include "msgreport.h"
+#include "commontools.h"
 #include "iso8583.h"
-#include "global.h"
 #include "xdata.h"
-
-extern "C"
-{
-#include "sand_network.h"
 #include "key.h"
+#include "global.h"
+
+
+extern "C"{
+#include "sand_lcd.h"
+#include "sand_network.h"
 }
 
 #define COMMS_CHECK_GPRS_TIMEOUT    100 //1000
@@ -102,7 +105,7 @@ void CommsSocket::UpdatedMsg(const QString str,const QString backup)
 {
     qDebug()<<Q_FUNC_INFO<<str<<backup;
     emit notify(str,backup);
-//    QThread::msleep(100);
+    //    QThread::msleep(100);
 }
 
 unsigned char CommsSocket::PreComm(void)
@@ -114,21 +117,26 @@ unsigned char CommsSocket::PreComm(void)
     gifRefresh("003.gif",80,120,100,100);
     UpdatedMsg(tr("Precomm"),tr(""));
 
-//    G_RUNDATA_ucHostConnectFlag = false;
+    //    G_RUNDATA_ucHostConnectFlag = false;
     switch(g_constantParam.commMode)
     {
     case PARAM_COMMMODE_GPRS:
+        activeDev(0);   //用于GPRS和WIFI切换，0为GPRS，1为WIFI
         ucSetApnResult = OSGSM_GprsSetAPN(g_constantParam.GSM.aucAPN);
         qDebug("[OSGSM_GprsSeAPN = %02x]", ucSetApnResult);
     case PARAM_COMMMODE_CDMA:
         ucResult = OSGSM_GprsDial();
         qDebug("[OSGSM_GprsDial = %02x]", ucResult);
         break;
+    case PARAM_COMMMODE_WIFI:
+        qDebug("activeDev 1");
+        activeDev(1);   //用于GPRS和WIFI切换，0为GPRS，1为WIFI
+        break;
     default:
         break;
     }
-    msleep(100);
-//    Os__gif_stop();
+    //    msleep(100);
+    //    Os__gif_stop();
     return ucResult;
 }
 
@@ -164,37 +172,37 @@ void CommsSocket::RetryConnect()
     emit EableNotify(false);
     pDialTimeOut->start();
     FinComm();
-//    if(ucDialCount < g_constIninfo.ucDialRetry)
-//    {
-//        qDebug("CHECKPRE 重拨号 尝试!\n");
-        do
+    //    if(ucDialCount < g_constIninfo.ucDialRetry)
+    //    {
+    //        qDebug("CHECKPRE 重拨号 尝试!\n");
+    //    for(ucDialCount < g_constantParam.connectionRetry; )
+    do
+    {
+        qDebug("ucDialCount = %u\n",ucDialCount);
+        //Thread Destruction exception
+        if(continueFlag == false)
+            break;
+        ucResult = PreComm();
+        //ucDialCount++;
+        if(ucResult == SUCCESS)
         {
-            qDebug("ucDialCount = %u\n",ucDialCount);
-            //Thread Destruction exception
-            if(continueFlag == false)
-                break;
-            ucResult = PreComm();
-            //ucDialCount++;
-            if(ucResult == SUCCESS)
-            {
-                qDebug("CHECKPRE 重拨号 成功!\n");
-                break;
-            }
-            else
-                FinComm();
-            //Thread Destruction exception
-            if(continueFlag == false)
-                break;
-        }while(1);
-//        while(ucDialCount < g_constIninfo.ucDialRetry);
-//    }
-//    else
-//    {
-//        qDebug("CHECKPRE 超时 退出!\n");
-//        return ExitFromRecv();
-//    }
-//    if(ucResult == SUCCESS)
-//        CheckPreComm();
+            qDebug("CHECKPRE 重拨号 成功!\n");
+            break;
+        }
+        else
+            FinComm();
+        //Thread Destruction exception
+        if(continueFlag == false)
+            break;
+    }while(ucDialCount < g_constantParam.connectionRetry);
+    //    }
+    //    else
+    //    {
+    //        qDebug("CHECKPRE 超时 退出!\n");
+    //        return ExitFromRecv();
+    //    }
+    //    if(ucResult == SUCCESS)
+    //        CheckPreComm();
     if(ucResult != SUCCESS)
     {
         qDebug("CHECKPRE 异常 退出!\n");
@@ -269,7 +277,7 @@ unsigned char CommsSocket::CheckPreComm(void)
         {
             pDialTimeOut->stop();
             emit EableNotify(false);
-//            G_RUNDATA_ucHostConnectFlag = true;
+            //            G_RUNDATA_ucHostConnectFlag = true;
             break;
         }
         //Thread Destruction exception
@@ -296,7 +304,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
     gifRefresh("003.gif", 80, 120, 100, 100);
     for(uiI = 0; uiI < 2; uiI++)
     {
-        if(uiI > 1)
+        if(uiI > 0)
             UpdatedMsg(tr("Switch to Backup IP"), tr(""));
         else
             UpdatedMsg(tr("Connecting Main IP"), tr(""));
@@ -306,26 +314,45 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
         ucResult = TCP_Open(&iTCPHandle);
         qDebug("TCP Open ucResult = %02x", ucResult);
         if(ucResult)
-        {
-            TCP_Close(iTCPHandle);
             break;
-        }
         /*================ TCP Connect ================*/
+        if(g_constantParam.hostType==HOST_DOMAINNAME)
+        {
+            if(!ucResult)
+            {
+                QHostInfo info = QHostInfo::fromName(QString::fromAscii((const char*)g_constantParam.aucDomainName));
+                if(info.error() != QHostInfo::NoError)
+                    ucResult = NET_NO_IDLE_DIALOG;
+                else
+                {
+                    QString strIp;
+
+                    if(info.addresses().size() > 0)
+                        strIp = info.addresses().first().toString();
+
+                    strIp.remove(".");
+                    qDebug() << "Host Get IP = "<< strIp;
+                    CONV_IPStringULong((unsigned char *)strIp.toAscii().data(), &g_constantParam.ulHostIP[0]);
+                }
+            }
+        }
         if(!ucResult)
         {
             ucResult = TCP_Connect(iTCPHandle,
                                    g_constantParam.ulHostIP[g_constantParam.ucHostIndex],
-                                   g_constantParam.uiHostPort[g_constantParam.ucHostIndex]);
+                    g_constantParam.uiHostPort[g_constantParam.ucHostIndex]);
         }
         //TCP Connect Fail
         if(ucResult)
         {
             TCP_Close(iTCPHandle);
             if(g_constantParam.commMode == PARAM_COMMMODE_GPRS
-            || g_constantParam.commMode == PARAM_COMMMODE_CDMA)
+                    || g_constantParam.commMode == PARAM_COMMMODE_CDMA)
                 OSGSM_GprsReset();
         }
         qDebug("TCP Connect Num %d result is %02x", uiI, ucResult);
+        if(!ucResult)
+            break;
     }
 
     //发送
@@ -333,7 +360,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
     {
         qDebug("Connect Server OK");
 
-        gifRefresh((char*)"sending3.gif", 0, 120, 240, 154);
+        //        gifRefresh("003.gif",80,120,100,100);
         UpdatedMsg(tr("Connected,Sending\nPlease Wait"), tr(""));
 
         //数据准备
@@ -347,6 +374,7 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
 
         //数据发送
         qDebug("Send Data");
+        KEY_DumpData("Data is:\n", aucSendBuff, 2+usOffSet);
         ucResult = TCP_Send(iTCPHandle, aucSendBuff, (2+usOffSet));
         qDebug("Send Data result is %02x", ucResult);
     }
@@ -363,12 +391,11 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
             sprintf((char *)aucBuf, "Total Used %d sec", uiI);
             UpdatedMsg(tr("Received, Processing\nPlease Wait"), tr((const char *)aucBuf));
 
-            *puiOutLen = ISO8583_MAXCOMMBUFLEN;
-            memset(aucReceiveBuff, 0x00, ISO8583_MAXCOMMBUFLEN);
+            *puiOutLen = sizeof(aucReceiveBuff);
+            memset(aucReceiveBuff, 0, ISO8583_MAXCOMMBUFLEN);
             qDebug("Recv Data");
-            ucResult = TCP_Recv(iTCPHandle,aucReceiveBuff, puiOutLen, 1);
-            qDebug("Recv Data Len %02x", puiOutLen);
-            qDebug("Recv Data result is %02x", ucResult);
+            ucResult = TCP_Recv(iTCPHandle, aucReceiveBuff, puiOutLen, 1);
+            qDebug("Recv Data Len %d", *puiOutLen);
             if(!ucResult)
             {
                 if(*puiOutLen < 2)
@@ -376,23 +403,27 @@ unsigned char CommsSocket::TCPIP_SendReceive(unsigned char *pucInData,unsigned s
                 break;
             }
         }
+        qDebug("Recv Data result is %02x", ucResult);
+        if(!ucResult)   //赋数据
+        {
+            usOffSet = 2 + ucTPDULen;
+            if(*puiOutLen > usOffSet && *puiOutLen <= ISO8583_MAXCOMMBUFLEN)
+            {
+                if(aucReceiveBuff[0] == 0x60 || aucReceiveBuff[0] == 0x80) //first byte of APTU
+                    usOffSet -= 2;
+                *puiOutLen -= usOffSet;
+                memcpy(pucOutData, &aucReceiveBuff[usOffSet], *puiOutLen);
+            }
+            else
+            {
+                ucResult = NET_REVIEVE_DATA_LEN_ERROR;
+            }
+        }
     }
-
-    //赋数据
-    if(!ucResult)
-    {
-        qDebug("Recv Data is SUCCESS!");
-        usOffSet = 2 + ucTPDULen;
-        if(aucReceiveBuff[0] == 0x60 || aucReceiveBuff[0] == 0x80) //first byte of APTU
-            usOffSet -= 2;
-        *puiOutLen -= usOffSet;
-        memcpy(pucOutData, &aucReceiveBuff[usOffSet], *puiOutLen);
-    }
-
     qDebug("SendReceive exit!");
     TCP_Close(iTCPHandle);
     if(g_constantParam.commMode == PARAM_COMMMODE_GPRS
-    || g_constantParam.commMode == PARAM_COMMMODE_CDMA)
+            || g_constantParam.commMode == PARAM_COMMMODE_CDMA)
         OSGSM_GprsReset();
     return ucResult;
 }
@@ -427,16 +458,17 @@ unsigned char CommsSocket::GenSendReceive(void)
 
     /* Pack Data */
     ucResult = ISO8583_PackData(ISO8583Data.aucCommBuf, &ISO8583Data.uiCommBufLen, ISO8583_MAXCOMMBUFLEN);
-
+#if 1
     /* Set MAC */
-    if(!ISO8583_CheckBit(64) || !ISO8583_CheckBit(128))
+    if(!ucResult && (!ISO8583_CheckBit(64) || !ISO8583_CheckBit(128)))
     {
         uiLen = ISO8583Data.uiCommBufLen - 8;
+        memset(aucMAC, 0, sizeof(aucMAC));
         ucResult = KEY_CalcMAC(ISO8583Data.aucCommBuf, uiLen, aucMAC);
         /* Copy MAC to Commbuf */
         memcpy(&ISO8583Data.aucCommBuf[uiLen], aucMAC, 8);
     }
-
+#endif
     /* SendReceive with host */
     if(!ucResult)
     {
@@ -459,5 +491,15 @@ unsigned char CommsSocket::GenSendReceive(void)
                 return(ERR_UTIL_OVERBUFLIMIT);
         }
     }
+#if 1
+    if(!ucResult && (!ISO8583_CheckBit(64) || !ISO8583_CheckBit(128)))
+    {
+        uiLen = ISO8583Data.uiCommBufLen - 8;
+        memset(aucMAC, 0, sizeof(aucMAC));
+        ucResult = KEY_CalcMAC(ISO8583Data.aucCommBuf, uiLen, aucMAC);
+//        if(memcmp(&ISO8583Data.aucCommBuf[uiLen], aucMAC, 8))
+//            return ERR_ISO8583_MACERROR;
+    }
+#endif
     return(ucResult);
 }

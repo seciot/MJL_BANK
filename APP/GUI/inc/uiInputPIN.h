@@ -36,6 +36,7 @@ private:
 protected:
     void keyPressEvent(QKeyEvent *event);
 
+    bool eventFilter(QObject *obj, QEvent *event);
 public slots:
     void slotQuitTrans();
     void slotSubmitClicked();

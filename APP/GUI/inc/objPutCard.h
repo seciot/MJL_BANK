@@ -18,6 +18,7 @@ public:
 
 signals:
     void putCardFinished();
+    void putNotSupportCard();
     void putCardFailed();
     void sigCardNum(QString);
 

@@ -142,6 +142,22 @@ void MyIpAddrEdit::settext(const QString &text)
     ip_part4_->setText(ippart4);
 }
 
+void MyIpAddrEdit::setReadOnly(bool flag)
+{
+    ip_part1_->setReadOnly(flag);
+    ip_part2_->setReadOnly(flag);
+    ip_part3_->setReadOnly(flag);
+    ip_part4_->setReadOnly(flag);
+}
+
+void MyIpAddrEdit::clearIP()
+{
+    ip_part1_->clear();
+    ip_part2_->clear();
+    ip_part3_->clear();
+    ip_part4_->clear();
+}
+
 QString MyIpAddrEdit::text()
 {
     QString ippart1, ippart2, ippart3, ippart4;

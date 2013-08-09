@@ -59,8 +59,10 @@ bool copyDirFiles(const QString &SourceDir,const QString &DestDir,bool coverFile
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    qDebug() << Q_FUNC_INFO;
 
     copyDirFiles(":/gif/","./image/",true);
+//    copyDirFiles(":/bmp/","./image/bmp/",true);
 
     QTextCodec::setCodecForTr(QTextCodec::codecForName("utf8"));
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
@@ -69,6 +71,5 @@ int main(int argc, char *argv[])
     Frame frame(argc,argv);
     
     main_entry_gui(argc, argv);
-
     return a.exec();
 }

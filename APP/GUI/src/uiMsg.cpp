@@ -50,7 +50,7 @@ UIMsg::UIMsg(ErrorType errortype, long errorCode, QDialog *parent, Qt::WindowFla
     btnSubmit->setText(tr("OK"));
     btnSubmit->setFont(font2);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREY_STYLE);
 
 
     this->beepTwice();   //beep
@@ -154,7 +154,7 @@ UIMsg::UIMsg(ErrorType errortype, unsigned char ucErrorCode, QDialog *parent, Qt
     btnSubmit->setText(tr("OK"));
     btnSubmit->setFont(font2);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREY_STYLE);
 
 
     this->beepTwice();   //beep
@@ -293,7 +293,7 @@ UIMsg::UIMsg(ErrorType errortype, QString errMsg, bool needBeep, QDialog *parent
     btnSubmit->setText(tr("OK"));
     btnSubmit->setFont(font2);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREY_STYLE);
 
 
     if(needBeep==true)
@@ -800,28 +800,28 @@ void UIMsg::initalFileErrorMsg()
 
 void UIMsg::initalCommErrorMsg()
 {
-    hashCommError.insert(NET_PATTERN_ERROR,				"PATTERN ERROR");
-    hashCommError.insert(NET_NO_IDLE_DIALOG,			"NO IDLE DIALOG");
-    hashCommError.insert(NET_ID_ERROR,					"错误句柄");
-    hashCommError.insert(NET_ID_NOT_OPEN,				"句柄未打开");
-    hashCommError.insert(NET_DIAL_CONNECT_ERROR,		"会话连接错误");
-    hashCommError.insert(NET_DIAL_CONNECT_REJECT,		"会话连接拒绝");
-    hashCommError.insert(NET_PARAM_ERROR,				"参数错误");
-    hashCommError.insert(NET_IP_CATEGORY_ERROR,			"IP层错误");
-    hashCommError.insert(NET_DATA_CHECK_ERROR,			"数据较验错误");
-    hashCommError.insert(NET_NO_MATCH_DIALOG,			"无匹配的会话");
-    hashCommError.insert(NET_TAG_ERROR,					"标志错误");
-    hashCommError.insert(NET_NO_MATCH_SERIES_NUMBER,	"无匹配的序列号");
-    hashCommError.insert(NET_SEND_DATA_LEN_ERROR,		"发送数据长度错误");
-    hashCommError.insert(NET_REVIEVE_OVERTIME,			"接收超时");
-    hashCommError.insert(NET_NO_ANSWER,					"数据无应答");
-    hashCommError.insert(NET_DIAL_OVERTIME,				"网络连接超时");
-    hashCommError.insert(NET_REVIEVE_DATA_LEN_ERROR,	"接收数据长度错误");
-    hashCommError.insert(NET_NETCOMMS_VERSION,	"通讯版本错");
-    hashCommError.insert(NET_NETCOMMS_OVERBUFLIMIT,	"缓存超限");
-    hashCommError.insert(NET_NETCOMMS_INDEXERROR,	"密钥索引错");
-    hashCommError.insert(NET_NETCOMMS_MACERROR,	"MAC错");
-    hashCommError.insert(ERR_COMMS_UNKNOW,				"交易失败");
+    hashCommError.insert(NET_PATTERN_ERROR,             "PATTERN ERROR");
+    hashCommError.insert(NET_NO_IDLE_DIALOG,            "NO IDLE DIALOG");
+    hashCommError.insert(NET_ID_ERROR,                  "错误句柄");
+    hashCommError.insert(NET_ID_NOT_OPEN,               "句柄未打开");
+    hashCommError.insert(NET_DIAL_CONNECT_ERROR,        "会话连接错误");
+    hashCommError.insert(NET_DIAL_CONNECT_REJECT,       "会话连接拒绝");
+    hashCommError.insert(NET_PARAM_ERROR,               "参数错误");
+    hashCommError.insert(NET_IP_CATEGORY_ERROR,         "IP层错误");
+    hashCommError.insert(NET_DATA_CHECK_ERROR,          "数据较验错误");
+    hashCommError.insert(NET_NO_MATCH_DIALOG,           "无匹配的会话");
+    hashCommError.insert(NET_TAG_ERROR,                 "标志错误");
+    hashCommError.insert(NET_NO_MATCH_SERIES_NUMBER,    "无匹配的序列号");
+    hashCommError.insert(NET_SEND_DATA_LEN_ERROR,       "发送数据长度错误");
+    hashCommError.insert(NET_REVIEVE_OVERTIME,          "接收超时");
+    hashCommError.insert(NET_NO_ANSWER,                 "数据无应答");
+    hashCommError.insert(NET_DIAL_OVERTIME,             "网络连接超时");
+    hashCommError.insert(NET_REVIEVE_DATA_LEN_ERROR,    "接收数据长度错误");
+    hashCommError.insert(NET_NETCOMMS_VERSION,          "通讯版本错");
+    hashCommError.insert(NET_NETCOMMS_OVERBUFLIMIT,     "缓存超限");
+    hashCommError.insert(NET_NETCOMMS_INDEXERROR,       "密钥索引错");
+    hashCommError.insert(NET_NETCOMMS_MACERROR,         "MAC错");
+    hashCommError.insert(ERR_COMMS_UNKNOW,              "交易失败");
 }
 
 void UIMsg::initalHostErrorMsg()

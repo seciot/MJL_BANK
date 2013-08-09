@@ -6,4 +6,6 @@
 
 #define IPS420
 
+//#define BUSINESS
+
 #endif // OSMAIN_H

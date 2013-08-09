@@ -3,18 +3,13 @@
 #include "xdata.h"
 #include "global.h"
 
-static void TRANS_CleanTransData(void);
-
 UICashAdvance::UICashAdvance(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
-    TRANS_CleanTransData();
+    xDATA::ClearGlobalData();
     NormalTransData.transType = TransMode_CashAdvance;
     RemoveKeyEventBug();
-    xDATA::ReadValidFile(xDATA::DataSaveChange);
-    xDATA::ReadValidFile(xDATA::DataSaveConstant);
-
 
     FLAG_InputPassword=false;
     FLAG_AccountType=false;
@@ -97,15 +92,15 @@ void UICashAdvance::chooseAccountType(UserType ut,QString ID)
 {
     // 交易关闭
     qDebug()<<ut<<ID<<g_changeParam.boolCashierLogonFlag;
-    if(g_changeParam.advance.TRANS_ENABLE==false)
+    if(g_constantParam.advance.TRANS_ENABLE==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Please Logon",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     //--------------------------------------- //
@@ -123,7 +118,7 @@ void UICashAdvance::chooseAccountType(UserType ut,QString ID)
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
         uiInPass->resetLine();
 
         return;
@@ -143,7 +138,7 @@ void UICashAdvance::swipeCard()
 
     FLAG_SwipeCard=true;
     uiSwipeCard=new UISwipeCard();
-    if(g_changeParam.advance.MANUAL_ENABLE==false)
+    if(g_constantParam.advance.MANUAL_ENABLE==false)
     {
         uiSwipeCard->setNoManual();
     }
@@ -194,7 +189,7 @@ void UICashAdvance::inputPIN(QString strAmt)
 
     uiInPIN=new UIInputPIN();
     uiInPIN->slotSetAmount(strAmt);
-    if(g_changeParam.advance.PIN_ENABLE==false)
+    if(g_constantParam.advance.PIN_ENABLE==false)
         uiInPIN->slotDisablePIN();
     connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
     connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
@@ -283,7 +278,7 @@ void UICashAdvance::quitFromFlow()
         FLAG_InputPassword=false;
     }
 
-    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_constantParam.TIMEOUT_ERRMSG);
 
     this->close();
 }
@@ -334,9 +329,4 @@ void UICashAdvance::finishFromFlow()
     }
 
     this->close();
-}
-static void TRANS_CleanTransData(void)
-{
-    memset(&NormalTransData, 0, sizeof(NormalTransData));
-    memset(&ExtraTransData, 0, sizeof(ExtraTransData));
 }

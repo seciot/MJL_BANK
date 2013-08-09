@@ -77,8 +77,8 @@ UIChooseAccType::UIChooseAccType(QDialog *parent,Qt::WindowFlags f) :
 
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(btnDefault);
@@ -109,7 +109,7 @@ UIChooseAccType::UIChooseAccType(QDialog *parent,Qt::WindowFlags f) :
    animation1->setEasingCurve(QEasingCurve::OutQuint);
    animation1->start();
 
-   this->setAutoClose(g_changeParam.TIMEOUT_UI);
+   this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 void UIChooseAccType::setSender()

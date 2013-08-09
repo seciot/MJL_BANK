@@ -6,7 +6,9 @@ UIInputAmount::UIInputAmount(QDialog *parent,Qt::WindowFlags f) :
 {
     qDebug()<<Q_FUNC_INFO;
     //    RemoveKeyEventBug();
+    QObject::installEventFilter(this);
 
+    FLAG_ADJUST=false;
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -72,8 +74,8 @@ UIInputAmount::UIInputAmount(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     //    QSpacerItem *sp=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QVBoxLayout *v1Lay=new QVBoxLayout();
@@ -108,7 +110,7 @@ UIInputAmount::UIInputAmount(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIInputAmount::~UIInputAmount()
@@ -135,7 +137,7 @@ void UIInputAmount::keyPressEvent(QKeyEvent *event)
         //        break;
         //    }
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -155,7 +157,11 @@ void UIInputAmount::slotSaveAmount(QString str)
     if(formatAmount.contains("."))
         formatAmount.remove('.');
 
-    NormalTransData.ulAmount = formatAmount.toULong();
+    if(FLAG_ADJUST==true)
+        NormalTransData.ulAdjustAmount = formatAmount.toULong();
+    else
+        NormalTransData.ulAmount = formatAmount.toULong();
+
     qDebug()<<"Amount::"<<AMOUNT<< NormalTransData.ulAmount;
 }
 
@@ -187,8 +193,8 @@ void UIInputAmount::slotAmountInputComplete()
             errMsg.append(" TO ");
             errMsg.append(QString::number(g_constantParam.ulMaxAmount));
 
-            UIMsg::showNoticeMsgWithAutoClose(errMsg,g_changeParam.TIMEOUT_ERRMSG);
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            UIMsg::showNoticeMsgWithAutoClose(errMsg,g_constantParam.TIMEOUT_ERRMSG);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
             return;
         }
     }
@@ -270,5 +276,24 @@ void UIInputAmount::setAutoClose(int timeout)
 
 void UIInputAmount::slotSetAdjust()
 {
+    FLAG_ADJUST=true;
     lbInput->setText("Please Enter The Adjust Amount:");
+}
+
+bool UIInputAmount::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj==this)
+    {
+        if(event->type()==QEvent::WindowActivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Start Timer";
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
+        }
+        else if(event->type()==QEvent::WindowDeactivate)
+        {
+            qDebug() << Q_FUNC_INFO<<"Stop Timer";
+            closeTimer->stop();
+        }
+    }
+    return QDialog::eventFilter(obj,event);
 }

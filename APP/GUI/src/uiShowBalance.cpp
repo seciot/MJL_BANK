@@ -57,7 +57,7 @@ UIShowBalance::UIShowBalance(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setText(tr("OK"));
     btnSubmit->setFont(font2);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);

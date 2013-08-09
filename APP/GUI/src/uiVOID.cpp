@@ -2,19 +2,15 @@
 #include "sav.h"
 #include "xdata.h"
 #include "commontools.h"
+#include "sav.h"
 #include "global.h"
-
-static void TRANS_CleanTransData(void);
 
 UIVOID::UIVOID(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
-    TRANS_CleanTransData();
+    xDATA::ClearGlobalData();
     RemoveKeyEventBug();
-    xDATA::ReadValidFile(xDATA::DataSaveChange);
-    xDATA::ReadValidFile(xDATA::DataSaveConstant);
-
 
     FLAG_InputPassword=false;
     FLAG_Detail=false;
@@ -91,15 +87,15 @@ void UIVOID::checkAuth(UserType ut,QString ID)
 {
     // 交易关闭
     qDebug()<<ut<<ID<<g_changeParam.boolCashierLogonFlag;
-    if(g_changeParam.transvoid.TRANS_ENABLE==false)
+    if(g_constantParam.transvoid.TRANS_ENABLE==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Please Logon",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     //--------------------------------------- //
@@ -113,7 +109,7 @@ void UIVOID::checkAuth(UserType ut,QString ID)
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
         uiInPass->resetLine();
 
         return;
@@ -123,96 +119,73 @@ void UIVOID::checkAuth(UserType ut,QString ID)
 void UIVOID::inputTraceNo()
 {
     qDebug() << Q_FUNC_INFO;
+    bool ok = false;
+    unsigned char ucResult = SUCCESS_TRACKDATA;
+    unsigned int traceNo;
     QString transType;
+    QString transStatus;
     QString cardNo;
     QString amount;
     QString refNo;
     QString apprNo;
     QString operatorNo;
 
-    bool ok;
-    unsigned int traceNo=UIInput::getInt("TRACE NO","Please Input\nOriginal Trace No. :",REGEX_NUMBER,6,&ok);
-    if(ok)
+    traceNo = UIInput::getInt("TRACE NO","Please Input\nOriginal Trace No. :",REGEX_NUMBER,6,&ok);
+    qDebug("OK = %x", ok);
+    if(!ok)
+        ucResult = ERR_CANCEL;
+    if(!ucResult)
     {
         qDebug()<<traceNo;
-
-        for(int index = 0; index < ((int)g_constantParam.uiMaxTotalNb); index++)
-        {
-            qDebug()<<"index:: "<<index;
-            if(g_transInfo.auiTransIndex[index])
-            {
-                //:- 读取数据保存到NormalTransData
-                memset(&NormalTransData,0,sizeof(NORMAL_TRANS));
-                int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
-                if(ucResult!=0)
-                {
-                    UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
-
-                    return;
-                }
-                memcpy(&NormalTransData,&g_saveTrans,sizeof(NORMAL_TRANS));
-
-                if(traceNo==NormalTransData.ulTraceNumber)
-                {
-                    // 显示详细交易信息
-                    qDebug()<<traceNo<<"Matched";
-                    switch(NormalTransData.transType)
-                    {
-                    case TransMode_CashDeposit:      //存钱
-                        transType="Cash Deposit";
-                        NormalTransData.transType=TransMode_AdvanceVoid;
-                        break;
-                    case TransMode_CashAdvance:      //取钱
-                        transType="Cash Advance";
-                        NormalTransData.transType=TransMode_DepositVoid;
-                        break;
-                    default:
-                        qDebug()<<"不支持撤销";
-                        UIMsg::showErrMsgWithAutoClose("This Transaction\nNot Support\nFor Adjust",g_changeParam.TIMEOUT_ERRMSG);
-                        return;
-                    }
-
-                    qDebug()<<"step2"<<transType;
-
-                    //Card No
-                    cardNo=QString::fromAscii((const char *)NormalTransData.aucSourceAcc);  // 需要部分隐藏
-                    qDebug()<<"card no:"<<cardNo;
-
-                    // Amount
-                    unsigned char aucBuf[12];
-                    getAmount(aucBuf, NormalTransData.ulAmount, 2);
-                    amount=QString::fromAscii((const char *)aucBuf);
-                    qDebug()<<"amount:"<<amount;
-
-                    // ref & appr
-                    refNo=QString::fromAscii((const char *)NormalTransData.aucRefNum);
-                    apprNo=QString::fromAscii((const char *)NormalTransData.aucAuthCode);
-                    qDebug()<<"ref & appr:"<<refNo<<apprNo;
-
-                    //operator
-                    operatorNo=QString::fromAscii((const char *)NormalTransData.aucCashier);
-
-                    FLAG_Detail=true;
-                    uiRepDetail=new UIReportDetail(1);
-                    uiRepDetail->slotSetFun("VOID");
-                    uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
-                    connect(uiRepDetail,SIGNAL(sigFun()),this,SLOT(confirmVOID()));
-                    uiRepDetail->exec();
-
-                    break;
-                }
-            }
-            else
-            {
-                UIMsg::showErrMsgWithAutoClose("No Match Trace",g_changeParam.TIMEOUT_ERRMSG);
-                return;
-            }
-        }
+        NormalTransData.ulOrgTraceNumber = traceNo;
+        ucResult = SAV_CheckVoidTransIndex(&NormalTransData);
     }
-    else
+    if(ucResult)
     {
+        UIMsg::showErrMsgWithAutoClose((ErrIndex)ucResult,g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
+
+
+    //显示一下原交易
+    if(g_saveTrans.transType == TransMode_CashDeposit)
+        transType="Cash Deposit";   //存款
+    else if(g_saveTrans.transType == TransMode_CashAdvance)
+        transType="Cash Advance";   //取款
+    else if(g_saveTrans.transType == TransMode_DepositAdjust)
+        transType="Cash Deposit Adjust";
+    else if(g_saveTrans.transType == TransMode_AdvanceAdjust)
+        transType="Cash Advance Adjust";
+    qDebug()<<"step2"<<transType;
+
+    // 交易状态
+    transStatus="NORMAL";
+
+    //Card No
+    cardNo=QString::fromAscii((const char *)g_saveTrans.aucSourceAcc);  // 需要部分隐藏
+    qDebug()<<"card no:"<<cardNo;
+
+    // Amount
+    unsigned char aucBuf[12];
+    getAmount(aucBuf, g_saveTrans.ulAmount, 2);
+    amount=QString::fromAscii((const char *)aucBuf);
+    qDebug()<<"amount:"<<amount;
+
+    // ref & appr
+    refNo=QString::fromAscii((const char *)g_saveTrans.aucRefNum);
+    apprNo=QString::fromAscii((const char *)g_saveTrans.aucAuthCode);
+    qDebug()<<"ref & appr:"<<refNo<<apprNo;
+
+    //operator
+    operatorNo=QString::fromAscii((const char *)g_saveTrans.aucCashier);
+
+    FLAG_Detail=true;
+    uiRepDetail=new UIReportDetail(1);
+    uiRepDetail->slotSetFun("VOID");
+    uiRepDetail->slotSetDetailList(transType, transStatus, cardNo,amount,refNo,apprNo,operatorNo);
+    connect(uiRepDetail,SIGNAL(sigFun()),this,SLOT(confirmVOID()));
+    connect(uiRepDetail,SIGNAL(sigClose()),this,SLOT(quitFromFlow()));
+    uiRepDetail->exec();
 }
 
 void UIVOID::confirmVOID()
@@ -229,10 +202,17 @@ void UIVOID::transOnline()
     uiTransOn=new UITransOnline();
     uiTransOn->slotStartTrans(NormalTransData.transType);
     connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
-    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(printReceipt()));
+    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(voidSuccess()));
 
     uiTransOn->exec();
 
+}
+
+void UIVOID::voidSuccess()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    this->printReceipt();
 }
 
 void UIVOID::printReceipt()
@@ -272,7 +252,7 @@ void UIVOID::quitFromFlow()
         FLAG_InputPassword=false;
     }
 
-    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_constantParam.TIMEOUT_ERRMSG);
 
     this->close();
 }
@@ -304,9 +284,4 @@ void UIVOID::finishFromFlow()
     }
 
     this->close();
-}
-static void TRANS_CleanTransData(void)
-{
-    memset(&NormalTransData, 0, sizeof(NormalTransData));
-    memset(&ExtraTransData, 0, sizeof(ExtraTransData));
 }

@@ -1,8 +1,6 @@
 #include "eventProcess.h"
 #include <QDebug>
 
-#include "global.h"
-
 #define POS_SUCCESS 0x00
 
 DRV_OUT *pxMifare;
@@ -133,7 +131,7 @@ void RemoveKeyEventBug(void)
     }
 }
 
-unsigned char EventProcess(unsigned char Type)
+unsigned char EventProcess(bool magEvent, bool touchEvent, bool untouchEvent)
 {
     qDebug() << Q_FUNC_INFO;
     unsigned char ucResult = POS_SUCCESS;
@@ -143,11 +141,11 @@ unsigned char EventProcess(unsigned char Type)
     ClearEventDrvAddr();
 
     DrvPro = 0;
-    if(NoCard == Type || Mag == Type)
+    if(magEvent == true)
         DrvPro = DrvPro|MAG_DRV;
-    if(NoCard == Type || Touch == Type)
+    if(touchEvent == true)
         DrvPro = DrvPro|ICC_DRV;
-    if(NoCard == Type || Untouch == Type)
+    if(untouchEvent == true)
         DrvPro = DrvPro|MFR_DRV;
     DrvPro = DrvPro|KEY_DRV;
     memset(&Driver ,0, sizeof(NEW_DRV_TYPE));
@@ -184,4 +182,9 @@ EventType getEventType()
 DRV_OUT* GetPxMag()
 {
     return pxMag;
+}
+
+DRV_OUT *GetMifare()
+{
+    return pxMifare;
 }

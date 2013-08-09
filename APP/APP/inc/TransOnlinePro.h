@@ -33,5 +33,8 @@ public:
     bool offRetry;
 protected:
     void run();
+
+signals:
+    void sigStatus(QString);
 };
 #endif

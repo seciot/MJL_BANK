@@ -7,7 +7,6 @@ extern "C"
     #include "ostools.h"
 }
 
-
 void getAmount(unsigned char *pucOut,unsigned long ulAmount,unsigned char ucDecimalPos)
 {
     unsigned char   i;
@@ -55,9 +54,9 @@ void getFormDate(unsigned char *pInDate, unsigned char *pOutDate)
 #else
     //DDMMYYYY
     memcpy(&pOutDate[0], &aucBuf[6], 2);
-    pOutDate[2] = '/';
+    pOutDate[2] = '.';
     memcpy(&pOutDate[3], &aucBuf[4], 2);
-    pOutDate[5] = '/';
+    pOutDate[5] = '.';
     memcpy(&pOutDate[6], &aucBuf[0], 4);
 #endif
 }
@@ -77,7 +76,6 @@ void CONV_IPStringULong(unsigned char *pucIP,unsigned long *ulIP)
 }
 
 // ul IP 转字符串
-
 QString FormIpAddressFromArray(unsigned long ulIPValue)
 {
     unsigned char aucBuf[4]={0};
@@ -95,6 +93,3 @@ QString FormIpAddressFromArray(unsigned long ulIPValue)
                                                     3, pucUnformatedIpAddress[3]);
     return QString::fromAscii((const char *)pucIpAddress);
 }
-
-
-

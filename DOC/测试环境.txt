@@ -30,14 +30,9 @@ Expiry date 1711
 706001000052170512
 
 1. Card No.: 706001000052170512
-    PIN: 1234
+    PIN: 4321
 706001000052170512D171152610220524
 	
 2. Card No.: 706001000004340825
     PIN: 1234
 706001000004340825D171152611777295
-
-	/* IPµØÖ·×ª»» */
-	memset(aucBuf, 0x00, sizeof(aucBuf));
-	memcpy(aucBuf, (unsigned char *) &tmsParamData.ulHostIPAddress, 4);
-	sg_constantParam.ulHostIPAddress = tab_long(aucBuf, 4);

@@ -37,7 +37,6 @@ private:
     bool FLAG_TransOnline;
     bool FLAG_PrintReceipt;
 
-
 protected:
     void keyPressEvent(QKeyEvent *event);
 private slots:
@@ -45,6 +44,7 @@ private slots:
     void inputTraceNo();
     void confirmVOID();
     void transOnline();
+    void voidSuccess();
     void printReceipt();
 
     void quitFromFlow();

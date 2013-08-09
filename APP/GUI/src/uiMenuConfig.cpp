@@ -37,7 +37,6 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     btnTerminal=new QPushButton;
     btnAcquirer=new QPushButton;
     btnCardTable=new QPushButton;
-    btnIssuer=new QPushButton;
     btnPayment=new QPushButton;
     btnSetDateTime=new QPushButton;
     btnClearReversal=new QPushButton;
@@ -52,7 +51,6 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     styleWidget(btnTerminal);
     styleWidget(btnAcquirer);
     styleWidget(btnCardTable);
-    styleWidget(btnIssuer);
     styleWidget(btnPayment);
     styleWidget(btnSetDateTime);
     styleWidget(btnClearReversal);
@@ -61,8 +59,7 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
 
     btnTerminal->setText(tr("Terminal"));
     btnAcquirer->setText(tr("Acquirer"));
-    btnCardTable->setText(tr("Card Table"));
-    btnIssuer->setText(tr("Issuer"));
+    btnCardTable->setText(tr("Card/Issuer Table"));
     btnPayment->setText(tr("Payment"));
     btnSetDateTime->setText(tr("Set Date Time"));
     btnClearReversal->setText(tr("Clear Reversal"));
@@ -72,7 +69,6 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     btnTerminal->setFont(font);
     btnAcquirer->setFont(font);
     btnCardTable->setFont(font);
-    btnIssuer->setFont(font);
     btnPayment->setFont(font);
     btnSetDateTime->setFont(font);
     btnClearReversal->setFont(font);
@@ -96,17 +92,16 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     btnTerminal->setStyleSheet(BTN_MENU_STYLE);
     btnAcquirer->setStyleSheet(BTN_MENU_STYLE);
     btnCardTable->setStyleSheet(BTN_MENU_STYLE);
-    btnIssuer->setStyleSheet(BTN_MENU_STYLE);
     btnPayment->setStyleSheet(BTN_MENU_STYLE);
     btnSetDateTime->setStyleSheet(BTN_MENU_STYLE);
     btnClearReversal->setStyleSheet(BTN_MENU_STYLE);
     btnSuvCharge->setStyleSheet(BTN_MENU_STYLE);
     btnTransAttr->setStyleSheet(BTN_MENU_STYLE);
 
-    btnPageOneCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageOneNext->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoBack->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnPageOneCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageOneNext->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoBack->setStyleSheet(BTN_GREY_STYLE);
 
     btnPageOneCancel->setFixedHeight(30);
     btnPageTwoCancel->setFixedHeight(30);
@@ -127,8 +122,8 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     pageOneVLayout->addWidget(btnTerminal);
     pageOneVLayout->addWidget(btnAcquirer);
     pageOneVLayout->addWidget(btnCardTable);
-    pageOneVLayout->addWidget(btnIssuer);
     pageOneVLayout->addWidget(btnPayment);
+    pageOneVLayout->addWidget(btnClearReversal);
     pageOneVLayout->addItem(sp1);
 
     pageOneHLayout->addWidget(btnPageOneCancel);
@@ -138,7 +133,6 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
 
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     pageTwoVLayout->addWidget(btnSetDateTime);
-    pageTwoVLayout->addWidget(btnClearReversal);
     pageTwoVLayout->addWidget(btnSuvCharge);
     pageTwoVLayout->addWidget(btnTransAttr);
     pageTwoVLayout->addItem(sp2);
@@ -168,7 +162,6 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     connect(btnTerminal,SIGNAL(clicked()),this,SLOT(Terminal_Config_Click()));
     connect(btnAcquirer,SIGNAL(clicked()),this,SLOT(Acquirer_Config_Click()));
     connect(btnCardTable,SIGNAL(clicked()),this,SLOT(CardTable_Config_Click()));
-    connect(btnIssuer,SIGNAL(clicked()),this,SLOT(Issuer_Config_Click()));
     connect(btnPayment,SIGNAL(clicked()),this,SLOT(Payment_Config_Click()));
     connect(btnSetDateTime,SIGNAL(clicked()),this,SLOT(Date_Config_Click()));
     connect(btnSuvCharge,SIGNAL(clicked()),this,SLOT(Sur_Config_Click()));
@@ -183,7 +176,7 @@ UIMenuConfig::UIMenuConfig(QDialog *parent,Qt::WindowFlags f) :
     connect(passThread, SIGNAL(started()), uiInPass, SLOT(exec()));
     passThread->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIMenuConfig::~UIMenuConfig()
@@ -200,14 +193,14 @@ void UIMenuConfig::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F1:
         this->pageTwoBackClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F2:
         this->pageOneNextClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -264,16 +257,8 @@ void UIMenuConfig::CardTable_Config_Click()
 {
     qDebug() << Q_FUNC_INFO;
 
-    UIConfigCardTable *uiCCT = new UIConfigCardTable();
-    uiCCT->exec();
-}
-
-void UIMenuConfig::Issuer_Config_Click()
-{
-    qDebug() << Q_FUNC_INFO;
-
-    UIConfigIssuer *uiCI= new UIConfigIssuer();
-    uiCI->exec();
+    UIConfigCardBIN *uiCCardBin = new UIConfigCardBIN();
+    uiCCardBin->exec();
 }
 
 void UIMenuConfig::Payment_Config_Click()
@@ -331,7 +316,9 @@ void UIMenuConfig::slotAllowEdit(UserType ut,QString ID)
     {
         qDebug()<<"不支持系统管理员以外的用户做系统设置";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
+        uiInPass->resetLine();
+
         return;
     }
 }
@@ -356,7 +343,7 @@ bool UIMenuConfig::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

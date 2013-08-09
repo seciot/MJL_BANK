@@ -63,7 +63,7 @@ UIReport::UIReport(QDialog *parent,Qt::WindowFlags f) :
     btnCancel->setText(tr("Cancel"));
     btnCancel->setFont(font2);
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_GREY_STYLE);
 
     QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -100,7 +100,7 @@ UIReport::UIReport(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIReport::~UIReport()
@@ -118,7 +118,7 @@ void UIReport::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -130,8 +130,8 @@ void UIReport::slotShowQueryTrans()
 
     if(g_transInfo.TransTotal.uiTotalNb==0)
     {
-        UIMsg::showNoticeMsgWithAutoClose("No Transaction",g_changeParam.TIMEOUT_ERRMSG);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        UIMsg::showNoticeMsgWithAutoClose("No Transaction",g_constantParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         return;
     }
     else
@@ -175,7 +175,7 @@ bool UIReport::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

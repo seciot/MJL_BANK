@@ -1,7 +1,7 @@
 #include "TransOnlinePro.h"
 #include "transonline.h"
-#include "msg.h"
 #include "global.h"
+#include "msgreport.h"
 #include "xdata.h"
 #include "sav.h"
 
@@ -12,7 +12,7 @@ void getTransNum(void)
 {
     //更新终端批次
     if(g_changeParam.ulBatchNumber < 1)
-        g_changeParam.ulTransNum = 1;
+        g_changeParam.ulBatchNumber = 1;
 
     //更新终端流水
     if(g_changeParam.ulTransNum >= 1 && g_changeParam.ulTransNum < 999999)
@@ -57,10 +57,12 @@ void TransOnlinePro::run()
         break;
     case TransMode_CashDeposit:         //存款 Deposit
     case TransMode_DepositVoid:         //存款撤销 Deposit Void
+    case TransMode_DepositAdjust:
         ucResult = DepositPro();
         break;
     case TransMode_CashAdvance:         //取款 Advance
     case TransMode_AdvanceVoid:         //取款撤销 Advance Void
+    case TransMode_AdvanceAdjust:
         ucResult = AdvancePro();
         break;
     case TransMode_BalanceInquiry:      //查余 Balance Inquiry
@@ -114,6 +116,11 @@ unsigned char TransOnlinePro::DepositPro(void)
 {
     unsigned char ucResult;
 
+    if(NormalTransData.transType != TransMode_CashDeposit
+    && NormalTransData.transType != TransMode_DepositVoid
+    && NormalTransData.transType != TransMode_DepositAdjust)
+        return ERR_UNKNOWTRANSTYPE;
+
     ucResult = ReversalPro();
     if(!ucResult)
     {
@@ -122,7 +129,8 @@ unsigned char TransOnlinePro::DepositPro(void)
     }
     if(!ucResult)
     {
-        TRANS_ONLINE_ReversalPack();
+        if(NormalTransData.transType != TransMode_DepositVoid)
+            TRANS_ONLINE_ReversalPack();
         ucResult = GenSendReceive();
     }
     if(!ucResult)
@@ -137,6 +145,11 @@ unsigned char TransOnlinePro::AdvancePro(void)
 {
     unsigned char ucResult;
 
+    if(NormalTransData.transType != TransMode_CashAdvance
+    && NormalTransData.transType != TransMode_AdvanceVoid
+    && NormalTransData.transType != TransMode_AdvanceAdjust)
+        return ERR_UNKNOWTRANSTYPE;
+
     ucResult = ReversalPro();
     if(!ucResult)
     {
@@ -145,7 +158,8 @@ unsigned char TransOnlinePro::AdvancePro(void)
     }
     if(!ucResult)
     {
-        TRANS_ONLINE_ReversalPack();
+        if(NormalTransData.transType != TransMode_AdvanceVoid)
+            TRANS_ONLINE_ReversalPack();
         ucResult = GenSendReceive();
     }
     if(!ucResult)
@@ -217,39 +231,40 @@ unsigned char TransOnlinePro::TransferPro(void)
 //结算 Settlement
 unsigned char TransOnlinePro::SettlementPro(void)
 {
-    unsigned char ucResult;
-    unsigned int uiTransIndex = 0;
+    unsigned char ucResult = SUCCESS_TRACKDATA;
 
-    ucResult = ReversalPro();
-    if(ucResult)
+    emit sigStatus("Initial Settlement");
+
+    if((ucResult = ReversalPro()))
         return ucResult;
 
     xDATA::ReadValidFile(xDATA::DataSaveTransInfo);
+    if(!g_transInfo.auiTransIndex[0])
+        return ERR_TRANSEMPTY;
 
-    //一次结算
-    ucResult = TRANS_ONLINE_Settlement_pack(&g_transInfo.TransTotal);
+    if(!ucResult)
+        ucResult = TRANS_ONLINE_Settlement_pack(TransMode_Settle, &g_transInfo.TransTotal);
     if(!ucResult)
         ucResult = GenSendReceive();
     if(!ucResult)
         ucResult = TRANS_ONLINE_Settlement_unpack();
 
-    //**************** 结算不平(二次结算) ****************
-    //批上送
     if(ucResult == ERR_SETTLE_UNBALANCE)
     {
-        if((ucResult = xDATA::ReadValidFile(xDATA::DataSaveTransInfo)))
-            return ucResult;
+        emit sigStatus("Settlement Unbalance");
 
-        for(uiTransIndex = 0; uiTransIndex < g_constantParam.uiMaxTotalNb; uiTransIndex++)
+        for(unsigned int uiIndex = 0; uiIndex < g_constantParam.uiMaxTotalNb; uiIndex++)
         {
-            if(ucResult)
+            if(!g_transInfo.auiTransIndex[uiIndex])
                 break;
 
-            if(!g_transInfo.auiTransIndex[uiTransIndex])
-                break;
+            QString str;
+            str.append("Batch Uploading :: ");
+            str.append(QString::number(uiIndex));
+            emit sigStatus(str);
 
             memset(&g_saveTrans, 0, sizeof(NORMAL_TRANS));
-            ucResult = xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, uiTransIndex);
+            ucResult = xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, uiIndex);
             if(!ucResult)
                 ucResult = TRANS_ONLINE_BatchUpload_pack(&g_saveTrans);
             if(!ucResult)
@@ -257,19 +272,23 @@ unsigned char TransOnlinePro::SettlementPro(void)
             if(!ucResult)
                 ucResult = TRANS_ONLINE_BatchUpload_unpack();
         }
+        if(!ucResult)
+        {
+            emit sigStatus("Finishing Settlement");
 
-        //批上送结束
-        if(!ucResult)
-            ucResult = TRANS_ONLINE_BatchUploadEnd_pack(&g_transInfo.TransTotal);
-        if(!ucResult)
-            ucResult = GenSendReceive();
-        if(!ucResult)
-            ucResult = TRANS_ONLINE_BatchUploadEnd_unpack();
+            ucResult = TRANS_ONLINE_Settlement_pack(TransMode_Settle2, &g_transInfo.TransTotal);
+            if(!ucResult)
+                ucResult = GenSendReceive();
+            if(!ucResult)
+                ucResult = TRANS_ONLINE_Settlement_unpack();
+        }
     }
-
+#if 0
     //参数更新
     if(!ucResult)
     {
+        //清数据
+        SAV_CleanCurrentBatch();
         //更新批次
         if(g_changeParam.ulBatchNumber >= 1 && g_changeParam.ulBatchNumber < 999999)
             ++g_changeParam.ulBatchNumber;
@@ -278,6 +297,7 @@ unsigned char TransOnlinePro::SettlementPro(void)
 
         xDATA::WriteValidFile(xDATA::DataSaveChange);
     }
+#endif
     return ucResult;
 }
 

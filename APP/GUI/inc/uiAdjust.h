@@ -34,20 +34,13 @@ private:
     UIInputPassword *uiInPass;
     UIReportDetail *uiRepDetail;
     UIInputAmount *uiInAmt;
-    UISwipeCard *uiSwipeCard;
-    UIChooseAccType *uiCAT;
-    UIInputPIN *uiInPIN;
     UITransOnline *uiTransOn;
-    UIInputManual *uiInMan;
     UIPrint *uiPrint;
 
 
     bool FLAG_InputPassword;
     bool FLAG_Detail;
-    bool FLAG_SwipeCard;
-    bool FLAG_InputManual;
     bool FLAG_InputAmount;
-    bool FLAG_InputPIN;
     bool FLAG_TransOnline;
     bool FLAG_PrintReceipt;
 
@@ -57,15 +50,10 @@ protected:
 private slots:
     void checkAuth(UserType,QString);
     void inputTraceNo();
-    void swipeCard();
-    void inputManual();
     void inputAmount();
-    void inputPIN(QString);
     void transOnline();
     void printReceipt();
 
-    void inputAmountAndExit();
-    void quitFromSwipeCard();
     void quitFromFlow();
     void finishFromFlow();
 

@@ -35,15 +35,11 @@ unsigned char TRANS_ONLINE_Transfer_pack(NormalTrans *pNormalTrans, ExtraTrans *
 unsigned char TRANS_ONLINE_Transfer_unpack(NormalTrans *pNormalTrans);
 
 //结算 Settlement
-unsigned char TRANS_ONLINE_Settlement_pack(TRANSTOTAL *pTransTotal);
+unsigned char TRANS_ONLINE_Settlement_pack(unsigned char transType, TRANSTOTAL *pTransTotal);
 unsigned char TRANS_ONLINE_Settlement_unpack(void);
 
 //批上送
 unsigned char TRANS_ONLINE_BatchUpload_pack(NormalTrans *pNormalTrans);
 unsigned char TRANS_ONLINE_BatchUpload_unpack(void);
-
-//批上送结束
-unsigned char TRANS_ONLINE_BatchUploadEnd_pack(TRANSTOTAL *pTransTotal);
-unsigned char TRANS_ONLINE_BatchUploadEnd_unpack(void);
 
 #endif // TRANSONLINE_H

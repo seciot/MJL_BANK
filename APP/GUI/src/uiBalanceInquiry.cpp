@@ -2,17 +2,13 @@
 #include "xdata.h"
 #include "global.h"
 
-static void TRANS_CleanTransData(void);
-
 UIBalanceInquiry::UIBalanceInquiry(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
-    TRANS_CleanTransData();
+    xDATA::ClearGlobalData();
     NormalTransData.transType = TransMode_BalanceInquiry;
     RemoveKeyEventBug();
-    xDATA::ReadValidFile(xDATA::DataSaveConstant);
-    xDATA::ReadValidFile(xDATA::DataSaveChange);
 
     FLAG_InputPassword=false;
     FLAG_AccountType=false;
@@ -95,14 +91,14 @@ void UIBalanceInquiry::chooseAccountType(UserType ut,QString ID)
 {
     qDebug()<<ut<<ID;
     //--------------------------------------- //
-    if(g_changeParam.balance.TRANS_ENABLE==false)
+    if(g_constantParam.balance.TRANS_ENABLE==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Please Logon",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     if(ut==typeCashier)
@@ -118,7 +114,7 @@ void UIBalanceInquiry::chooseAccountType(UserType ut,QString ID)
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
 
         uiInPass->resetLine();
 
@@ -139,12 +135,12 @@ void UIBalanceInquiry::swipeCard()
 
     FLAG_SwipeCard=true;
     uiSwipeCard=new UISwipeCard();
-    if(g_changeParam.p2p.MANUAL_ENABLE==false)
+    if(g_constantParam.p2p.MANUAL_ENABLE==false)
     {
-            uiSwipeCard->setNoManual();
+        uiSwipeCard->setNoManual();
     }
     connect(uiSwipeCard,SIGNAL(sigQuitTrans()),this,SLOT(quitFromSwipeCard()));
-    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputAmount()));
+    connect(uiSwipeCard,SIGNAL(sigFinishPutCard()),this,SLOT(inputManual()));
     connect(uiSwipeCard,SIGNAL(sigFinishPutNotSupportCard()),this,SLOT(inputPinAndExit()));
     connect(uiSwipeCard,SIGNAL(sigSwitchToManual()),this,SLOT(inputManual()));
 
@@ -178,7 +174,7 @@ void UIBalanceInquiry::inputPIN()
     FLAG_InputPIN=true;
 
     uiInPIN=new UIInputPIN();
-    if(g_changeParam.balance.PIN_ENABLE==false)
+    if(g_constantParam.balance.PIN_ENABLE==false)
         uiInPIN->slotDisablePIN();
     connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
     connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(transOnline()));
@@ -192,9 +188,9 @@ void UIBalanceInquiry::transOnline()
 
     uiTransOn=new UITransOnline();
     uiTransOn->slotStartTrans(NormalTransData.transType);
-    connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
+    connect(uiTransOn,SIGNAL(sigQuitTrans()),this,SLOT(finishFromFlow()));
     connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(showBalance()));
-//    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(finishFromFlow()));
+    //    connect(uiTransOn,SIGNAL(sigTransSuccess()),this,SLOT(finishFromFlow()));
 
     uiTransOn->exec();
 
@@ -261,7 +257,7 @@ void UIBalanceInquiry::quitFromFlow()
         FLAG_InputPassword=false;
     }
 
-    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_constantParam.TIMEOUT_ERRMSG);
 
     this->close();
 }
@@ -305,8 +301,4 @@ void UIBalanceInquiry::finishFromFlow()
 
     this->close();
 }
-static void TRANS_CleanTransData(void)
-{
-    memset(&NormalTransData, 0, sizeof(NormalTransData));
-    memset(&ExtraTransData, 0, sizeof(ExtraTransData));
-}
+

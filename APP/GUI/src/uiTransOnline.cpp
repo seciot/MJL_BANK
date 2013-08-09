@@ -48,7 +48,7 @@ UITransOnline::UITransOnline(QDialog *parent,Qt::WindowFlags f) :
 
     btnCancel->setText("CANCEL");
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
     btnCancel->hide();
     connect(btnCancel,SIGNAL(clicked()),this,SLOT(slotBtnCancelclicked()));
 
@@ -157,7 +157,7 @@ void UITransOnline::ReturnFromThread(unsigned char index)
     if(index)
     {
         qDebug()<<"交易失败";
-        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_constantParam.TIMEOUT_ERRMSG);
 
         emit sigQuitTrans();
     }

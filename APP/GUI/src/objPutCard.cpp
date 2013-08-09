@@ -2,6 +2,7 @@
 #include "eventProcess.h"
 #include "msg.h"
 #include <QDebug>
+#include "MIFAREPro.h"
 #include "global.h"
 
 #define PUTCARD_DEBUG_FLAG
@@ -26,10 +27,12 @@ unsigned char objPutCard::putCardProcess()
 {
     qDebug()<<Q_FUNC_INFO;
     unsigned char ucResult = 0;
+    unsigned char aucBuf[20];
+    unsigned short usLength = 0;
 
     while(1)
     {
-        ucResult = EventProcess(Mag);
+        ucResult = EventProcess(true, false, true);
         if(ucResult)
             break;
 
@@ -44,10 +47,30 @@ unsigned char objPutCard::putCardProcess()
                 return(ERR_MAG_TRACKDATA);
             else
             {
-                if( GetTrackInfo((unsigned char*)pxMagObj) != 0)
+                if(GetTrackInfo((unsigned char*)pxMagObj) != 0)
                     return(ERR_NOTPROC);
             }
             break;
+        }
+        else if(getEventType() == Untouch)
+        {
+            memset(aucBuf, 0, sizeof(aucBuf));
+            ucResult = MIFARE_readCardNo(GetMifare(), 254, aucBuf, &usLength);
+            QString tmp=QString::fromAscii((const char*)aucBuf);
+            qDebug()<<"tmp::"<<tmp<<tmp.size();
+            if(tmp.size()<5)
+                return ERR_MFCDRV;
+            qDebug("card is %s", aucBuf);
+            qDebug("card len is %d", usLength);
+            if(ucResult)
+                return ERR_MFCDRV;
+            else
+            {
+                memset(G_NORMALTRANS_aucSourceAcc, 0, sizeof(G_NORMALTRANS_aucSourceAcc));
+                memcpy(G_NORMALTRANS_aucSourceAcc, aucBuf, usLength);
+                G_NORMALTRANS_ucMainAccountLen = usLength;
+                break;
+            }
         }
         else if(getEventType() == Key)
         {
@@ -60,74 +83,74 @@ unsigned char objPutCard::putCardProcess()
             if(ucResult==ERR_CARDNOACT)
             {
                 // 没有手动
-                if(NormalTransData.transType==TransMode_CashAdvance && g_changeParam.advance.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_CashAdvance && g_constantParam.advance.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_CashDeposit && g_changeParam.deposit.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_CashDeposit && g_constantParam.deposit.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_BalanceInquiry && g_changeParam.balance.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_BalanceInquiry && g_constantParam.balance.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_CardTransfer && g_changeParam.p2p.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_CardTransfer && g_constantParam.p2p.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.transvoid.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_constantParam.transvoid.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.transvoid.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_DepositVoid && g_constantParam.transvoid.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
-                if(g_changeParam.adjust.MANUAL_ENABLE == false
+                if(g_constantParam.adjust.MANUAL_ENABLE == false
                 && (NormalTransData.transType == TransMode_AdvanceAdjust
                  || NormalTransData.transType == TransMode_DepositAdjust))
                 {
                      ucResult = 0;
                 }
-                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.pinchange.MANUAL_ENABLE==false)
+                if(NormalTransData.transType==TransMode_PINChange && g_constantParam.pinchange.MANUAL_ENABLE==false)
                 {
                      ucResult = 0;
                 }
 
 
                 // 进入手动
-                if(NormalTransData.transType==TransMode_CashAdvance && g_changeParam.advance.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_CashAdvance && g_constantParam.advance.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_CashDeposit && g_changeParam.deposit.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_CashDeposit && g_constantParam.deposit.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_BalanceInquiry && g_changeParam.balance.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_BalanceInquiry && g_constantParam.balance.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_CardTransfer && g_changeParam.p2p.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_CardTransfer && g_constantParam.p2p.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_AdvanceVoid && g_changeParam.transvoid.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_AdvanceVoid && g_constantParam.transvoid.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_DepositVoid && g_changeParam.transvoid.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_DepositVoid && g_constantParam.transvoid.MANUAL_ENABLE==true)
                 {
                     break;
                 }
-                if(g_changeParam.adjust.MANUAL_ENABLE == true
+                if(g_constantParam.adjust.MANUAL_ENABLE == true
                 && (NormalTransData.transType == TransMode_AdvanceAdjust
                  || NormalTransData.transType == TransMode_DepositAdjust))
                 {
                     break;
                 }
-                if(NormalTransData.transType==TransMode_PINChange && g_changeParam.pinchange.MANUAL_ENABLE==true)
+                if(NormalTransData.transType==TransMode_PINChange && g_constantParam.pinchange.MANUAL_ENABLE==true)
                 {
                     break;
                 }
@@ -145,28 +168,26 @@ unsigned char objPutCard::putCardProcess()
 
 void objPutCard::run()
 {
-    qDebug()<<Q_FUNC_INFO;
 
     int ucResult=this->putCardProcess();
+    qDebug()<<Q_FUNC_INFO<<ucResult;
 
     switch(ucResult)
     {
-    case ERR_CANCEL:
-        qDebug()<<"ERR_CANCEL";
-        emit putCardFailed();
+    case SUCCESS_TRACKDATA:
+        emit putCardFinished();
+        break;
+    case ERR_MAG_TRACKDATA:
+    case ERR_NOTPROC:
+        emit putNotSupportCard();
         break;
     case ERR_CARDNOACT:
-    {
         qDebug()<<"切换为手动";
-        emit sigManualMode();  // 切换为手动
-        break;
-    }
-    case ERR_UNKNOWNDRV:
-        qDebug()<<"ERR_UNKNOWNDRV";
-        emit putCardFailed();
+        emit sigManualMode();
         break;
     default:
-        emit putCardFinished();
+        qDebug()<<"ERR_CANCEL";
+        emit putCardFailed();
         break;
 
     }
@@ -174,6 +195,7 @@ void objPutCard::run()
 
 void GetTestTrackInfo(void)
 {
+    qDebug()<<Q_FUNC_INFO;
 #ifdef PUTCARD_DEBUG_FLAG
     //2磁道数据
 //    G_EXTRATRANS_uiISO2Len = sprintf((char*)G_EXTRATRANS_aucISO2, "%s",

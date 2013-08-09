@@ -1,26 +1,33 @@
-#include "pinpad.h"
 #include <string.h>
-#include "ostools.h"
+#include <QVector>
+#include <QDebug>
+
 #include "key.h"
 #include "msg.h"
+extern "C"{
+#include "ostools.h"
+#include "pinpad.h"
+}
 
 #define KEY_DEBUG_FLAG
-
 #define min(a, b)       (((a) < (b)) ? (a) : (b))
-//#define max(a, b)       (((a) > (b)) ? (a) : (b))
 
-#define KEY_DEBUG_FLAG
-
-void KEY_DumpData(char *pTitle, unsigned char *pData, short sDataLen)
+void KEY_DumpData(const char *pTitle, unsigned char *pData, short sDataLen)
 {
 #ifdef KEY_DEBUG_FLAG
     short i;
 
-    Uart_Printf(pTitle);
+    Uart_Printf((char *)pTitle);
     for(i = 0; i < sDataLen; i++)
-        Uart_Printf("%02x ", pData[i]);
-    Uart_Printf("\n");
+        Uart_Printf((char *)"%02x ", pData[i]);
+    Uart_Printf((char *)"\n");
 #endif
+}
+
+void KEY_SetDES(unsigned char ucIS3DES)
+{
+//    if(ucIS3DES)
+
 }
 
 unsigned char KEY_LoadDefaultKey(void)
@@ -30,9 +37,7 @@ unsigned char KEY_LoadDefaultKey(void)
     int i = 0, iDES = 0;
 
     memset(aucHexData, 0x00, sizeof(aucHexData));
-//    memcpy(aucHexData, "\x01\x23\x45\x67\x89\xAB\xCD\xEF", 8);
     memcpy(aucHexData, "\x01\x23\x45\x67\x89\xAB\xCD\xEF\x01\x23\x45\x67\x89\xAB\xCD\xEF", 16);
-
 
     if(!memcmp(&aucHexData[8], "\x00\x00\x00\x00\x00\x00\x00\x00", 8))
         iDES = 1;
@@ -63,7 +68,7 @@ unsigned char KEY_StoreSingleNewKey(unsigned char *aucHexData, short iLen)
     unsigned char aucMacKey[9];
     unsigned char ucOffset = 0;
 
-    if(iLen != 16)
+    if(iLen != 16 && iLen != 32)
         return ERR_ISO8583_INVALIDLEN;
 
     //PIN KEY
@@ -175,7 +180,7 @@ unsigned char KEY_EncryptPIN_X98(const unsigned char *pInPinData,
         if(!isDoubleDes)
         {
 #ifdef KEY_DEBUG_FLAG
-            Uart_Printf("\n------------ PIN 单DES加密 ----------------\n");
+            Uart_Printf((char *)"\n------------ PIN 单DES加密 ----------------\n");
 #endif
             ucResult = Encrypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH,
                                                 KEYINDEX_GOLDENCARDSH_PIK,
@@ -185,7 +190,7 @@ unsigned char KEY_EncryptPIN_X98(const unsigned char *pInPinData,
         else
         {
 #ifdef KEY_DEBUG_FLAG
-            Uart_Printf("\n------------ PIN 3DES加密 ----------------\n");
+            Uart_Printf((char *)"\n------------ PIN 3DES加密 ----------------\n");
 #endif
             ucResult = EncryptByDoubleKey(KEYARRAY_GOLDENCARDSH,
                                           KEYINDEX_GOLDENCARDSH_PIK,
@@ -198,6 +203,40 @@ unsigned char KEY_EncryptPIN_X98(const unsigned char *pInPinData,
 }
 
 unsigned char KEY_CalcMAC_1(unsigned char *pucInData, unsigned short uiInLen, unsigned char *pucOutMAC)
+{
+    unsigned char ucResult;
+    unsigned char aucHexData[9];
+    unsigned char *pucPtr;
+    unsigned short uiI, uiJ, uiLen;
+
+    pucPtr = pucInData;
+    KEY_DumpData("初始数据:\n", pucPtr, uiInLen);
+
+    memset(aucHexData, 0, sizeof(aucHexData));
+    for(uiI = 0; uiI < uiInLen; uiI += 8)
+    {
+        uiLen = min(8, pucInData+uiInLen-pucPtr);
+        for(uiJ = 0; uiJ < uiLen; uiJ++)
+        {
+            aucHexData[uiJ] ^= *(pucPtr+uiJ);
+        }
+        pucPtr += 8;
+    }
+
+    ucResult = Encrypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH,
+                                        KEYINDEX_GOLDENCARDSH_MAK,
+                                        aucHexData,
+                                        aucHexData);
+
+    KEY_DumpData("DES加密后数据:\n", aucHexData, 8);
+
+    if(!ucResult)
+        memcpy(pucOutMAC,aucHexData,8);
+
+    return ucResult;
+}
+
+unsigned char KEY_CalcMAC_2(unsigned char *pucInData, unsigned short uiInLen, unsigned char *pucOutMAC)
 {
     unsigned char ucResult;
     unsigned char aucHexData[8], aucAscData[17];
@@ -247,42 +286,68 @@ unsigned char KEY_CalcMAC_1(unsigned char *pucInData, unsigned short uiInLen, un
     return ucResult;
 }
 
-unsigned char KEY_CalcMAC_2(unsigned char *pucInData, unsigned short uiInLen, unsigned char *pucOutMAC)
+unsigned char KEY_CalcMAC_ISO9797(unsigned char *pucInData, unsigned short uiInLen, unsigned char *pucOutMAC)
 {
-    unsigned char ucResult;
-    unsigned char aucHexData[9];
-    unsigned char *pucPtr;
-    unsigned short uiI, uiJ, uiLen;
+    bool bExtra = false;
+    unsigned char ucResult = SUCCESS_TRACKDATA;
+    unsigned char aucHexData[8] = {0};
+    unsigned char aucResult[8] = {0};
+    unsigned short uiI,uiJ,uiLen = 0;
+    memset(aucHexData,0x00,sizeof(aucHexData));
+    memset(aucResult,0x00,sizeof(aucResult));
+    unsigned char *pucPtr = pucInData;
 
-    pucPtr = pucInData;
-    KEY_DumpData("初始数据:\n", pucPtr, uiInLen);
-
-    memset(aucHexData, 0, sizeof(aucHexData));
-    for(uiI = 0; uiI < uiInLen; uiI += 8)
+    for(uiI=0;uiI<uiInLen;uiI += 8)
     {
         uiLen = min(8, pucInData+uiInLen-pucPtr);
-        for(uiJ = 0; uiJ < uiLen; uiJ++)
+        memset(aucHexData, 0x00, 8);
+        memcpy(aucHexData, pucPtr, uiLen);
+
+        /*padding the Last BLOCK Of InData*/
+        if(pucInData+uiInLen-pucPtr == 8)
+            bExtra = true;  //Extra BLOCK fixed with "\x80\x00\x00\x00\x00\x00\x00\x00"
+//        if(uiLen < 8)
+//            memset(&aucHexData[uiLen], 0x00, 8-uiLen);
+        /*padding End*/
+
+        /*XOR*/
+        //first time aucResult was full of 0x00,no effect
+EXTRA_PAD:
+        for(uiJ=0;uiJ<8;uiJ++)
+            aucHexData[uiJ] ^= aucResult[uiJ];
+        /*XOR End*/
+
+        /*SEC*/
+        ucResult = Encrypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH, KEYINDEX_GOLDENCARDSH_MAK, aucHexData, aucResult);
+        if(ucResult)
+            return(ucResult);
+        /*SEC End*/
+
+        if(bExtra == true)
         {
-            aucHexData[uiJ] ^= *(pucPtr+uiJ);
+            memcpy(aucHexData,"\x80\x00\x00\x00\x00\x00\x00\x00",8);
+            bExtra = false;
+            goto EXTRA_PAD;
         }
         pucPtr += 8;
     }
-
-    ucResult = Encrypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH,
-                                        KEYINDEX_GOLDENCARDSH_MAK,
-                                        aucHexData,
-                                        aucHexData);
-
-    KEY_DumpData("DES加密后数据:\n", aucHexData, 8);
-
+    KEY_DumpData("MAC Data :", aucResult, 8);
+#if 0
+//    if(bTripleDes == true)
+    {
+         ucResult = Crypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH, KEYINDEX_GOLDENCARDSH_MAK+1, aucResult, aucResult);
+         if(!ucResult)
+             ucResult = Encrypt8ByteSingleKey_47(KEYARRAY_GOLDENCARDSH, KEYINDEX_GOLDENCARDSH_MAK, aucResult, aucResult);
+    }
+#endif
     if(!ucResult)
-        memcpy(pucOutMAC,aucHexData,8);
-
+        memcpy(pucOutMAC, aucResult, 8);
     return ucResult;
 }
 
 unsigned char KEY_CalcMAC(unsigned char *pucInData, unsigned short uiInLen, unsigned char *pucOutMAC)
 {
 //    return KEY_CalcMAC_1(pucInData, uiInLen, pucOutMAC);
-    return KEY_CalcMAC_2(pucInData, uiInLen, pucOutMAC);
+//    return KEY_CalcMAC_2(pucInData, uiInLen, pucOutMAC);
+    return KEY_CalcMAC_ISO9797(pucInData, uiInLen, pucOutMAC);
 }

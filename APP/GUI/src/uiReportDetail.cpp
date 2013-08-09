@@ -18,7 +18,7 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     QObject::installEventFilter(this);
     RemoveKeyEventBug();
 
-    FLAG_NEEDVOID=false;
+    FLAG_NEEDSUBMIT=false;
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -75,8 +75,8 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
     btnSubmit->hide();
 
     //    QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -99,7 +99,7 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     layout->addLayout(h2Lay);
 
 
-    connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
+    connect(btnCancel, SIGNAL(clicked()), this, SLOT(slotClose()));
     connect(tbDetailList,SIGNAL(viewportEntered()),this,SLOT(restartTimeOut()));
     connect(tbDetailList,SIGNAL(clicked(QModelIndex)),this,SLOT(restartTimeOut()));
     connect(tbDetailList->verticalScrollBar(),SIGNAL(sliderMoved(int)),this,SLOT(restartTimeOut()));
@@ -114,7 +114,7 @@ UIReportDetail::UIReportDetail(int type, QDialog *parent, Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 
@@ -128,8 +128,10 @@ void UIReportDetail::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
     case Qt::Key_Escape:
-        this->close();
+    {
+        this->slotClose();
         break;
+    }
     case Qt::Key_Enter:
         this->slotFunClicked();
         break;
@@ -140,13 +142,17 @@ void UIReportDetail::keyPressEvent(QKeyEvent *event)
 }
 
 
-void UIReportDetail::slotSetDetailList(QString transType, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo)
+void UIReportDetail::slotSetDetailList(QString transType, QString transStatus, QString cardNo, QString amount, QString refNo, QString apprNo, QString operatorNo)
 {
     QFont fontTitle("Helvetica",14,QFont::Bold);
 
     QTableWidgetItem *itmTransType=new QTableWidgetItem();
     itmTransType->setText("Trans Type:");
     itmTransType->setFont(fontTitle);
+
+    QTableWidgetItem *itmTransStatus=new QTableWidgetItem();
+    itmTransStatus->setText("Trans Status:");
+    itmTransStatus->setFont(fontTitle);
 
     QTableWidgetItem *itmCardNo=new QTableWidgetItem();
     itmCardNo->setText("Card No:");
@@ -166,6 +172,8 @@ void UIReportDetail::slotSetDetailList(QString transType, QString cardNo, QStrin
 
     QTableWidgetItem *itmTransTypeData=new QTableWidgetItem();
     itmTransTypeData->setText(transType);
+    QTableWidgetItem *itmTransStatusData=new QTableWidgetItem();
+    itmTransStatusData->setText(transStatus);
     QTableWidgetItem *itmCardNoData=new QTableWidgetItem();
     itmCardNoData->setText(cardNo);
     QTableWidgetItem *itmAmountData=new QTableWidgetItem();
@@ -185,25 +193,28 @@ void UIReportDetail::slotSetDetailList(QString transType, QString cardNo, QStrin
     tbDetailList->setItem(0,0,itmTransType);
     tbDetailList->setItem(1,0,itmTransTypeData);
 
-    tbDetailList->setItem(2,0,itmCardNo);
-    tbDetailList->setItem(3,0,itmCardNoData);
+    tbDetailList->setItem(2,0,itmTransStatus);
+    tbDetailList->setItem(3,0,itmTransStatusData);
 
-    tbDetailList->setItem(4,0,itmAmount);
-    tbDetailList->setItem(5,0,itmAmountData);
+    tbDetailList->setItem(4,0,itmCardNo);
+    tbDetailList->setItem(5,0,itmCardNoData);
 
-    tbDetailList->setItem(6,0,itmRefNo);
-    tbDetailList->setItem(7,0,itmRefNoData);
+    tbDetailList->setItem(6,0,itmAmount);
+    tbDetailList->setItem(7,0,itmAmountData);
 
-    tbDetailList->setItem(8,0,itmApprNo);
-    tbDetailList->setItem(9,0,itmApprNoData);
+    tbDetailList->setItem(8,0,itmRefNo);
+    tbDetailList->setItem(9,0,itmRefNoData);
 
-    tbDetailList->setItem(10,0,itmOperator);
-    tbDetailList->setItem(11,0,itmOperatorData);
+    tbDetailList->setItem(10,0,itmApprNo);
+    tbDetailList->setItem(11,0,itmApprNoData);
+
+    tbDetailList->setItem(12,0,itmOperator);
+    tbDetailList->setItem(13,0,itmOperatorData);
 }
 
 void UIReportDetail::slotSetFun(QString text)
 {
-    FLAG_NEEDVOID=true;
+    FLAG_NEEDSUBMIT=true;
 
     btnSubmit->setText(text);
     btnSubmit->show();
@@ -225,8 +236,16 @@ void UIReportDetail::setAutoClose(int timeout)
 
 void UIReportDetail::slotQuitMenu()
 {
-    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoCloseNoBeep("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
+}
+
+void UIReportDetail::slotClose()
+{
+    if(FLAG_NEEDSUBMIT==true)
+        emit sigClose();
+    else
+        this->close();
 }
 
 bool UIReportDetail::eventFilter(QObject *obj, QEvent *event)
@@ -236,7 +255,7 @@ bool UIReportDetail::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {
@@ -250,5 +269,5 @@ bool UIReportDetail::eventFilter(QObject *obj, QEvent *event)
 void UIReportDetail::restartTimeOut()
 {
     qDebug()<<Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

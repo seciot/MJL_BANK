@@ -83,6 +83,7 @@ UISwipeCard::UISwipeCard(QDialog *parent,Qt::WindowFlags f) :
     pCard = new objPutCard;
     connect(threadSwipe, SIGNAL(started()), pCard, SLOT(run()));
     connect(pCard,SIGNAL(putCardFinished()),this,SLOT(slotPutCardFinish()));
+    connect(pCard,SIGNAL(putNotSupportCard()),this,SLOT(slotPutNotSupportCard()));
     connect(pCard,SIGNAL(putCardFailed()),this,SLOT(slotQuitTrans()));
     connect(pCard,SIGNAL(sigManualMode()),this,SLOT(slotSwitchToManual()));
 
@@ -124,6 +125,7 @@ void UISwipeCard::keyPressEvent(QKeyEvent *event)
 void UISwipeCard::slotQuitTrans()
 {
     qDebug()<<Q_FUNC_INFO;
+
     lbPic->stop();
     delete pCard;
     threadSwipe->quit();
@@ -138,12 +140,8 @@ void UISwipeCard::slotPutCardFinish()
     {
     case ERR_CARDSUPPORT:
     {
-        lbPic->stop();
-        delete pCard;
-        threadSwipe->quit();
-
-        emit sigFinishPutNotSupportCard();
-        break;
+        qDebug()<<"ERR_CARDSUPPORT";
+        this->slotPutNotSupportCard();
     }
     case SUCCESS_TRACKDATA:
     {
@@ -158,9 +156,22 @@ void UISwipeCard::slotPutCardFinish()
     }
 }
 
+void UISwipeCard::slotPutNotSupportCard()
+{
+    qDebug()<<Q_FUNC_INFO;
+    UIMsg::showErrMsgWithAutoClose(ERR_CARDSUPPORT,g_constantParam.TIMEOUT_ERRMSG);
+
+    lbPic->stop();
+    delete pCard;
+    threadSwipe->quit();
+
+    emit sigQuitTrans();
+}
+
 int UISwipeCard::checkCard()
 {
     qDebug()<<Q_FUNC_INFO;
+
     if(G_EXTRATRANS_uiISO2Len<10)
     {
         qDebug()<<"Not Supported Card";

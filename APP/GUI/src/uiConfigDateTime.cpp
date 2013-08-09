@@ -76,7 +76,7 @@ UIConfigDateTime::UIConfigDateTime(QDialog *parent,Qt::WindowFlags f) :
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btnSubmit,SIGNAL(clicked()),this,SLOT(setDateTime()));
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -99,7 +99,7 @@ void UIConfigDateTime::keyPressEvent(QKeyEvent *event)
     case Qt::Key_F4:
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -141,6 +141,6 @@ void UIConfigDateTime::setAutoClose(int timeout)
 
 void UIConfigDateTime::slotQuitCfg()
 {
-    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }

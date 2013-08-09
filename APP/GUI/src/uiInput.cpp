@@ -37,13 +37,13 @@ UIInput::UIInput(QString title, QString showMsg, QDialog *parent, Qt::WindowFlag
     btnSubmit->setText(tr("Apply"));
     btnSubmit->setFont(fontL);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     btnCancel=new QPushButton;
     btnCancel->setText(tr("Cancel"));
     btnCancel->setFont(fontL);
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
 
 
     // -----------layout------------//
@@ -136,13 +136,13 @@ UIInput::UIInput(QString title, QString showMsg, QString regExp, int length, QDi
     btnSubmit->setText(tr("Apply"));
     btnSubmit->setFont(fontL);
     btnSubmit->setMinimumHeight(30);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     btnCancel=new QPushButton;
     btnCancel->setText(tr("Cancel"));
     btnCancel->setFont(fontL);
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
 
 
     // -----------layout------------//
@@ -185,7 +185,7 @@ UIInput::UIInput(QString title, QString showMsg, QString regExp, int length, QDi
     connect(btnSubmit,SIGNAL(clicked()),this,SLOT(slotSubmit()));
     connect(leInput,SIGNAL(textChanged(QString)),this,SLOT(restartTimer()));
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 bool UIInput::flagFinish = false;
@@ -324,5 +324,5 @@ void UIInput::setAutoClose(int timeout)
 
 void UIInput::restartTimer()
 {
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

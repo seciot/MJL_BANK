@@ -51,7 +51,7 @@ UILogon::UILogon(QDialog *parent,Qt::WindowFlags f) :
 
     btnCancel->setText("CANCEL");
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
     btnCancel->hide();
     connect(btnCancel,SIGNAL(clicked()),this,SLOT(slotBtnCancelclicked()));
 
@@ -201,14 +201,14 @@ void UILogon::ReturnFromThread(unsigned char index)
         xDATA::WriteValidFile(xDATA::DataSaveChange);
 
         // 签到失败
-        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_constantParam.TIMEOUT_ERRMSG);
     }
     else
     {
         //签到成功
         g_changeParam.boolCashierLogonFlag = true;
         xDATA::WriteValidFile(xDATA::DataSaveChange);
-        UIMsg::showNoticeMsgWithAutoClose(LOGON_SUCCESS,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(LOGON_SUCCESS,g_constantParam.TIMEOUT_ERRMSG);
 
     }
 

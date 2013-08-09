@@ -7,10 +7,7 @@
 #include "msg.h"
 #include "global.h"
 #include "xdata.h"
-
-extern "C"{
 #include "key.h"
-}
 
 MainEntryThread *Frame::mainEntryThread = NULL;
 
@@ -86,9 +83,5 @@ void Frame::wakeUpMainThread(void)
     connect(mainEntryThread,SIGNAL(sysEventSignal(int)),this,SLOT(sysEventSlot(int)));
     mainEntryThread->wakeUp();
 }
-
-
-
-
 
 

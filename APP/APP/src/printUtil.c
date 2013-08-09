@@ -329,7 +329,7 @@ void PRINT_UTIL_PrintLine(PrinterType a_type)
 void PRINT_UTIL_PrintInfoLine(unsigned char *ptStr, PrinterType a_type)
 {
     unsigned char aucPrintBuf[MAX_PRINT_MIN_FONT_LEN + 1];
-    memset(aucPrintBuf, '-', MAX_PRINT_MIN_FONT_LEN);
+    memset(aucPrintBuf, '_', MAX_PRINT_MIN_FONT_LEN);
     memcpy(aucPrintBuf, ptStr, strlen((const char*)ptStr));
     aucPrintBuf[MAX_PRINT_MIN_FONT_LEN] = 0;
     PRINT_UTIL_Info(aucPrintBuf, PRINT_LEFT, PF_SMALL, a_type);

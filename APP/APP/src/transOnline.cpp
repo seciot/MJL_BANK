@@ -1,13 +1,15 @@
+#include "osmain.h"
 #include "transonline.h"
 #include "iso8583.h"
-
 #include "global.h"
+#include "msgreport.h"
 #include "xdata.h"
+#include "key.h"
 
 extern "C"{
 #include "ostools.h"
 #include "sand_time.h"
-#include "key.h"
+
 }
 
 static unsigned int TRANS_Tool_TotalPack(unsigned char *pOutData, unsigned int uiTotalNum, unsigned long ulTotalAmount)
@@ -27,21 +29,15 @@ static unsigned int TRANS_Tool_TagPack(unsigned short usTagID, unsigned char *pT
 {
     unsigned int iLen = 0;
 
-    //总长度
     iLen = uiTagLen + 2;
-    long_asc(&pOutData[0], 3, (unsigned long *)&iLen);
+    long_asc(&pOutData[0], 3, (unsigned long *)&iLen);      //总长度
+    short_asc(&pOutData[3], 2, &usTagID);                   //ID
+    memcpy(&pOutData[5], pTag, uiTagLen);                   //内容
     iLen += 3;
-
-    //ID
-    short_asc(&pOutData[3], 2, &usTagID);
-
-    //内容
-    memcpy(&pOutData[5], pTag, uiTagLen);
-
     return iLen;
 }
 
-unsigned char TRANS_ONLINE_GetResponseCode(void)
+static unsigned char TRANS_ONLINE_GetResponseCode(void)
 {
     unsigned char   ucResult = SUCCESS_TRACKDATA;
     unsigned char   aucBuf[3];
@@ -76,7 +72,7 @@ unsigned char TRANS_ONLINE_GetResponseCode(void)
     return ucResult;
 }
 
-void TRANS_ONLINE_GetTransDataTime(unsigned char *pData, unsigned char *pTime)
+static void TRANS_ONLINE_GetTransDataTime(unsigned char *pDate, unsigned char *pTime)
 {
     unsigned char aucBuf[8];
     short sBufLen = 0;
@@ -89,14 +85,10 @@ void TRANS_ONLINE_GetTransDataTime(unsigned char *pData, unsigned char *pTime)
     //get bit13(M)
     memset(aucBuf, 0, sizeof(aucBuf));
     Os__read_date(aucBuf);
-    memcpy(aucBuf, &aucBuf[4], 2);
-    if(!ISO8583_GetBitValue(13, &aucBuf[2], &sBufLen, sizeof(aucBuf)))
-    {
-//        pData[0] = 0x20;
-//        pData[1] = 0x13;
-//        asc_bcd(&pData[2], sBufLen/2, aucBuf, sBufLen);
-        asc_bcd(pData, (sBufLen+2)/2, aucBuf, (sBufLen+2));
-    }
+    memcpy(&aucBuf[0], "20", 2);
+    memcpy(&aucBuf[2], &aucBuf[4], 2);
+    if(!ISO8583_GetBitValue(13, &aucBuf[4], &sBufLen, sizeof(aucBuf)))
+        asc_bcd(pDate, (sBufLen+4)/2, aucBuf, (sBufLen+4));
 }
 
 static void TRANS_ONLINE_SetProCode(TransMode m_transMode, unsigned char *pProCode)
@@ -107,19 +99,22 @@ static void TRANS_ONLINE_SetProCode(TransMode m_transMode, unsigned char *pProCo
         unsigned char   aucCode[7];
     }TransCode;
 
-    TransCode transCodeTab[TramsMode_MaxIndex] =
+    const TransCode transCodeTab[TransMode_MaxIndex] =
     {
         {800, "920000"},    //签到(工作密钥)
         {800, "950000"},    //签到(传输密钥)
-        {500, "920000"},    //结算
+        {500, "920000"},    //结算(一次)
+        {500, "960000"},    //结算(二次)
+        {320, "000000"},    //批上送
         {100, "310000"},    //查余
         {200, "210000"},    //存钱
         {200, "220000"},    //存钱撤销
+        {220, "220000"},    //存钱调整
         {200, "010000"},    //取钱
         {200, "020000"},    //取钱撤销
+        {220, "020000"},    //取钱调整
         {200, "610000"},    //转账
         {200, "700000"},    //改密
-        {000, "000000"},    //调整
     };
 
     // Set Msg ID
@@ -157,6 +152,14 @@ static void TRANS_ONLINE_SetEntryMode(InputModeIndex m_InputModeIndex, bool isIn
     else
         aucBuf[3] = '2';
     ISO8583_SetBitValue(22, aucBuf, 4);
+}
+
+static unsigned int TRANS_ONLINE_SetTotalInfo(unsigned char *pOutData, TRANSTOTAL *pTransTotal, unsigned char ucCardType, TotalBusinessType businessType)
+{
+    unsigned int uiNb = pTransTotal->totalBusiness[ucCardType][businessType].uiNb;
+    unsigned long ulAmount = pTransTotal->totalBusiness[ucCardType][businessType].ulAmount;
+
+    return TRANS_Tool_TotalPack(pOutData, uiNb, ulAmount);
 }
 
 static void TRANS_ONLINE_CommonInfo_pack(void)
@@ -226,7 +229,7 @@ static void TRANS_ONLINE_CommonTransInfo_pack(NormalTrans *pNormalTrans)
         ISO8583_SetBitValue(64, (unsigned char*)"0000000000000000", 16);
 }
 
-unsigned char TRANS_ONLINE_CheckResponseValid(TransMode m_transMode)
+static unsigned char TRANS_ONLINE_CheckResponseValid(TransMode m_transMode)
 {
     unsigned char ucResult;
 
@@ -242,12 +245,15 @@ unsigned char TRANS_ONLINE_CheckResponseValid(TransMode m_transMode)
 
     switch(m_transMode)
     {
+    case TransMode_AdvanceVoid:      //撤销
+    case TransMode_DepositVoid:      //撤销
+        if(!ucResult)
+            ucResult = ISO8583_CompareSentBit(4);
+        break;
     case TransMode_CashDeposit:      //存钱
     case TransMode_CashAdvance:      //取钱
         if(!ucResult)
             ucResult = ISO8583_CompareSentBit(4);
-    case TransMode_AdvanceVoid:      //撤销
-    case TransMode_DepositVoid:      //撤销
     case TransMode_BalanceInquiry:   //查余
     case TransMode_CardTransfer:     //转账
         if(!ucResult)
@@ -265,10 +271,7 @@ void TRANS_ONLINE_ReversalPack(void)
     /* save to backup first */
     memcpy(&Trans_8583Data.SendISO8583Data, &ISO8583Data, sizeof(BACKUPISO8583));
     ISO8583_SetMsgID(400);
-    ISO8583_RemoveBit(2);
-    ISO8583_RemoveBit(12);
-    ISO8583_RemoveBit(13);
-    ISO8583_RemoveBit(48);
+//    ISO8583_RemoveBit(2);
     ISO8583_RemoveBit(52);
     /* Save new reversal */
     ISO8583_SaveReversalISO8583Data((const unsigned char*)"00");
@@ -313,8 +316,8 @@ unsigned char TRANS_ONLINE_DownWK_unpack(void)
         {
             if(memcmp(&aucBuf[8], "FFFFFFFF", 8))
             {
-//                g_changeParam.boolMacKeyFlag = true;
-//                xDATA::WriteValidFile(xDATA::DataSaveChange);
+                g_changeParam.boolMacKeyFlag = true;
+                xDATA::WriteValidFile(xDATA::DataSaveChange);
             }
             ucResult = KEY_StoreSingleNewKey(&aucBuf[2], (iLen - 2));
         }
@@ -361,15 +364,11 @@ unsigned char TRANS_ONLINE_DownEWK_unpack(void)
     return ucResult;
 }
 
-//存款/撤销
+//存款、存款撤销、存款调整
 unsigned char TRANS_ONLINE_Deposit_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans)
 {
     unsigned char ucResult = SUCCESS_TRACKDATA;
     unsigned char aucBuf[20];
-
-    if(pNormalTrans->transType != TransMode_CashDeposit
-    && pNormalTrans->transType != TransMode_DepositVoid)
-        return ERR_UNKNOWTRANSTYPE;
 
     //03,04,11,14,22,24,25,35,41,42,49,62,64(02,35,52)
     ISO8583_Clear();
@@ -391,7 +390,10 @@ unsigned char TRANS_ONLINE_Deposit_pack(NormalTrans *pNormalTrans, ExtraTrans *p
 
     // Set bit 04
     memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
+    if(TransMode_DepositAdjust == pNormalTrans->transType)
+        long_asc(aucBuf, 12, &pNormalTrans->ulAdjustAmount);
+    else
+        long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
     ISO8583_SetBitValue(4, aucBuf, TRANS_AMOUNT_LEN);
 
     // Set bit 35
@@ -399,7 +401,8 @@ unsigned char TRANS_ONLINE_Deposit_pack(NormalTrans *pNormalTrans, ExtraTrans *p
     && INPUTMODE_MagneticStripe2 == pNormalTrans->inputMode)
         ISO8583_SetBitValue(35, pExtraTrans->magData.aucISO2, pExtraTrans->magData.uiISO2Len);
 
-    if(TransMode_DepositVoid == pNormalTrans->transType)
+    if(TransMode_DepositVoid == pNormalTrans->transType
+    || TransMode_DepositAdjust == pNormalTrans->transType)
     {
         // Set bit 37
         ISO8583_SetBitValue(37, pNormalTrans->aucRefNum, TRANS_REFNUM_LEN);
@@ -414,6 +417,13 @@ unsigned char TRANS_ONLINE_Deposit_pack(NormalTrans *pNormalTrans, ExtraTrans *p
     && pNormalTrans->isInputPin)
         ISO8583_SetBitHexValue(52, pExtraTrans->aucPINData, TRANS_PINDATALEN);
 
+    // Set bit 60 Original Amount to Adjustment transaction
+    if(TransMode_DepositAdjust == pNormalTrans->transType)
+    {
+        memset(aucBuf, 0, sizeof(aucBuf));
+        long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
+        ISO8583_SetBitValue(60, aucBuf, TRANS_AMOUNT_LEN);
+    }
     return ucResult;
 }
 
@@ -440,15 +450,11 @@ unsigned char TRANS_ONLINE_Deposit_unpack(NormalTrans *pNormalTrans)
     return ucResult;
 }
 
-//取款/撤销
+//取款、取款撤销、取款调整
 unsigned char TRANS_ONLINE_Advance_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans)
 {
     unsigned char ucResult = SUCCESS_TRACKDATA;
     unsigned char aucBuf[20];
-
-    if(pNormalTrans->transType != TransMode_CashAdvance
-    && pNormalTrans->transType != TransMode_AdvanceVoid)
-        return ERR_UNKNOWTRANSTYPE;
 
     //正常取款 (11,12,13,24,25,41,42)02,03,04,14,22,35,49,52,62,64
     //撤销取款 (11,12,13,24,25,41,42)02,03,04,14,22,37,38,62,64
@@ -472,7 +478,10 @@ unsigned char TRANS_ONLINE_Advance_pack(NormalTrans *pNormalTrans, ExtraTrans *p
 
     // Set bit 04
     memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
+    if(TransMode_AdvanceAdjust == pNormalTrans->transType)
+        long_asc(aucBuf, 12, &pNormalTrans->ulAdjustAmount);
+    else
+        long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
     ISO8583_SetBitValue(4, aucBuf, TRANS_AMOUNT_LEN);
 
     // Set bit 35
@@ -480,7 +489,8 @@ unsigned char TRANS_ONLINE_Advance_pack(NormalTrans *pNormalTrans, ExtraTrans *p
     && INPUTMODE_MagneticStripe2 == pNormalTrans->inputMode)
         ISO8583_SetBitValue(35, pExtraTrans->magData.aucISO2, pExtraTrans->magData.uiISO2Len);
 
-    if(TransMode_AdvanceVoid == pNormalTrans->transType)
+    if(TransMode_AdvanceVoid == pNormalTrans->transType
+    || TransMode_AdvanceAdjust == pNormalTrans->transType)
     {
         // Set bit 37
         ISO8583_SetBitValue(37, pNormalTrans->aucRefNum, TRANS_REFNUM_LEN);
@@ -494,6 +504,14 @@ unsigned char TRANS_ONLINE_Advance_pack(NormalTrans *pNormalTrans, ExtraTrans *p
     if(TransMode_CashAdvance == pNormalTrans->transType
     && pNormalTrans->isInputPin)
         ISO8583_SetBitHexValue(52, pExtraTrans->aucPINData, TRANS_PINDATALEN);
+
+    // Set bit 60 Original Amount to Adjustment transaction
+    if(TransMode_AdvanceAdjust == pNormalTrans->transType)
+    {
+        memset(aucBuf, 0, sizeof(aucBuf));
+        long_asc(aucBuf, 12, &pNormalTrans->ulAmount);
+        ISO8583_SetBitValue(60, aucBuf, TRANS_AMOUNT_LEN);
+    }
 
     return ucResult;
 }
@@ -527,16 +545,13 @@ unsigned char TRANS_ONLINE_BalanceInquiry_pack(NormalTrans *pNormalTrans, ExtraT
     unsigned char ucResult = SUCCESS_TRACKDATA;
     unsigned char aucBuf[6];
 
-    if(pNormalTrans->transType != TransMode_BalanceInquiry)
-        return ERR_UNKNOWTRANSTYPE;
-
     //03,11,14,24,25,35,41,42,49,62,64(02,22,35, 52)
     ISO8583_Clear();
 
     // Set Msg ID and Set bit 03 Processing Code
     //1-2位事务处理码, 3-4账户类型, 5转移账户类型, 6初始化交易值为4
     memset(aucBuf, 0, sizeof(aucBuf));
-    TRANS_ONLINE_SetProCode(pNormalTrans->transType, aucBuf);
+    TRANS_ONLINE_SetProCode(TransMode_BalanceInquiry, aucBuf);
     aucBuf[2] = pNormalTrans->accType;
     ISO8583_SetBitValue(3, aucBuf, 6);
 
@@ -592,7 +607,7 @@ unsigned char TRANS_ONLINE_BalanceInquiry_unpack(NormalTrans *pNormalTrans)
 unsigned char TRANS_ONLINE_PINChange_pack(NormalTrans *pNormalTrans, ExtraTrans *pExtraTrans)
 {
     unsigned char ucResult = SUCCESS_TRACKDATA;
-    unsigned char aucBuf[50];
+    unsigned char aucBuf[50], aucBuf2[50];
     unsigned int uiOffSet = 0;
 
     //03,11,14,24,25,35,41,42,49,62,64(02,22,35,52)
@@ -601,7 +616,7 @@ unsigned char TRANS_ONLINE_PINChange_pack(NormalTrans *pNormalTrans, ExtraTrans 
     // Set Msg ID and Set bit 03 Processing Code
     //1-2位事务处理码, 3-4账户类型, 5转移账户类型, 6初始化交易值为4
     memset(aucBuf, 0, sizeof(aucBuf));
-    TRANS_ONLINE_SetProCode(pNormalTrans->transType, aucBuf);
+    TRANS_ONLINE_SetProCode(TransMode_PINChange, aucBuf);
     ISO8583_SetBitValue(3, aucBuf, 6);
 
     //(11,12,13,24,41,42)14,22,25,49,62,64
@@ -622,7 +637,9 @@ unsigned char TRANS_ONLINE_PINChange_pack(NormalTrans *pNormalTrans, ExtraTrans 
     // Set bit 57
     memset(aucBuf, 0, sizeof(aucBuf));
     uiOffSet = 0;
-    uiOffSet += TRANS_Tool_TagPack(70, pExtraTrans->aucChangePINData, TRANS_PINDATALEN, &aucBuf[uiOffSet]);
+    memset(aucBuf2, 0, sizeof(aucBuf2));
+    hex_asc(aucBuf2, pExtraTrans->aucChangePINData, TRANS_PINDATALEN*2);
+    uiOffSet += TRANS_Tool_TagPack(70, aucBuf2, (TRANS_PINDATALEN*2), &aucBuf[uiOffSet]);
     ISO8583_SetBitValue(57, aucBuf, uiOffSet);
 
     return ucResult;
@@ -630,25 +647,7 @@ unsigned char TRANS_ONLINE_PINChange_pack(NormalTrans *pNormalTrans, ExtraTrans 
 
 unsigned char TRANS_ONLINE_PINChange_unpack(NormalTrans *pNormalTrans)
 {
-    unsigned char ucResult;
-    unsigned char aucBuf[20];
-    short sBufLen = 0;
-
-    ucResult = TRANS_ONLINE_CheckResponseValid(pNormalTrans->transType);
-    if(!ucResult)
-    {
-        //get bit12 trans time and get bit13 trans data
-//        TRANS_ONLINE_GetTransDataTime(pNormalTrans->aucDate, pNormalTrans->aucTime);
-        //get bit37
-        memset(aucBuf, 0, sizeof(aucBuf));
-        if(!ISO8583_GetBitValue(37, aucBuf, &sBufLen, sizeof(aucBuf)))
-            memcpy(pNormalTrans->aucRefNum, aucBuf, TRANS_REFNUM_LEN);
-        //get bit38
-//        memset(aucBuf, 0, sizeof(aucBuf));
-//        if(!ISO8583_GetBitValue(38, aucBuf, &sBufLen, sizeof(aucBuf)))
-//            memcpy(pNormalTrans->aucAuthCode, aucBuf, TRANS_AUTHCODE_LEN);
-    }
-    return ucResult;
+    return TRANS_ONLINE_CheckResponseValid(pNormalTrans->transType);
 }
 
 //转账
@@ -658,16 +657,13 @@ unsigned char TRANS_ONLINE_Transfer_pack(NormalTrans *pNormalTrans, ExtraTrans *
     unsigned char aucBuf[100];
     unsigned int uiOffSet = 0;
 
-    if(pNormalTrans->transType != TransMode_CardTransfer)
-        return ERR_UNKNOWTRANSTYPE;
-
     //03,04,11,14,24,25,35,41,42,49,62,64(02,22,35, 52)
     ISO8583_Clear();
 
     // Set Msg ID and Set bit 03 Processing Code
     //1-2位事务处理码, 3-4账户类型, 5转移账户类型, 6初始化交易值为4
     memset(aucBuf, 0, sizeof(aucBuf));
-    TRANS_ONLINE_SetProCode(pNormalTrans->transType, aucBuf);
+    TRANS_ONLINE_SetProCode(TransMode_CardTransfer, aucBuf);
     aucBuf[2] = pNormalTrans->accType;
     aucBuf[4] = pNormalTrans->toAccType;
     ISO8583_SetBitValue(3, aucBuf, 6);
@@ -726,24 +722,29 @@ unsigned char TRANS_ONLINE_Transfer_unpack(NormalTrans *pNormalTrans)
 }
 
 //结算
-unsigned char TRANS_ONLINE_Settlement_pack(TRANSTOTAL *pTransTotal)
+unsigned char TRANS_ONLINE_Settlement_pack(unsigned char transType, TRANSTOTAL *pTransTotal)
 {
     unsigned char ucResult = SUCCESS_TRACKDATA;
-    unsigned char aucBuf[100];
-    unsigned long ulAmount = 0;
-    unsigned int uiNb = 0;
+    unsigned char aucBuf[150];
     unsigned int uiOffSet = 0;
+
+    if(transType != TransMode_Settle && transType != TransMode_Settle2)
+        return ERR_UNKNOWTRANSTYPE;
 
     ISO8583_Clear();
 
+    // Set Msg ID and Set bit 03 Processing Code
+    memset(aucBuf, 0, sizeof(aucBuf));
+    TRANS_ONLINE_SetProCode(TransMode(transType), aucBuf);
+    ISO8583_SetBitValue(3, aucBuf, 6);
+
     //11,12,13,24,41,42
     TRANS_ONLINE_CommonInfo_pack();
+    ISO8583_RemoveBit(12);
+    ISO8583_RemoveBit(13);
 
-    // Set Msg ID and Set bit 03 Processing Code
-    //1-2位事务处理码, 3-4账户类型, 5转移账户类型, 6初始化交易值为4
-    memset(aucBuf, 0, sizeof(aucBuf));
-    TRANS_ONLINE_SetProCode(TransMode_Settle, aucBuf);
-    ISO8583_SetBitValue(3, aucBuf, 6);
+    memset(aucBuf, '0', sizeof(aucBuf));
+    ISO8583_SetBitValue(42, aucBuf, PARAM_MERCHANTID_LEN);
 
     // Set bit 60
     memset(aucBuf, 0, sizeof(aucBuf));
@@ -751,20 +752,28 @@ unsigned char TRANS_ONLINE_Settlement_pack(TRANSTOTAL *pTransTotal)
     ISO8583_SetBitValue(60, aucBuf, 6);
 
     // Set bit 63
-    memset(aucBuf, '0', sizeof(aucBuf));
+    //内卡信用卡借记业务     credit cards debit
+    //内卡信用卡信贷业务     credit cards credit
+
+    //内卡借记卡借记业务     debit cards debit
+    //内卡借记卡信贷业务     debit cards credit
+
+    //外卡借记卡贷记业务
+    //外卡借记卡借记业务
+    //外卡贷记卡贷记业务
+    //外卡贷记卡借记业务
     uiOffSet = 0;
-    //内卡
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
+    memset(aucBuf, '0', sizeof(aucBuf));
+    uiOffSet += TRANS_ONLINE_SetTotalInfo(&aucBuf[uiOffSet], pTransTotal, 0, TotalDebitBusiness);
+    uiOffSet += TRANS_ONLINE_SetTotalInfo(&aucBuf[uiOffSet], pTransTotal, 0, TotalCreditBusiness);
+
+    uiOffSet += TRANS_ONLINE_SetTotalInfo(&aucBuf[uiOffSet], pTransTotal, 1, TotalDebitBusiness);
+    uiOffSet += TRANS_ONLINE_SetTotalInfo(&aucBuf[uiOffSet], pTransTotal, 1, TotalCreditBusiness);
 
     uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
     uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
-
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
-
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
+//    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
+//    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], 0, 0);
     ISO8583_SetBitValue(63, aucBuf, uiOffSet);
 
     // Set bit 64 MAC
@@ -859,50 +868,3 @@ unsigned char TRANS_ONLINE_BatchUpload_unpack(void)
     return ucResult;
 }
 
-//批上送结束
-unsigned char TRANS_ONLINE_BatchUploadEnd_pack(TRANSTOTAL *pTransTotal)
-{
-    unsigned char ucResult = SUCCESS_TRACKDATA;
-    unsigned char aucBuf[100];
-    unsigned int uiOffSet = 0;
-
-    ISO8583_Clear();
-
-    // Set Msg ID
-    ISO8583_SetMsgID(500);
-
-    //11,12,13,24,41,42
-    TRANS_ONLINE_CommonInfo_pack();
-
-    // Set bit 03 Processing Code
-    ISO8583_SetBitValue(3, (unsigned char *)"960000", 6);
-
-    // Set bit 60
-    memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 6, &g_changeParam.ulBatchNumber);
-    ISO8583_SetBitValue(60, aucBuf, 6);
-
-    // Set bit 63
-    memset(aucBuf, '0', sizeof(aucBuf));
-    uiOffSet = 0;
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], pTransTotal->uiCDebitNb, pTransTotal->ulCDebitAmount);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], pTransTotal->uiCCreditNb, pTransTotal->ulCCreditAmount);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], pTransTotal->uiDDebitNb, pTransTotal->ulDDebitAmount);
-    uiOffSet += TRANS_Tool_TotalPack(&aucBuf[uiOffSet], pTransTotal->uiDCreditNb, pTransTotal->ulDCreditAmount);
-    ISO8583_SetBitValue(63, aucBuf, uiOffSet);
-
-    // Set bit 64 MAC
-    if(g_changeParam.boolMacKeyFlag == true)
-        ISO8583_SetBitValue(64, (const unsigned char*)"0000000000000000", 16);
-
-    return ucResult;
-}
-
-unsigned char TRANS_ONLINE_BatchUploadEnd_unpack(void)
-{
-    unsigned char ucResult;
-
-    ucResult = TRANS_ONLINE_GetResponseCode();
-
-    return ucResult;
-}

@@ -3,9 +3,13 @@
 #include "commontools.h"
 #include "global.h"
 
+
 UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    xDATA::ClearGlobalData();
+
+
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -43,7 +47,6 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     lbBatchNum=new QLabel();
     lbNextBatchNum=new QLabel();
     lbAPN=new QLabel();
-    lbProType=new QLabel();
     lbHostAccess=new QLabel();
     lbDomainAddr=new QLabel();
     lbPriIP=new QLabel();
@@ -68,10 +71,19 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     leTerID=new QLineEdit();
     leMerID=new QLineEdit();
     leBatchNum=new QLineEdit();
+    leBatchNum->setMaxLength(6);
     leNextBatchNum=new QLineEdit();
+    leNextBatchNum->setMaxLength(6);
     leAPN=new QLineEdit();
-    cbProType=new QComboBox();
+
     cbHostAccess=new QComboBox();
+    QPixmap pixmap(1,COMBO_HEIGHT);
+    pixmap.fill(Qt::transparent);
+    QIcon blankicon(pixmap);
+    cbHostAccess->setIconSize(QSize(1, COMBO_HEIGHT));
+    cbHostAccess->addItem(blankicon,"IP");
+    cbHostAccess->addItem(blankicon,"Domain Name");
+
     leDomainAddr=new QLineEdit();
     lePriIP=new MyIpAddrEdit();
     lePriIP->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -103,7 +115,6 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     lbBatchNum->setText(tr("Batch Number:"));
     lbNextBatchNum->setText(tr("Next Batch Number:"));
     lbAPN->setText(tr("APN:"));
-    lbProType->setText(tr("Protocol Type:"));
     lbHostAccess->setText(tr("Host Access:"));
     lbDomainAddr->setText(tr("Domain Address:"));
     lbPriIP->setText(tr("Primary IP Address:"));
@@ -121,12 +132,10 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     cbCarrierTimeOut->setStyleSheet(COMBO_BOX_STYLE);
     cbHostAccess->setStyleSheet(COMBO_BOX_STYLE);
     cbHostType->setStyleSheet(COMBO_BOX_STYLE);
-    cbProType->setStyleSheet(COMBO_BOX_STYLE);
     cbSettleHost->setStyleSheet(COMBO_BOX_STYLE);
     cbCarrierTimeOut->setMinimumHeight(26);
     cbHostAccess->setMinimumHeight(26);
     cbHostType->setMinimumHeight(26);
-    cbProType->setMinimumHeight(26);
     cbSettleHost->setMinimumHeight(26);
 
     //--------------------   LAYOUT ----------------------//
@@ -157,8 +166,6 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     v1Lay->addWidget(leNextBatchNum);
     v1Lay->addWidget(lbAPN);
     v1Lay->addWidget(leAPN);
-    v1Lay->addWidget(lbProType);
-    v1Lay->addWidget(cbProType);
     v1Lay->addWidget(lbHostAccess);
     v1Lay->addWidget(cbHostAccess);
     v1Lay->addWidget(lbDomainAddr);
@@ -223,32 +230,7 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     scWidget->setMaximumWidth(FRAME420_WIDTH-5);
     scWidget->setFont(font);
     //    scWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    vBar->setStyleSheet("QScrollBar:vertical {"
-                        "border:0px solid grey;"
-                        "width: 3px;"
-                        "}"
-                        " QScrollBar::handle:vertical {"
-                        " background: #8080FF;"
-                        " border: 2px solid grey;"
-                        " border-radius:5px;"
-                        " min-height: 10px;"
-                        " }"
-                        " QScrollBar::add-line:vertical {"
-                        " height: 0px;"
-                        " subcontrol-position: bottom;"
-                        " }"
-                        " QScrollBar::sub-line:vertical {"
-                        " height: 0px;"
-                        " subcontrol-position: top;"
-                        " }"
-                        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-                        " background: none;"
-                        "}"
-                        "QScrollArea"
-                        "{"
-                        "border:0;"
-                        "background:rgb(64,64,71);"
-                        "}");
+    vBar->setStyleSheet(SCROLL_VERTICAL_SIMPLE_STYLE);
 
 
     scArea->setVerticalScrollBar(vBar);
@@ -271,7 +253,7 @@ UIConfigAcq::UIConfigAcq(QDialog *parent,Qt::WindowFlags f) :
     connect(vBar,SIGNAL(valueChanged(int)),this,SLOT(restartTimer()));
 
     this->initialSettings();
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIConfigAcq::~UIConfigAcq()
@@ -287,17 +269,18 @@ void UIConfigAcq::keyPressEvent(QKeyEvent *event)
         this->close();
         break;
     case Qt::Key_Enter:
+        focusNextChild();
         break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -335,16 +318,13 @@ void UIConfigAcq::initialSettings()
     /// NII
     leNII->setText(QString::fromAscii((const char*)g_constantParam.aucNii));
 
-
-    //    g_constantParam.ulHostIP[0] = 0x74D46CE5;
-    //    g_constantParam.ulHostIP[1] = 0x1B938067;
-    //    g_constantParam.uiHostPort[0] = 5999;
-    //    g_constantParam.uiHostPort[1] = 5999;
     // IP::Port
     QString priIp=FormIpAddressFromArray(g_constantParam.ulHostIP[0]);
     QString secIp=FormIpAddressFromArray(g_constantParam.ulHostIP[1]);
     priIp=priIp.trimmed();
     secIp=secIp.trimmed();
+    priIp.replace(" ","");
+    secIp.replace(" ","");
     qDebug()<<priIp<<secIp;
     lePriIP->settext(priIp);
     leSecIP->settext(secIp);
@@ -352,14 +332,50 @@ void UIConfigAcq::initialSettings()
     lePriIPPort->setText(QString::number( g_constantParam.uiHostPort[0]));
     leSecIPPort->setText(QString::number( g_constantParam.uiHostPort[1]));
 
+    // Domain Name
+    leDomainAddr->setText(QString::fromAscii((const char*)g_constantParam.aucDomainName));
+
+    // Host Access
+    if(g_constantParam.hostType==HOST_IP)
+        cbHostAccess->setCurrentIndex(0);
+    else if(g_constantParam.hostType==HOST_DOMAINNAME)
+        cbHostAccess->setCurrentIndex(1);
+    else
+        cbHostAccess->setCurrentIndex(0);
+
+
+    // APN
+    leAPN->setText(QString::fromAscii((const char*)g_constantParam.GSM.aucAPN));
+
     // 终端号
     leTerID->setText(QString::fromAscii((const char*)g_constantParam.aucTerminalID));
+
+    // 商户号
+    leMerID->setText(QString::fromAscii((const char*)g_constantParam.aucMerchantID));
 
     // 货币代号
     leCurCode->setText(QString::fromAscii((const char*)g_constantParam.aucCurrencySign));
 
     // 货币数字代码
     leCurCodeNo->setText(QString::number(g_constantParam.usCurrencyId));
+
+    // 批次号
+    QString batch=QString::number(g_changeParam.ulBatchNumber);
+    qDebug()<<"batch:"<<batch;
+
+    if(batch.length()<6)
+        batch=batch.rightJustified(6,'0');
+    qDebug()<<"batch:"<<batch;
+    leBatchNum->setText(batch);
+
+    ulong next=g_changeParam.ulBatchNumber+1;
+    QString nextBatch=QString::number(next);
+    qDebug()<<"nextBatch:"<<nextBatch;
+    if(nextBatch.length()<6)
+        nextBatch=nextBatch.rightJustified(6,'0');
+    qDebug()<<"nextBatch:"<<nextBatch;
+    leNextBatchNum->setText(nextBatch);
+
 
     // 有交易的情况下,以下设置为只读,不可更改,要么先结算
     if(g_transInfo.TransTotal.uiTotalNb>0)
@@ -369,9 +385,6 @@ void UIConfigAcq::initialSettings()
         leBatchNum->setReadOnly(true);
         leNextBatchNum->setReadOnly(true);
 
-        connect(leTerID,SIGNAL(editingFinished()),this,SLOT(warning()));
-        connect(leTerID,SIGNAL(returnPressed()),this,SLOT(warning()));
-        connect(leTerID,SIGNAL(selectionChanged()),this,SLOT(warning()));
     }
 
     // 最大最小金额
@@ -379,10 +392,7 @@ void UIConfigAcq::initialSettings()
     leMaxTrnsAmt->setText(QString::number(g_constantParam.ulMaxAmount));
 }
 
-void UIConfigAcq::warning()
-{
-    qDebug()<<Q_FUNC_INFO<<sender();
-}
+
 
 void UIConfigAcq::slotSubmitClicked()
 {
@@ -391,14 +401,11 @@ void UIConfigAcq::slotSubmitClicked()
     QString nii=leNII->text();
     memcpy(g_constantParam.aucNii, nii.toAscii().data(), 4);
 
-    /// ip
+    // ip :: port
     QString priIP=lePriIP->text();
     QString secIP=leSecIP->text();
     unsigned long ulPriIP;
     unsigned long ulSecIP;
-
-    //    g_constantParam.ulHostIP[0] = 0x74D46CE5;
-    //    g_constantParam.ulHostIP[1] = 0x1B938067;
     qDebug()<< g_constantParam.ulHostIP[0]<< g_constantParam.ulHostIP[1];
     CONV_IPStringULong((unsigned char *)priIP.toAscii().data(), &ulPriIP);
     CONV_IPStringULong((unsigned char *)secIP.toAscii().data(), &ulSecIP);
@@ -406,10 +413,33 @@ void UIConfigAcq::slotSubmitClicked()
     g_constantParam.ulHostIP[0] =  ulPriIP;
     g_constantParam.ulHostIP[1] =  ulSecIP;
     qDebug()<< g_constantParam.ulHostIP[0]<< g_constantParam.ulHostIP[1];
+    g_constantParam.uiHostPort[0]=lePriIPPort->text().toUInt();
+    g_constantParam.uiHostPort[1]=leSecIPPort->text().toUInt();
+    qDebug()<<g_constantParam.uiHostPort[0]<<g_constantParam.uiHostPort[1];
+
+    //Domain Name
+    QString domainText=leDomainAddr->text();
+    memcpy(g_constantParam.aucDomainName, domainText.toAscii().data(), domainText.length());
+
+    // Host Access
+    if(cbHostAccess->currentText()=="IP")
+        g_constantParam.hostType=HOST_IP;
+    else if(cbHostAccess->currentText()=="DOMAINNAME")
+        g_constantParam.hostType=HOST_DOMAINNAME;
+    else
+        g_constantParam.hostType=HOST_IP;
+
+    // APN
+    QString apnText=leAPN->text();
+    memcpy(g_constantParam.GSM.aucAPN, apnText.toAscii().data(), apnText.length());
 
     // 终端号
     QString terminalID=leTerID->text();
     memcpy(g_constantParam.aucTerminalID, terminalID.toAscii().data(), PARAM_TERMINALID_LEN);
+
+    // 终端号
+    QString merchantID=leMerID->text();
+    memcpy(g_constantParam.aucMerchantID, merchantID.toAscii().data(), PARAM_MERCHANTID_LEN);
 
     // 货币代号
     QString currencyCode=leCurCode->text();
@@ -417,14 +447,19 @@ void UIConfigAcq::slotSubmitClicked()
 
     // 货币数字代码
     QString currencyCodeNo=leCurCodeNo->text();
-    g_constantParam.usCurrencyId=currencyCodeNo.toAscii().toShort();
+    g_constantParam.usCurrencyId=currencyCodeNo.toShort();
+
+    // 批次号
+    QString batchNumber=leBatchNum->text();
+    qDebug()<<"batch Num::"<<leBatchNum->text();
+    g_changeParam.ulBatchNumber=batchNumber.toULong();
 
     // 最大最小金额
     QString minAmt=leMinTrnsAmt->text();
     QString maxAmt=leMaxTrnsAmt->text();
     if(minAmt.toULong()>maxAmt.toULong())
     {
-        UIMsg::showErrMsgWithAutoClose("AMOUNT\nMIN > MAX",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("AMOUNT\nMIN > MAX",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     else
@@ -437,14 +472,15 @@ void UIConfigAcq::slotSubmitClicked()
 
     /// 保存设置
     unsigned char ucResult=xDATA::WriteValidFile(xDATA::DataSaveConstant);
+    ucResult=xDATA::WriteValidFile(xDATA::DataSaveChange);
     if(!ucResult)
     {
         //成功
-        UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_constantParam.TIMEOUT_ERRMSG);
     }
     else
     {
-        UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showFileErrMsgWithAutoClose(FileErrIndex(ucResult),g_constantParam.TIMEOUT_ERRMSG);
     }
 
 }
@@ -460,12 +496,11 @@ void UIConfigAcq::setAutoClose(int timeout)
 
 void UIConfigAcq::slotQuitCfg()
 {
-    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }
 
 void UIConfigAcq::restartTimer()
 {
-    qDebug()<<Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

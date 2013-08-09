@@ -3,11 +3,14 @@
 #include <QThread>
 #include "sand_lcd.h"
 #include "xdata.h"
+#include "objPrint.h"
+#include "sav.h"
 #include "global.h"
 
 UISettle::UISettle(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    xDATA::ClearGlobalData();
     RemoveKeyEventBug();
 
     QPixmap bg;
@@ -36,28 +39,32 @@ UISettle::UISettle(QDialog *parent,Qt::WindowFlags f) :
 
     // -----------define-----------//
     lbGif=new QLabel();
+    lbHeadNotice=new QLabel();
     lbNotice=new QLabel();
     lbNotice2=new QLabel();
     btnCancel=new QPushButton();
 
     lbGif->setAlignment(Qt::AlignCenter);
+    lbHeadNotice->setAlignment(Qt::AlignCenter);
     lbNotice->setAlignment(Qt::AlignCenter);
+    lbNotice2->setAlignment(Qt::AlignCenter);
 
     lbGif->setFont(font2);
+    lbHeadNotice->setFont(font2);
     lbNotice->setFont(font2);
     lbNotice2->setFont(font2);
     btnCancel->setFont(font2);
 
     btnCancel->setText("CANCEL");
     btnCancel->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
     btnCancel->hide();
     connect(btnCancel,SIGNAL(clicked()),this,SLOT(slotBtnCancelclicked()));
 
     QSpacerItem *sItem=new QSpacerItem(10,10,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(lbHead);
-    v1Lay->addWidget(lbGif);
+    v1Lay->addWidget(lbHeadNotice);
     v1Lay->addItem(sItem);
     v1Lay->addWidget(lbNotice);
     v1Lay->addWidget(lbNotice2);
@@ -101,6 +108,7 @@ void UISettle::startSettle()
     connect(pUpdateTimer,SIGNAL(timeout()),this,SLOT(UpdateLabelChange()));
     connect(transOnlineProcess,SIGNAL(EableNotify(bool)),this,SLOT(EableKEY_CAN(bool)));
     connect(transOnlineProcess,SIGNAL(notify(const QString,const QString)),this,SLOT(UpdateLabelText(const QString,const QString)));
+    connect(transOnlineProcess,SIGNAL(sigStatus(QString)),this,SLOT(slotUpdateStatus(QString)));
     connect(transOnlineProcess,SIGNAL(sendResult(unsigned char)),this,SLOT(ReturnFromThread(unsigned char)));
     connect(transOnlineProcess,SIGNAL(destroyed()),this,SLOT(ReturnWay()));//added by pan.cy 2013/1/10 forbid it being disconnected
     transOnlineProcess->process();
@@ -162,21 +170,43 @@ void UISettle::ReturnFromThread(unsigned char index)
     pUpdateTimer->stop();
     if(movie!=NULL) {movie->stop();delete movie;movie = NULL;}
     Os__gif_stop();
+#if 0
     if(index)
     {
         // 结算失败
-        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_constantParam.TIMEOUT_ERRMSG);
     }
     else
     {
         //结算成功
         xDATA::WriteValidFile(xDATA::DataSaveChange);
-        UIMsg::showNoticeMsgWithAutoClose("SETTLE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
-
+        UIMsg::showNoticeMsgWithAutoClose("SETTLE SUCCESS",g_constantParam.TIMEOUT_ERRMSG);
     }
+#else
+    if(!index)
+    {
+        //结算成功
+        UIMsg::showNoticeMsgWithAutoClose("SETTLE SUCCESS",g_constantParam.TIMEOUT_ERRMSG);
 
+        // 打印线程
+        if(g_constantParam.flagSettleReceipt==true)
+        {
+            QThread *threadPrint=new QThread(this);
+            objPrint *pPrint = new objPrint;
+            connect(threadPrint, SIGNAL(started()), pPrint, SLOT(printSettle()));
+            connect(pPrint,SIGNAL(sigPrintComplete()),this,SLOT(slotFinishPrint()));
+
+            pPrint->moveToThread(threadPrint);
+            threadPrint->start();
+        }
+    }
+    else
+    {
+        // 结算失败
+        UIMsg::showCombineErrMsgWithAutoClose(ErrIndex(index),g_constantParam.TIMEOUT_ERRMSG);
+    }
+#endif
     ClearLabelInfo();
-
     qDebug("----- ReturnFromThread To son_PreClicked ----- \n");
     ReturnWay();
 }
@@ -190,12 +220,18 @@ void UISettle::ClearLabelInfo()
 
 void UISettle::UpdateLabelText(const QString &str,const QString &backup)
 {
-    qDebug() << Q_FUNC_INFO<<str<<backup;
+//    qDebug() << Q_FUNC_INFO<<str<<backup;
     qsUpdate = str;
     qsBack = backup;
     lbNotice->setText(qsUpdate);
     lbNotice2->setText(qsBack);
-    qDebug()<<Q_FUNC_INFO<<qsUpdate;
+//    qDebug()<<Q_FUNC_INFO<<qsUpdate;
+}
+
+void UISettle::slotUpdateStatus(QString status)
+{
+    qDebug() << Q_FUNC_INFO<<status;
+    lbHeadNotice->setText(status);
 }
 
 void UISettle::EableKEY_CAN(bool bEnable)
@@ -287,5 +323,12 @@ void UISettle::slotBtnCancelclicked()
         //bDisable = true;
         transOnlineProcess->ExitFromExCAN(0x02);
     }
+}
+
+void UISettle::slotFinishPrint()
+{
+    qDebug()<<Q_FUNC_INFO;
+    SAV_SettleSave();
+
 }
 

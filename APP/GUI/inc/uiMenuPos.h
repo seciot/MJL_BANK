@@ -16,7 +16,6 @@ public:
     QPushButton *btnConfig;
     QPushButton *btnBatch;
     QPushButton *btnReceipt;
-    QPushButton *btnVOID;
     QPushButton *btnSettle;
     QPushButton *btnCashierManager;
     QPushButton *btnReport;

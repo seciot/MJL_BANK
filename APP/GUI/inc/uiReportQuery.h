@@ -29,7 +29,7 @@ public slots:
     void setAutoClose(int timeout);
     void slotQuitMenu();
 private slots:
-    void slotTransClicked();
+    void slotDetailClicked();
     void restartTimeOut();
     void ergodicTrans();
 

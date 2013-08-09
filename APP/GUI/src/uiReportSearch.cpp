@@ -2,6 +2,7 @@
 #include "transData.h"
 #include "xdata.h"
 #include "commontools.h"
+#include "sav.h"
 #include "global.h"
 
 UIReportSearch::UIReportSearch(QDialog *parent,Qt::WindowFlags f) :
@@ -64,8 +65,8 @@ UIReportSearch::UIReportSearch(QDialog *parent,Qt::WindowFlags f) :
     btnSubmit->setFont(font2);
     btnCancel->setMinimumHeight(30);
     btnSubmit->setMinimumHeight(30);
-    btnCancel->setStyleSheet(BTN_CANCEL_STYLE);
-    btnSubmit->setStyleSheet(BTN_SUBMIT_STYLE);
+    btnCancel->setStyleSheet(BTN_BLUE_STYLE);
+    btnSubmit->setStyleSheet(BTN_GREEN_STYLE);
 
     QSpacerItem *sp1=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -99,7 +100,7 @@ UIReportSearch::UIReportSearch(QDialog *parent,Qt::WindowFlags f) :
     animation1->setEasingCurve(QEasingCurve::OutQuint);
     animation1->start();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 }
 
 UIReportSearch::~UIReportSearch()
@@ -118,7 +119,7 @@ void UIReportSearch::keyPressEvent(QKeyEvent *event)
         this->slotSearchTransaction();
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -132,12 +133,13 @@ void UIReportSearch::slotSearchTransaction()
     {
         qDebug()<<"fill in the blank";
 
-        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_changeParam.TIMEOUT_ERRMSG);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        UIMsg::showNoticeMsgWithAutoClose(INCOMPLETE_INFORMATION,g_constantParam.TIMEOUT_ERRMSG);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         return;
     }
 
     QString transType;
+    QString transStatus;
     QString cardNo;
     QString amount;
     QString refNo;
@@ -155,7 +157,7 @@ void UIReportSearch::slotSearchTransaction()
             int ucResult=xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
             if(ucResult!=0)
             {
-                UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_changeParam.TIMEOUT_ERRMSG);
+                UIMsg::showFileErrMsgWithAutoClose((FileErrIndex)ucResult,g_constantParam.TIMEOUT_ERRMSG);
 
                 return;
             }
@@ -165,6 +167,20 @@ void UIReportSearch::slotSearchTransaction()
             if(inputTraceNo==NormalTransData.ulTraceNumber)
             {
                 qDebug()<<inputTraceNo<<"Matched";
+                // 已撤销
+                switch(g_transInfo.auiTransIndex[index])
+                {
+                case SAV_TRANS_NORMAL:
+                    transStatus="NORMAL";
+                    break;
+                case SAV_TRANS_NIIVOID:
+                    transStatus="VOID";
+                    break;
+                default:
+                    transStatus="NULL";
+                    break;
+                }
+
                 switch(NormalTransData.transType)
                 {
                 case TransMode_CashDeposit:      //存钱
@@ -185,12 +201,19 @@ void UIReportSearch::slotSearchTransaction()
                 case TransMode_CardTransfer:     //转账
                     transType="P2P Transfer";
                     break;
+                case TransMode_DepositAdjust:     //存款调整
+                    transType="Deposit Adjust";
+                    break;
+                case TransMode_AdvanceAdjust:     //取款调整
+                    transType="Advance Adjust";
+                    break;
                 default:
                     qDebug()<<"This should not be entered";
                     break;
                 }
-                qDebug()<<"step2"<<transType;
 
+
+                qDebug()<<"step2"<<transType;
                 //Card No
                 cardNo=QString::fromAscii((const char *)NormalTransData.aucSourceAcc);  // 需要部分隐藏
                 qDebug()<<"card no:"<<cardNo;
@@ -210,7 +233,7 @@ void UIReportSearch::slotSearchTransaction()
                 operatorNo=QString::fromAscii((const char *)NormalTransData.aucCashier);
 
                 uiRepDetail=new UIReportDetail();
-                uiRepDetail->slotSetDetailList(transType,cardNo,amount,refNo,apprNo,operatorNo);
+                uiRepDetail->slotSetDetailList(transType,transStatus,cardNo,amount,refNo,apprNo,operatorNo);
                 uiRepDetail->exec();
 
                 break;
@@ -218,10 +241,10 @@ void UIReportSearch::slotSearchTransaction()
         }
         else
         {
-            UIMsg::showErrMsgWithAutoClose("No Match Transaction",g_changeParam.TIMEOUT_ERRMSG);
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            UIMsg::showErrMsgWithAutoClose("No Match Transaction",g_constantParam.TIMEOUT_ERRMSG);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
             break;
-    }
+        }
     }
 }
 
@@ -245,7 +268,7 @@ bool UIReportSearch::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

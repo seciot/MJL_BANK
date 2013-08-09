@@ -1,20 +1,15 @@
 #include "print.h"
-#include "xdata.h"
-#include "commontools.h"
 #include <stdio.h>
 #include <string.h>
+#include "commontools.h"
+#include "xdata.h"
 #include "global.h"
 
-
-
-extern "C"
-{
+extern "C"{
     #include "ostools.h"
-    #include "printUtil.h"
     #include "sand_time.h"
-    void Uart_Printf(char *fmt,...);
+    #include "printUtil.h"
 }
-
 
 #define LINENUM 0x16
 #define min(a, b)       (((a) < (b)) ? (a) : (b))
@@ -46,12 +41,11 @@ unsigned char *PRINT_FormAmount(unsigned char *pucOut, unsigned long ulAmount,
 #else
     pcFind = (char *) aucBuf;
 #endif
-    strcat((char*) pucOut, (const char*) pCurrencySign);
-    if (ucNegative == 1)
-    {
+
+    if(ucNegative == 1)
         strcat((char*) pucOut, "-");
-    }
     strcat((char*) pucOut, pcFind);
+    strcat((char*) pucOut, (const char*) pCurrencySign);
     return pucOut;
 }
 
@@ -59,17 +53,22 @@ void getTransType(unsigned char *pOutData, TransMode m_transType)
 {
     switch(m_transType)
     {
-    case TransMode_CashDeposit:      //存钱
-        sprintf((char*)pOutData, "%s", (char *)"Deposit");
+    case TransMode_CashDeposit:     //存款
+    case TransMode_DepositAdjust:
+        sprintf((char*)pOutData, "%s", "CASH DEPOSIT");
         break;
-    case TransMode_CashAdvance:      //取钱
-        sprintf((char*)pOutData, "%s", (char *)"Advance");
+    case TransMode_DepositVoid:     //存款撤销
+        sprintf((char*)pOutData, "%s", "CASH DEPOSIT VOID");
         break;
-    case TransMode_AdvanceVoid:         //撤销
-        sprintf((char*)pOutData, "%s", (char *)"Void");
+    case TransMode_CashAdvance:     //取款
+    case TransMode_AdvanceAdjust:
+        sprintf((char*)pOutData, "%s", "CASH ADVANCE");
         break;
-    case TransMode_CardTransfer:     //转账
-        sprintf((char*)pOutData, "%s", (char *)"Transfer");
+    case TransMode_AdvanceVoid:     //取款撤销
+        sprintf((char*)pOutData, "%s", "CASH ADVANCE VOID");
+        break;
+    case TransMode_CardTransfer:    //转账
+        sprintf((char*)pOutData, "%s", "P2P TRANSFER");
         break;
     default:
         break;
@@ -92,24 +91,15 @@ void PRINT_ProjAndVer(void)
 
 void PrintTitle(void)
 {
-    unsigned char aucBufLeft[25];
-    unsigned char aucBufRight[25];
+    PRINT_BMP((const char*)"bmp/logo.bmp");
 
-    //PRINT_BMP((const char*)"bmp/logo.bmp");
-    //PRINT_xlinefeed(LINENUM*1);
-
-    //标题
-    PRINT_UTIL_InfoChar("PRIME BANK LTD", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-
-    //门店信息
-    PRINT_UTIL_InfoChar("29 RAJUK AVENUE,MOTIJHEEL,DHAKA", PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-
-    //终端号    商户号
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-    getInfoBuf(aucBufLeft, "TERM# ", 6, g_constantParam.aucTerminalID, 8);
-    getInfoBuf(aucBufRight, "MER# ", 5, g_constantParam.aucMerchantID, 15);
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+    PRINT_UTIL_InfoChar("ARAB BANGLADESH LTD", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+    PRINT_xlinefeed(LINENUM*1);
+    PRINT_UTIL_Info(g_constantParam.aucReceiptLine1, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+    PRINT_UTIL_Info(g_constantParam.aucReceiptLine2, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+    PRINT_UTIL_Info(g_constantParam.aucReceiptLine3, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+    PRINT_UTIL_Info(g_constantParam.aucReceiptLine4, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+//    PRINT_xlinefeed(LINENUM*1);
 }
 
 //打印交易小票单
@@ -120,82 +110,86 @@ void PrintTransTicket(NormalTrans *pNormalTrans, TicketType ucTicketType, bool i
     unsigned char aucBufRight[40];
     unsigned long ulAmount = 0;
 
-//    PRINT_CheckState();
-//    return;
-
     //商户信息
     PrintTitle();
-
-    //卡信息
-    PRINT_UTIL_InfoChar("CARD TYPER MASTER", PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-    //卡号
-    PRINT_UTIL_InfoChar((const char *)pNormalTrans->aucSourceAcc, PRINT_LEFT, PF_DOUBLE_SIZE, THERMAL);
-    //卡个人信息
-
-    PRINT_xlinefeed(LINENUM*2);
-
-    //交易类型    卡有效期
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-
-    memcpy(&aucBufRight[0], &pNormalTrans->ucExpiredDate[0], 2);
-    aucBufRight[2] = '/';
-    memcpy(&aucBufRight[3], &pNormalTrans->ucExpiredDate[2], 2);
-
-    getTransType(aucBufLeft, pNormalTrans->transType);
-    PRINT_UTIL_ChangeFont_GroupInfo(PF_DOUBLE_HEIGHT,
-                                    NULL, PF_NORMAL,
-                                    aucBufLeft, PF_DOUBLE_SIZE,
-                                    (unsigned char *)"EXPY DATE: ", PF_DOUBLE_HEIGHT,
-                                    aucBufRight, PF_DOUBLE_HEIGHT);
-
-    //批次号    流水号
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-
-    memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 6, &pNormalTrans->ulBatchNumber);
-    getInfoBuf(aucBufLeft, "BATCH NO.: ", 11, aucBuf, 6);
-
-    memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 6, &pNormalTrans->ulTraceNumber);
-    getInfoBuf(aucBufRight, "TRACE NO.: ", 11, aucBuf, 6);
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
 
     //交易日期  MMDD,YY  HH:MM
     memset(aucBufLeft, 0, sizeof(aucBufLeft));
     memset(aucBufRight, 0, sizeof(aucBufRight));
 
+    memcpy(aucBufLeft, "DATE/TIME: ", 11);
+    getFormDate(pNormalTrans->aucDate, &aucBufLeft[11]);
+    getFormTime(pNormalTrans->aucTime, aucBufRight);
+    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+
+    //终端号
     memset(aucBuf, 0, sizeof(aucBuf));
-    getFormDate(pNormalTrans->aucDate, aucBuf);
-    getInfoBuf(aucBufLeft, "DATE: ", 6, aucBuf, strlen((char *)aucBuf));
+    getInfoBuf(aucBuf, "TERM# ", 6, g_constantParam.aucTerminalID, 8);
+    PRINT_UTIL_Info(aucBuf, PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
+
+    //商户号
+    memset(aucBuf, 0, sizeof(aucBuf));
+    getInfoBuf(aucBuf, "MER# ", 5, g_constantParam.aucMerchantID, 15);
+    PRINT_UTIL_Info(aucBuf, PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
+
+    //批次号    流水号
+    memset(aucBuf, 0, sizeof(aucBuf));
+    memset(aucBufLeft, 0, sizeof(aucBufLeft));
+    long_asc(aucBuf, 6, &pNormalTrans->ulBatchNumber);
+    getInfoBuf(aucBufLeft, "BATCH# ", 7, aucBuf, 6);
 
     memset(aucBuf, 0, sizeof(aucBuf));
-    getFormTime(pNormalTrans->aucTime, aucBuf);
-    getInfoBuf(aucBufRight, "TIME: ", 6, aucBuf, strlen((char *)aucBuf));
+    memset(aucBufRight, 0, sizeof(aucBufRight));
+    long_asc(aucBuf, 6, &pNormalTrans->ulTraceNumber);
+    getInfoBuf(aucBufRight, "TRACE# ", 7, aucBuf, 6);
+    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
 
+    //交易类型
+    memset(aucBuf, 0, sizeof(aucBuf));
+    getTransType(aucBuf, pNormalTrans->transType);
+    PRINT_UTIL_Info(aucBuf, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+
+    /*************************************************/
+    //卡号
+    PRINT_UTIL_InfoChar("CARD:", PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
+    PRINT_UTIL_InfoChar((const char *)pNormalTrans->aucSourceAcc, PRINT_LEFT, PF_DOUBLE_SIZE, THERMAL);
+
+    //卡有效期    类型
+    memset(aucBuf, 0, sizeof(aucBuf));
+    memcpy(&aucBuf[0], &pNormalTrans->ucExpiredDate[0], 2);
+    aucBuf[2] = '/';
+    memcpy(&aucBuf[3], &pNormalTrans->ucExpiredDate[2], 2);
+    memset(aucBufLeft, 0, sizeof(aucBufLeft));
+    getInfoBuf(aucBufLeft, "EXPY: ", 6, aucBuf, 5);
+
+    memset(aucBufRight, 0, sizeof(aucBufRight));
+    getInfoBuf(aucBufRight, "TYPE: ", 6, (unsigned char *)"QCASH", 5);
     PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
 
     //参考号    授权号
+#if 0
     PRINT_UTIL_ChangeFont_GroupInfo(PF_DOUBLE_HEIGHT,
-                                    (unsigned char *)"REF.NO.: ", PF_DOUBLE_HEIGHT,
+                                    (unsigned char *)"REF# ", PF_DOUBLE_HEIGHT,
                                     pNormalTrans->aucRefNum, PF_DOUBLE_HEIGHT,
-                                    (unsigned char *)"APPR.CODE: ", PF_DOUBLE_HEIGHT,
+                                    (unsigned char *)"APPR# ", PF_DOUBLE_HEIGHT,
                                     pNormalTrans->aucAuthCode, PF_DOUBLE_SIZE);
+#else
+    memset(aucBufLeft, 0, sizeof(aucBufLeft));
+    memset(aucBufRight, 0, sizeof(aucBufRight));
+    getInfoBuf(aucBufLeft, "REF# ", 5, pNormalTrans->aucRefNum, 12);
+    getInfoBuf(aucBufRight, "APPR# ", 6, pNormalTrans->aucAuthCode, 6);
+    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+#endif
 
     //金额统计
     //消费金额
     memset(aucBufRight, 0, sizeof(aucBufRight));
-    PRINT_FormAmount(aucBufRight, pNormalTrans->ulAmount, 2, 0, g_constantParam.aucCurrencySign);
-    ulAmount += pNormalTrans->ulAmount;
-    PRINT_UTIL_TransInfo((const unsigned char *)"BASE", aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_SIZE, THERMAL);
-//    //小费
-//    memset(aucBufRight, 0, sizeof(aucBufRight));
-//    sprintf((char*)aucBufRight, "%s",(char *)"TK          0.00");
-//    PRINT_UTIL_TransInfo((const unsigned char *)"TIP ", aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_UTIL_TransInfo((const unsigned char *)"", (const unsigned char *)"------------", 12, PRINT_RIGHT, PF_NORMAL, THERMAL);
-    //总计
+    if(pNormalTrans->transType == TransMode_AdvanceAdjust
+    || pNormalTrans->transType == TransMode_DepositAdjust)
+        ulAmount += pNormalTrans->ulAdjustAmount;
+    else
+        ulAmount += pNormalTrans->ulAmount;
+
     memset(aucBufRight, 0, sizeof(aucBufRight));
     PRINT_FormAmount(aucBufRight, ulAmount, 2, 0, g_constantParam.aucCurrencySign);
     PRINT_UTIL_TransInfo((const unsigned char *)"TOTAL", aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_SIZE, THERMAL);
@@ -203,13 +197,14 @@ void PrintTransTicket(NormalTrans *pNormalTrans, TicketType ucTicketType, bool i
     //签名提示
     if(MerchantTicket == ucTicketType)
     {
-        PRINT_xlinefeed(LINENUM*5);
+        PRINT_xlinefeed(LINENUM*4);
         PRINT_UTIL_PrintInfoLine((unsigned char *)"SIGN X", THERMAL);
-        PRINT_UTIL_InfoChar("I AGREE TO PAY ABOVE TOTAL AMOUNT", PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-        PRINT_UTIL_InfoChar("ACCORDING TO CARD ISSVER AGREEMENT", PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+        PRINT_UTIL_Info(g_constantParam.aucAgreeLine1, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+        PRINT_UTIL_Info(g_constantParam.aucAgreeLine2, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+        PRINT_UTIL_Info(g_constantParam.aucAgreeLine3, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+        PRINT_UTIL_Info(g_constantParam.aucAgreeLine4, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
     }
 
-    PRINT_xlinefeed(LINENUM*2);
     //重印
     if(isReprint)
         PRINT_UTIL_InfoChar("*** DUPLICATE ***", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
@@ -218,7 +213,7 @@ void PrintTransTicket(NormalTrans *pNormalTrans, TicketType ucTicketType, bool i
     switch(ucTicketType)
     {
     case MerchantTicket:
-        PRINT_UTIL_InfoChar("--- Merchant Copy ---", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+        PRINT_UTIL_Info(g_constantParam.aucCompanyCopyLabel, PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
         break;
     case CardHolderTicket:
         PRINT_UTIL_InfoChar("--- Card Holder Copy ---", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
@@ -230,140 +225,107 @@ void PrintTransTicket(NormalTrans *pNormalTrans, TicketType ucTicketType, bool i
     PRINT_CheckState();
 }
 
+static void PrintTransTicket(NormalTrans *pNormalTrans, unsigned int uiNo)
+{
+    unsigned char aucBufLeft[40];
+    unsigned char aucBufRight[40];
+    unsigned int uiOffSet = 0;
+
+    /******************* 第一行 *******************/
+    uiOffSet = 0;
+    memset(aucBufLeft, ' ', sizeof(aucBufLeft));
+    //序号
+    int_asc(aucBufLeft, 3, &uiNo);
+    aucBufLeft[3] = '.';
+    uiOffSet += 6;
+    //日期 时间
+    getFormDate(pNormalTrans->aucDate, &aucBufLeft[uiOffSet]);
+    uiOffSet += 12;
+    getFormTime(pNormalTrans->aucTime, &aucBufLeft[uiOffSet]);
+    uiOffSet += 5;
+    aucBufLeft[uiOffSet] = 0;
+    //交易类型
+    memset(aucBufRight, 0, sizeof(aucBufRight));
+    getTransType(aucBufRight, pNormalTrans->transType);
+    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
+    /******************* 第二行 *******************/
+    //卡号
+    memset(aucBufLeft, ' ', sizeof(aucBufLeft));
+    uiOffSet = 6;
+    memcpy(&aucBufLeft[uiOffSet], pNormalTrans->aucSourceAcc, pNormalTrans->ucSourceAccLen);
+    uiOffSet += pNormalTrans->ucSourceAccLen;
+    aucBufLeft[uiOffSet] = 0;
+    PRINT_UTIL_Info(aucBufLeft, PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
+    /******************* 第三行 *******************/
+    memset(aucBufRight, 0, sizeof(aucBufRight));
+    if(pNormalTrans->transType == TransMode_AdvanceAdjust
+    || pNormalTrans->transType == TransMode_DepositAdjust)
+        PRINT_FormAmount(aucBufRight, pNormalTrans->ulAdjustAmount, 2, 0, g_constantParam.aucCurrencySign);
+    else
+        PRINT_FormAmount(aucBufRight, pNormalTrans->ulAmount, 2, 0, g_constantParam.aucCurrencySign);
+
+    PRINT_UTIL_Info(aucBufRight, PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
+}
+
+static void PrintTransDetailTicket_ex(unsigned long ulTotalNb)
+{
+    PRINT_UTIL_InfoChar("***TRANSACTION DETAILS***", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
+    for(unsigned int uiIndex = 0; uiIndex < ulTotalNb; uiIndex++)
+    {
+        memset(&g_saveTrans, 0, sizeof(NORMAL_TRANS));
+        xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, uiIndex);
+        PrintTransTicket(&g_saveTrans, uiIndex);
+        PRINT_xlinefeed(LINENUM*1);
+    }
+}
+
 //打印结算单
 void PrintSettleTicket(void)
 {
-    unsigned char aucBuf[50];
-    unsigned char aucBuf2[50];
-    unsigned char aucBufMid[50];
-    unsigned char aucBufLeft[50];
-    unsigned char aucBufRight[50];
-
-    unsigned char   aucDate[7];    //  记录系统当前日期
-    unsigned char   aucTime[7];    //  记录系统当前时间
+    unsigned char aucBuf[20];
+    unsigned char aucDateTime[8];
+    unsigned char aucBufLeft[40];
+    unsigned char aucBufRight[40];
 
     //商户信息
     PrintTitle();
+    PRINT_UTIL_InfoChar("***SETTLEMENT RECEIPT***", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
 
-    //批次号 打印要在显示在中间
-    memset(aucBufMid, 0, sizeof(aucBufMid));
+    //交易日期  MMDD,YY  HH:MM
+    memset(aucBufLeft, ' ', sizeof(aucBufLeft));
+    memcpy(aucBufLeft, "DATE/TIME:", 10);
 
     memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 6, &NormalTransData.ulBatchNumber);
-    getInfoBuf(aucBufMid, "BATCH #:", 8, aucBuf, 6);
+    Os__read_date(aucBuf);
+    memcpy(&aucBuf[0], "20", 2);
+    memcpy(&aucBuf[2], &aucBuf[4], 2);
+    memset(aucDateTime, 0, sizeof(aucDateTime));
+    asc_bcd(aucDateTime, 8/2, aucBuf, 8);
+    getFormDate(aucDateTime, &aucBufLeft[11]);
 
-    PRINT_UTIL_InfoChar((const char*)aucBufMid, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-
-    //打印系统当前日期时间
     memset(aucBuf, 0, sizeof(aucBuf));
-    memset(aucBuf2, 0, sizeof(aucBuf2));
+    Os__read_time_sec(aucBuf);
+    memset(aucDateTime, 0, sizeof(aucDateTime));
+    asc_bcd(aucDateTime, 4/2, aucBuf, 4);
+    getFormTime(aucDateTime, &aucBufLeft[20]);
+    PRINT_UTIL_Info(aucBufLeft, PRINT_LEFT, PF_DOUBLE_HEIGHT, THERMAL);
+
+    //批次号    HOST
+    memset(aucBuf, 0, sizeof(aucBuf));
     memset(aucBufLeft, 0, sizeof(aucBufLeft));
+    long_asc(aucBuf, 6, &g_changeParam.ulBatchNumber);
+    getInfoBuf(aucBufLeft, "BATCH# ", 7, aucBuf, 6);
+
+//    memset(aucBuf, 0, sizeof(aucBuf));
     memset(aucBufRight, 0, sizeof(aucBufRight));
-    memset(aucDate, 0, sizeof(aucDate));
-    memset(aucTime, 0, sizeof(aucTime));
-
-    Os__read_date(aucDate);     //aucData: 230713
-    Uart_Printf("\naucData = %s\n", aucDate);
-    memcpy(&aucBuf[0],&aucDate[4],2);
-    memcpy(&aucBuf[2],&aucDate[2],2);
-    memcpy(&aucBuf[4],&aucDate[0],2);
-    aucBuf2[0]=0x20;
-    asc_bcd(&aucBuf2[1],3,aucBuf,6);
-    getFormDate(aucBuf2, aucBufLeft);
-
-    Os__read_time_sec(aucTime);
-    Uart_Printf("\naucTime = %s\n", aucTime);
-    memset(aucBuf,0,sizeof(aucBuf));
-    asc_bcd(aucBuf,3,aucTime,6);
-    getFormTime(aucBuf, aucBufRight);
-
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-
-    //
-
-    PRINT_xlinefeed(LINENUM*2);
-    PRINT_UTIL_InfoChar("BANKED TOTALS REPORT", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    //结算批次发起的起始日期 时间
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-
-    memset(aucBuf, 0, sizeof(aucBuf));
-    getFormDate(NormalTransData.aucDate, aucBuf);   //日期
-    getInfoBuf(aucBufLeft, "START: ", 7, aucBuf, strlen((char *)aucBuf));
-    getFormTime(NormalTransData.aucTime, aucBufRight);
-
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-
-
-    //********************** 分类统计 **********************
-    PRINT_xlinefeed(LINENUM*1);
-    //交易类型
-    PRINT_UTIL_InfoChar("ADVANCE", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-
-    PRINT_xlinefeed(LINENUM*1);
-    //交易类型      笔数      货币符号        金额
-    PRINT_UTIL_TransInfo((const unsigned char *)"TOTAL", (const unsigned char *)"AMOUNT", 6, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-    PRINT_UTIL_TransInfo((const unsigned char *)"--------", (const unsigned char *)"--------", 8, PRINT_MIDDLE, PF_NORMAL, THERMAL);
-
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-    memset(aucBuf, 0, sizeof(aucBuf));
-    sprintf((char*)aucBufLeft, "%d", g_transInfo.TransTotal.uiAdvanceNb);
-    PRINT_FormAmount(aucBufRight, g_transInfo.TransTotal.ulAdvanceAmount, 2, 0, g_constantParam.aucCurrencySign);
+//    long_asc(aucBuf, 6, &pNormalTrans->ulTraceNumber);
+//    getInfoBuf(aucBufRight, "TRACE# ", 7, aucBuf, 6);
     PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
+
     PRINT_xlinefeed(LINENUM*1);
 
-    //笔数      货币符号        金额
-    //PRINT_UTIL_TransInfo((const unsigned char *)"--------", (const unsigned char *)"    --------", 12, PRINT_RIGHT, PF_NORMAL, THERMAL);
-
-    //交易类型
-    PRINT_UTIL_InfoChar("DEPOSIT", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    PRINT_UTIL_TransInfo((const unsigned char *)"TOTAL", (const unsigned char *)"AMOUNT", 6, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-    PRINT_UTIL_TransInfo((const unsigned char *)"--------", (const unsigned char *)"--------", 8, PRINT_MIDDLE, PF_NORMAL, THERMAL);
-
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-    memset(aucBuf, 0, sizeof(aucBuf));
-    sprintf((char*)aucBufLeft, "%d", g_transInfo.TransTotal.uiDepositNb);
-    PRINT_FormAmount(aucBufRight, g_transInfo.TransTotal.ulDepositAmount, 2, 0, g_constantParam.aucCurrencySign);
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    //********************** 统计 **********************
-    //    PRINT_xlinefeed(LINENUM*1);
-    //    PRINT_UTIL_InfoChar("GRAND TOTAL", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    //    PRINT_xlinefeed(LINENUM*1);
-    //    //交易类型      笔数      货币符号        金额
-    //    PRINT_UTIL_TransInfo((const unsigned char *)"--------", (const unsigned char *)"    --------", 12, PRINT_RIGHT, PF_NORMAL, THERMAL);
-    //    //笔数      货币符号        金额
-    //    PRINT_UTIL_TransInfo((const unsigned char *)"--------", (const unsigned char *)"    --------", 12, PRINT_RIGHT, PF_NORMAL, THERMAL);
-
-    //*************************************************
-
-    //结束  日期 时间
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-
-    memset(aucBuf, 0, sizeof(aucBuf));
-    getFormDate(NormalTransData.aucDate, aucBuf);   //日期
-    getInfoBuf(aucBufLeft, "ENDED: ", 7, aucBuf, strlen((char *)aucBuf));
-    getFormTime(NormalTransData.aucTime, aucBufRight);
-
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    //
-    PRINT_UTIL_InfoChar("SETTLEMENT OK", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_UTIL_InfoChar("THANK YOU", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_UTIL_InfoChar("PRIME BANK LTD.", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    PRINT_UTIL_PrintLine(THERMAL);
-    PRINT_ProjAndVer();
+    xDATA::ReadValidFile(xDATA::DataSaveTransInfo);
+    PrintTransDetailTicket_ex(g_transInfo.ulTransNumber);
     PRINT_xlinefeed(LINENUM*6);
     PRINT_CheckState();
 }
@@ -371,148 +333,11 @@ void PrintSettleTicket(void)
 //打印交易明细
 void PrintTransDetailTicket(void)
 {
-    unsigned char aucBuf[50];
-    unsigned char aucBuf2[50];
-    unsigned char aucBufMid[50];
-    unsigned char aucBufLeft[50];
-    unsigned char aucBufRight[50];
-
-    unsigned char   aucDate[7];    //  记录系统当前日期
-    unsigned char   aucTime[7];    //  记录系统当前时间
-
     //商户信息
     PrintTitle();
 
-    //批次号 打印要在显示在中间
-    memset(aucBufMid, 0, sizeof(aucBufMid));
-
-    memset(aucBuf, 0, sizeof(aucBuf));
-    long_asc(aucBuf, 6, &NormalTransData.ulBatchNumber);
-    getInfoBuf(aucBufMid, "BATCH #:", 8, aucBuf, 6);
-
-    PRINT_UTIL_InfoChar((const char*)aucBufMid, PRINT_MIDDLE, PF_DOUBLE_HEIGHT, THERMAL);
-
-    //打印系统当前时间
-    memset(aucBuf, 0, sizeof(aucBuf));
-    memset(aucBuf2, 0, sizeof(aucBuf2));
-    memset(aucBufLeft, 0, sizeof(aucBufLeft));
-    memset(aucBufRight, 0, sizeof(aucBufRight));
-    memset(aucDate, 0, sizeof(aucDate));
-    memset(aucTime, 0, sizeof(aucTime));
-
-    Os__read_date(aucDate);     //aucData: 230713
-    Uart_Printf("\naucData = %s\n", aucDate);
-    memcpy(&aucBuf[0],&aucDate[4],2);
-    memcpy(&aucBuf[2],&aucDate[2],2);
-    memcpy(&aucBuf[4],&aucDate[0],2);
-    aucBuf2[0]=0x20;
-    asc_bcd(&aucBuf2[1],3,aucBuf,6);
-    getFormDate(aucBuf2, aucBufLeft);
-
-    Os__read_time_sec(aucTime);
-    Uart_Printf("\naucTime = %s\n", aucTime);
-    memset(aucBuf,0,sizeof(aucBuf));
-    asc_bcd(aucBuf,3,aucTime,6);
-    getFormTime(aucBuf, aucBufRight);
-
-    PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-
-    //
-    PRINT_xlinefeed(LINENUM*2);
-    PRINT_UTIL_InfoChar("BATCH ANALYSIS REPORT", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    //交易详细清单
-    for(int index = 0; index < ((int)g_constantParam.uiMaxTotalNb); index++)
-    {
-        if(g_transInfo.auiTransIndex[index])
-        {
-            //:- 读取数据保存到NormalTransData
-            memset(&NormalTransData,0,sizeof(NORMAL_TRANS));
-            xDATA::ReadSubsectionFile(xDATA::DataSaveSaveTrans, index);
-            memcpy(&NormalTransData,&g_saveTrans,sizeof(NORMAL_TRANS));
-
-            //清单第一行
-            memset(aucBuf, 0, sizeof(aucBuf));
-            memset(aucBufLeft, 0, sizeof(aucBufLeft));
-            memset(aucBufRight, 0, sizeof(aucBufRight));
-
-            PRINT_FormAmount(aucBuf, NormalTransData.ulAmount, 2, 0, g_constantParam.aucCurrencySign);
-            getInfoBuf(aucBufLeft, (const char*)NormalTransData.aucSourceAcc, TRANS_ACCLEN, aucBuf,  strlen((char *)aucBuf));
-            getInfoBuf(aucBufRight, "Appr. ", 6, NormalTransData.aucAuthCode, TRANS_AUTHCODE_LEN);
-
-            PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-
-            //清单第二行
-            memset(aucBuf, 0, sizeof(aucBuf));
-            memset(aucBuf2, 0, sizeof(aucBuf2));
-            memset(aucBufLeft, 0, sizeof(aucBufLeft));
-            memset(aucBufRight, 0, sizeof(aucBufRight));
-
-            getFormDate(NormalTransData.aucDate, aucBuf);   //日期
-            memcpy(&aucBuf[10], "  ", 2);
-            getFormTime(NormalTransData.aucTime, aucBuf2);  //时间
-            getInfoBuf(aucBufLeft, (const char*)aucBuf, strlen((char*)aucBuf), aucBuf2, strlen((char*)aucBuf2));
-
-            memset(aucBuf, 0, sizeof(aucBuf));
-
-            memcpy(&aucBuf[0], &NormalTransData.ucExpiredDate[0], 2);
-            aucBuf[2] = '/';
-            memcpy(&aucBuf[3], &NormalTransData.ucExpiredDate[2], 2);
-
-            getInfoBuf(aucBufRight, "Exp. ", 5, aucBuf, strlen((char*)aucBuf));
-
-            PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-
-            //清单第三行
-            memset(aucBuf, 0, sizeof(aucBuf));
-            memset(aucBufLeft, 0, sizeof(aucBufLeft));
-            memset(aucBufRight, 0, sizeof(aucBufRight));
-
-            switch(NormalTransData.transType)
-            {
-            case TransMode_CashDeposit: //存钱
-                memcpy(aucBufLeft, "CashDeposit", 11);
-                break;
-
-            case TransMode_CashAdvance: //取钱
-                memcpy(aucBufLeft, "CashAdvance", 11);
-                break;
-
-            case TransMode_AdvanceVoid:    //撤销
-                memcpy(aucBufLeft, "CashVoid", 8);
-                break;
-
-            case TransMode_CardTransfer: //转账
-                memcpy(aucBufLeft, "CashTransfer", 12);
-                break;
-
-            case TransMode_BalanceInquiry: //查余
-                memcpy(aucBufLeft, "BalanceInquiry", 14);
-                break;
-
-             default:
-                memcpy(aucBufLeft, "Unknown Trans", 13);
-                break;
-            }
-
-            long_asc(aucBuf, 6, &NormalTransData.ulTraceNumber);
-            getInfoBuf(aucBufRight, "Trace: ", 7, aucBuf, 6);
-
-            PRINT_UTIL_TransInfo(aucBufLeft, aucBufRight, strlen((char *)aucBufRight), PRINT_RIGHT, PF_DOUBLE_HEIGHT, THERMAL);
-            PRINT_xlinefeed(LINENUM*1);
-        }
-    }
-
-
-    //
-    PRINT_UTIL_InfoChar("END OF REPORT", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_UTIL_InfoChar("PRIME BANK LTD.", PRINT_MIDDLE, PF_DOUBLE_SIZE, THERMAL);
-    PRINT_xlinefeed(LINENUM*1);
-
-    PRINT_UTIL_PrintLine(THERMAL);
-    PRINT_ProjAndVer();
+    xDATA::ReadValidFile(xDATA::DataSaveTransInfo);
+    PrintTransDetailTicket_ex(g_transInfo.ulTransNumber);
     PRINT_xlinefeed(LINENUM*6);
     PRINT_CheckState();
 }
-

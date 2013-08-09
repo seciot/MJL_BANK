@@ -110,10 +110,10 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     btnPIN->setStyleSheet(BTN_MENU_STYLE);
     btnLogOn->setStyleSheet(BTN_MENU_STYLE);
 
-    btnPageOneCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageOneNext->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoBack->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnPageOneCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageOneNext->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoBack->setStyleSheet(BTN_GREY_STYLE);
 
     btnPageOneCancel->setFixedHeight(30);
     btnPageTwoCancel->setFixedHeight(30);
@@ -181,7 +181,7 @@ UIMenuTrans::UIMenuTrans(QDialog *parent,Qt::WindowFlags f) :
     connect(btnAdjust,SIGNAL(clicked()),this,SLOT(Adjust_Click()));
 
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -199,15 +199,15 @@ void UIMenuTrans::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F1:
         this->pageTwoBackClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F2:
         this->pageOneNextClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     default:
         event->ignore();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     }
 }
@@ -330,7 +330,7 @@ bool UIMenuTrans::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

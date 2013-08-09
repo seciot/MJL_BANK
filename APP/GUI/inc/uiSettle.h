@@ -17,6 +17,7 @@ public:
 
     QLabel *lbHead;
     QLabel *lbGif;
+    QLabel *lbHeadNotice;
     QLabel *lbNotice;
     QLabel *lbNotice2;
 
@@ -50,11 +51,12 @@ private slots:
     void quitFromInputPass();
     void EableKEY_CAN(bool bEnable);
     void UpdateLabelText(const QString &str,const QString &backup);
+    void slotUpdateStatus(QString status);
     void ReturnFromThread(unsigned char index);
     void UpdateLabelChange();
     void ReturnWay();
     void slotBtnCancelclicked();
-
+    void slotFinishPrint();
 signals:
     void QuickQuit(unsigned char result);
 

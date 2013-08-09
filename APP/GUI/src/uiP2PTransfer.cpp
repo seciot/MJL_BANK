@@ -3,18 +3,13 @@
 #include "xdata.h"
 #include "global.h"
 
-static void TRANS_CleanTransData(void);
-
 UIP2PTransfer::UIP2PTransfer(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
     // 先清数据
-    TRANS_CleanTransData();
+    xDATA::ClearGlobalData();
     NormalTransData.transType = TransMode_CardTransfer;
     RemoveKeyEventBug();
-    xDATA::ReadValidFile(xDATA::DataSaveChange);
-    xDATA::ReadValidFile(xDATA::DataSaveConstant);
-
 
     FLAG_InputPassword=false;
     FLAG_AccountTypeReceive=false;
@@ -101,15 +96,15 @@ void UIP2PTransfer::chooseAccountType(UserType ut,QString ID)
 {
     qDebug()<<ut<<ID;
 
-    if(g_changeParam.p2p.TRANS_ENABLE==false)
+    if(g_constantParam.p2p.TRANS_ENABLE==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Transaction Disabled",g_constantParam.TIMEOUT_ERRMSG);
 
         return;
     }
     if(g_changeParam.boolCashierLogonFlag==false)
     {
-        UIMsg::showErrMsgWithAutoClose("Please Logon",g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showErrMsgWithAutoClose("Please Logon",g_constantParam.TIMEOUT_ERRMSG);
         return;
     }
     //--------------------------------------- //
@@ -127,7 +122,7 @@ void UIP2PTransfer::chooseAccountType(UserType ut,QString ID)
     {
         qDebug()<<"不支持柜员以外的用户做交易";
 
-        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_changeParam.TIMEOUT_ERRMSG);
+        UIMsg::showNoticeMsgWithAutoClose(NO_PERMISSION,g_constantParam.TIMEOUT_ERRMSG);
         uiInPass->resetLine();
 
         return;
@@ -156,7 +151,7 @@ void UIP2PTransfer::swipeCard()
 
     FLAG_SwipeCard=true;
     uiSwipeCard=new UISwipeCard();
-    if(g_changeParam.p2p.MANUAL_ENABLE==false)
+    if(g_constantParam.p2p.MANUAL_ENABLE==false)
     {
         uiSwipeCard->setNoManual();
     }
@@ -206,7 +201,7 @@ void UIP2PTransfer::inputPIN(QString strAmt)
 
     uiInPIN=new UIInputPIN();
     uiInPIN->slotSetAmount(strAmt);
-    if(g_changeParam.p2p.PIN_ENABLE==false)
+    if(g_constantParam.p2p.PIN_ENABLE==false)
         uiInPIN->slotDisablePIN();
     connect(uiInPIN,SIGNAL(sigQuitTrans()),this,SLOT(quitFromFlow()));
     connect(uiInPIN,SIGNAL(sigSubmit()),this,SLOT(chooseReceiverAccountType()));
@@ -328,7 +323,7 @@ void UIP2PTransfer::quitFromFlow()
         FLAG_InputPassword=false;
     }
 
-    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showErrMsgWithAutoClose(ERR_CANCEL,g_constantParam.TIMEOUT_ERRMSG);
 
     this->close();
 }
@@ -399,8 +394,4 @@ void UIP2PTransfer::finishFromFlow()
 
     this->close();
 }
-static void TRANS_CleanTransData(void)
-{
-    memset(&NormalTransData, 0, sizeof(NormalTransData));
-    memset(&ExtraTransData, 0, sizeof(ExtraTransData));
-}
+

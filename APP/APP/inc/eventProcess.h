@@ -15,7 +15,8 @@ enum EventType
 EventType getEventType();
 void RemoveKeyEventBug(void);
 unsigned char KEYDrv_Process();
-unsigned char EventProcess(unsigned char Type);
-DRV_OUT* GetPxMag();
+unsigned char EventProcess(bool magEvent, bool touchEvent, bool untouchEvent);
+DRV_OUT *GetPxMag();
+DRV_OUT *GetMifare();
 
 #endif // EVENTPROCESS_H

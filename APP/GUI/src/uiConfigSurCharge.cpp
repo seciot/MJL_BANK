@@ -256,7 +256,7 @@ UIConfigSurCharge::UIConfigSurCharge(QDialog *parent,Qt::WindowFlags f) :
 
     layout->setContentsMargins(0,0,0,5);
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -276,14 +276,14 @@ void UIConfigSurCharge::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -324,6 +324,6 @@ void UIConfigSurCharge::setAutoClose(int timeout)
 
 void UIConfigSurCharge::slotQuitCfg()
 {
-    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }

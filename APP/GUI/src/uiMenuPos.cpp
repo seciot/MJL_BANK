@@ -42,7 +42,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnConfig=new QPushButton;
     btnBatch=new QPushButton;
     btnReceipt=new QPushButton;
-    btnVOID=new QPushButton;
     btnSettle=new QPushButton;
     btnCashierManager=new QPushButton;
     btnReport=new QPushButton;
@@ -57,7 +56,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     styleWidget(btnConfig);
     styleWidget(btnBatch);
     styleWidget(btnReceipt);
-    styleWidget(btnVOID);
     styleWidget(btnSettle);
     styleWidget(btnCashierManager);
     styleWidget(btnReport);
@@ -73,7 +71,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnConfig->setText(tr("Configuration"));
     btnBatch->setText(tr("Batch"));
     btnReceipt->setText(tr("Receipt"));
-    btnVOID->setText(tr("VOID"));
     btnSettle->setText(tr("Settlement"));
     btnCashierManager->setText(tr("Cashier Manager"));
     btnReport->setText(tr("Report"));
@@ -83,7 +80,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnConfig->setFont(font);
     btnBatch->setFont(font);
     btnReceipt->setFont(font);
-    btnVOID->setFont(font);
     btnSettle->setFont(font);
     btnCashierManager->setFont(font);
     btnReport->setFont(font);
@@ -102,17 +98,16 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     btnConfig->setStyleSheet(BTN_MENU_STYLE);
     btnBatch->setStyleSheet(BTN_MENU_STYLE);
     btnReceipt->setStyleSheet(BTN_MENU_STYLE);
-    btnVOID->setStyleSheet(BTN_MENU_STYLE);
     btnSettle->setStyleSheet(BTN_MENU_STYLE);
     btnCashierManager->setStyleSheet(BTN_MENU_STYLE);
     btnReport->setStyleSheet(BTN_MENU_STYLE);
     btnParDown->setStyleSheet(BTN_MENU_STYLE);
 
 
-    btnPageOneCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoCancel->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageOneNext->setStyleSheet(BTN_MENU_CANCEL_STYLE);
-    btnPageTwoBack->setStyleSheet(BTN_MENU_CANCEL_STYLE);
+    btnPageOneCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoCancel->setStyleSheet(BTN_GREY_STYLE);
+    btnPageOneNext->setStyleSheet(BTN_GREY_STYLE);
+    btnPageTwoBack->setStyleSheet(BTN_GREY_STYLE);
 
     btnPageOneCancel->setFixedHeight(30);
     btnPageTwoCancel->setFixedHeight(30);
@@ -134,7 +129,7 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     pageOneVLayout->addWidget(btnConfig);
     pageOneVLayout->addWidget(btnBatch);
     pageOneVLayout->addWidget(btnReceipt);
-    pageOneVLayout->addWidget(btnVOID);
+    pageOneVLayout->addWidget(btnSettle);
     pageOneVLayout->addItem(sp1);
     pageOneHLayout->addWidget(btnPageOneCancel);
     pageOneHLayout->addWidget(btnPageOneNext);
@@ -142,7 +137,6 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
     //    pageOne->setLayout(pageOneVLayout);
 
     QSpacerItem *sp2=new QSpacerItem(1,1,QSizePolicy::Expanding,QSizePolicy::Expanding);
-    pageTwoVLayout->addWidget(btnSettle);
     pageTwoVLayout->addWidget(btnCashierManager);
     pageTwoVLayout->addWidget(btnReport);
     pageTwoVLayout->addWidget(btnParDown);
@@ -176,7 +170,7 @@ UIMenuPos::UIMenuPos(QDialog *parent,Qt::WindowFlags f) :
 
     connect(btnParDown,SIGNAL(clicked()),this,SLOT(Param_Down_Click()));
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -194,16 +188,16 @@ void UIMenuPos::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_F1:
         this->pageTwoBackClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
 
         break;
     case Qt::Key_F2:
         this->pageOneNextClicked();
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
 
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -313,7 +307,7 @@ bool UIMenuPos::eventFilter(QObject *obj, QEvent *event)
         if(event->type()==QEvent::WindowActivate)
         {
             qDebug() << Q_FUNC_INFO<<"Start Timer";
-            closeTimer->start(g_changeParam.TIMEOUT_UI);
+            closeTimer->start(g_constantParam.TIMEOUT_UI);
         }
         else if(event->type()==QEvent::WindowDeactivate)
         {

@@ -5,6 +5,8 @@
 UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     QDialog(parent,f)
 {
+    xDATA::ClearGlobalData();
+
     QPixmap bg;
     bg.load(":/images/commonbg.png");
     QPalette palette;
@@ -27,14 +29,15 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbHead->setStyleSheet(HEAD_STYLE);
 
     //--------------------   define ----------------------//
-    xDATA::ReadValidFile(xDATA::DataSaveChange);
+    chkTrans = new QCheckBox();
+    chkCard = new QCheckBox();
 
-    chkTrans=new QCheckBox();
-    chkCard=new QCheckBox();
-    chkTrans->setText("模拟通讯");
-    chkCard->setText("模拟卡号");
+    chkTrans->setText("Sim COMM");
+    chkCard->setText("Sim Test Card");
+
     chkTrans->setFont(fontH);
     chkCard->setFont(fontH);
+
     if(g_changeParam.simTrans==true)
         chkTrans->setChecked(true);
     if(g_changeParam.simCard==true)
@@ -44,16 +47,17 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbSTAN->setMinimumWidth(FRAME420_WIDTH-RIGHT_WHITE);
 
     leSTAN=new QLineEdit();
+    leSTAN->setMaxLength(6);
     lbInvoice=new QLabel();
     leInvoice=new QLineEdit();
-    lbPABXAcCode=new QLabel();
-    lePABXAcCode=new QLineEdit();
-    lbPABXDelay=new QLabel();
+    leInvoice->setMaxLength(6);
     lePABXDelay=new QLineEdit();
     lbDialType=new QLabel();
     cbDialType=new QComboBox();
     lbTechPass=new QLabel();
     leTechPass=new QLineEdit();
+    leTechPass->setMaxLength(8);
+    leTechPass->setEchoMode(QLineEdit::Password);
     lbHostTimeOut=new QLabel();
     leHostTimeOut=new QLineEdit();
     lbUserTimeOut=new QLabel();
@@ -69,8 +73,6 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     lbSTAN->setText(tr("STAN:"));
     lbInvoice->setText(tr("Invoice:"));
-    lbPABXAcCode->setText(tr("PABX Access Code:"));
-    lbPABXDelay->setText(tr("PABX Delay:"));
     lbDialType->setText(tr("Dial Type:"));
     lbTechPass->setText(tr("Tech Password:"));
     lbHostTimeOut->setText(tr("Host Time Out(sec):"));
@@ -82,8 +84,6 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     lbSTAN->setScaledContents(true);
     lbInvoice->setScaledContents(true);
-    lbPABXAcCode->setScaledContents(true);
-    lbPABXDelay->setScaledContents(true);
     lbDialType->setScaledContents(true);
     lbTechPass->setScaledContents(true);
     lbHostTimeOut->setScaledContents(true);
@@ -93,7 +93,6 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     lbInvoiceLogo->setScaledContents(true);
     lbScreenLogo->setScaledContents(true);
 
-    chkNoBliendDial=new QCheckBox();
     chkSetReceipt=new QCheckBox();
     chkSelAccEnable=new QCheckBox();
     lbRLine1=new QLabel();
@@ -115,8 +114,16 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     lbCompLb=new QLabel();
     leCompLb=new QLineEdit();
+    leRLine1->setMaxLength(PARAM_PRINT_BIG_FONT_LEN);
+    leRLine2->setMaxLength(PARAM_PRINT_BIG_FONT_LEN);
+    leRLine3->setMaxLength(PARAM_PRINT_BIG_FONT_LEN);
+    leRLine4->setMaxLength(PARAM_PRINT_BIG_FONT_LEN);
+    leALine1->setMaxLength(PARAM_PRINT_SMALL_FONT_LEN);
+    leALine2->setMaxLength(PARAM_PRINT_SMALL_FONT_LEN);
+    leALine3->setMaxLength(PARAM_PRINT_SMALL_FONT_LEN);
+    leALine4->setMaxLength(PARAM_PRINT_SMALL_FONT_LEN);
+    leCompLb->setMaxLength(PARAM_PRINT_BIG_FONT_LEN - 10);
 
-    chkNoBliendDial->setText(tr("No Bliend Dial"));
     chkSetReceipt->setText(tr("Settle Receipt"));
     chkSelAccEnable->setText(tr("Select Account Enable"));
     lbRLine1->setText(tr("Receipt Line 1:"));
@@ -131,17 +138,19 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     chkCard->setStyleSheet(CHECK_BOX_STYLE);
     chkTrans->setStyleSheet(CHECK_BOX_STYLE);
-    chkNoBliendDial->setStyleSheet(CHECK_BOX_STYLE);
+
     chkSelAccEnable->setStyleSheet(CHECK_BOX_STYLE);
     chkSetReceipt->setStyleSheet(CHECK_BOX_STYLE);
+
     chkCard->setMinimumHeight(30);
     chkTrans->setMinimumHeight(30);
-    chkNoBliendDial->setMinimumHeight(30);
+
     chkSelAccEnable->setMinimumHeight(30);
     chkSetReceipt->setMinimumHeight(30);
+
     chkCard->setFont(font2);
     chkTrans->setFont(font2);
-    chkNoBliendDial->setFont(font2);
+
     chkSelAccEnable->setFont(font2);
     chkSetReceipt->setFont(font2);
 
@@ -151,13 +160,19 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     cbDialType->setMinimumHeight(26);
     cbInvoiceLogo->setMinimumHeight(26);
     cbScreenLogo->setMinimumHeight(26);
-    cbDialType->addItem("GPRS");
-    cbDialType->addItem("WIFI");
-    cbDialType->addItem("BLUETOOTH");
+
+    QPixmap pixmap(1,COMBO_HEIGHT);
+    pixmap.fill(Qt::transparent);
+    QIcon blankicon(pixmap);
+    cbDialType->setIconSize(QSize(1, COMBO_HEIGHT));
+    cbDialType->addItem(blankicon,"GPRS");
+    cbDialType->addItem(blankicon,"WIFI");
+
     cbInvoiceLogo->addItem("LOGO 1");
     cbInvoiceLogo->addItem("LOGO 2");
     cbInvoiceLogo->addItem("LOGO 3");
     cbInvoiceLogo->addItem("LOGO 4");
+
     cbScreenLogo->addItem("LOGO 1");
     cbScreenLogo->addItem("LOGO 2");
     cbScreenLogo->addItem("LOGO 3");
@@ -168,15 +183,11 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     QVBoxLayout *v1Lay=new QVBoxLayout();
     v1Lay->addWidget(chkTrans);
     v1Lay->addWidget(chkCard);
+
     v1Lay->addWidget(lbSTAN);
     v1Lay->addWidget(leSTAN);
     v1Lay->addWidget(lbInvoice);
     v1Lay->addWidget(leInvoice);
-
-    v1Lay->addWidget(lbPABXAcCode);
-    v1Lay->addWidget(lePABXAcCode);
-    v1Lay->addWidget(lbPABXDelay);
-    v1Lay->addWidget(lePABXDelay);
 
     v1Lay->addWidget(lbDialType);
     v1Lay->addWidget(cbDialType);
@@ -198,7 +209,6 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     v1Lay->addWidget(lbScreenLogo);
     v1Lay->addWidget(cbScreenLogo);
 
-    v1Lay->addWidget(chkNoBliendDial);
     v1Lay->addWidget(chkSetReceipt);
     v1Lay->addWidget(chkSelAccEnable);
 
@@ -253,32 +263,7 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     scWidget->setMaximumWidth(FRAME420_WIDTH-5);
     scWidget->setFont(font);
     scWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    vBar->setStyleSheet("QScrollBar:vertical {"
-                        "border:0px solid grey;"
-                        "width: 3px;"
-                        "}"
-                        " QScrollBar::handle:vertical {"
-                        " background: #8080FF;"
-                        " border: 2px solid grey;"
-                        " border-radius:5px;"
-                        " min-height: 10px;"
-                        " }"
-                        " QScrollBar::add-line:vertical {"
-                        " height: 0px;"
-                        " subcontrol-position: bottom;"
-                        " }"
-                        " QScrollBar::sub-line:vertical {"
-                        " height: 0px;"
-                        " subcontrol-position: top;"
-                        " }"
-                        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-                        " background: none;"
-                        "}"
-                        "QScrollArea"
-                        "{"
-                           "border:0;"
-                            "background:rgb(64,64,71);"
-                        "}");
+    vBar->setStyleSheet(SCROLL_VERTICAL_SIMPLE_STYLE);
 
     scArea->setVerticalScrollBar(vBar);
     scArea->setHorizontalScrollBar(hBar);
@@ -286,7 +271,7 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
     scArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scArea->setWidget(scWidget);
 
-//    scArea->ensureVisible(240,320,240,320);
+    //    scArea->ensureVisible(240,320,240,320);
 
     // ------------------------------------------- //
 
@@ -303,7 +288,7 @@ UIConfigTer::UIConfigTer(QDialog *parent,Qt::WindowFlags f) :
 
     this->initialSettings();
 
-    this->setAutoClose(g_changeParam.TIMEOUT_UI);
+    this->setAutoClose(g_constantParam.TIMEOUT_UI);
 
 }
 
@@ -320,17 +305,18 @@ void UIConfigTer::keyPressEvent(QKeyEvent *event)
         this->close();
         break;
     case Qt::Key_Enter:
+        focusNextChild();
         break;
     case Qt::Key_F3:
         vBar->setValue(vBar->value()-150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     case Qt::Key_F4:
         vBar->setValue(vBar->value()+150);
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         break;
     default:
-        closeTimer->start(g_changeParam.TIMEOUT_UI);
+        closeTimer->start(g_constantParam.TIMEOUT_UI);
         event->ignore();
         break;
     }
@@ -338,16 +324,15 @@ void UIConfigTer::keyPressEvent(QKeyEvent *event)
 
 void UIConfigTer::mousePressEvent(QMouseEvent *event)
 {
-//    qDebug()<<"mousePressEvent"<<event->pos().x()<<event->pos().y();
+    //    qDebug()<<"mousePressEvent"<<event->pos().x()<<event->pos().y();
     saveVValue=event->pos().y();
 
 }
 
 void UIConfigTer::mouseMoveEvent(QMouseEvent *event)
 {
-
-//    qDebug()<<"mouseMoveEvent"<<event->pos().x()<<event->pos().y()<<vBar->value();
-//    qDebug()<<saveVValue;
+    //    qDebug()<<"mouseMoveEvent"<<event->pos().x()<<event->pos().y()<<vBar->value();
+    //    qDebug()<<saveVValue;
     if(saveVValue-event->pos().y() > 3)
     {
         vBar->setValue(vBar->value()+13);
@@ -362,16 +347,73 @@ void UIConfigTer::mouseMoveEvent(QMouseEvent *event)
 
 void UIConfigTer::initialSettings()
 {
+    qDebug()<<Q_FUNC_INFO;
+    // 模拟通讯 卡号
+    qDebug()<<"simCard:"<<g_changeParam.simCard<<"simTrans:"<<g_changeParam.simTrans;
+    if(g_changeParam.simCard==true)
+        chkCard->setChecked(true);
+    if(g_changeParam.simTrans==true)
+        chkTrans->setChecked(true);
+
+    // STAN 流水号
+    QString originTraceNo=QString::number(g_changeParam.ulTransNum);
+    qDebug()<<"originTraceNo:"<<originTraceNo;
+    if(originTraceNo.length()<6)
+        originTraceNo=originTraceNo.rightJustified(6,'0');
+    leSTAN->setText(originTraceNo);
+    //    qDebug()<<"g_changeParam.ulTransNum"<<g_changeParam.ulTransNum;
+    //    leSTAN->setText(QString::number(g_changeParam.ulTransNum));
+
+    // invoice 账单号
+    QString originInvoiceNo=QString::number(g_changeParam.ulInvoiceNum);
+    qDebug()<<"originInvoiceNo:"<<originInvoiceNo;
+    if(originInvoiceNo.length()<6)
+        originInvoiceNo=originInvoiceNo.rightJustified(6,'0');
+    leInvoice->setText(originInvoiceNo);
+    //    qDebug()<<"g_changeParam.ulInvoiceNum"<<g_changeParam.ulInvoiceNum;
+    //    leInvoice->setText(QString::number(g_changeParam.ulInvoiceNum));
+
     // timeout
-    leHostTimeOut->setText(QString::number(g_changeParam.TIMEOUT_HOST/1000));
-    leUserTimeOut->setText(QString::number(g_changeParam.TIMEOUT_UI/1000));
-    leErrMsgTimeOut->setText(QString::number(g_changeParam.TIMEOUT_ERRMSG/1000));
-    lePaperTearTimeOut->setText(QString::number(g_changeParam.TIMEOUT_PAPERTEAR/1000));
+    leHostTimeOut->setText(QString::number(g_constantParam.TIMEOUT_HOST/1000));
+    leUserTimeOut->setText(QString::number(g_constantParam.TIMEOUT_UI/1000));
+    leErrMsgTimeOut->setText(QString::number(g_constantParam.TIMEOUT_ERRMSG/1000));
+    lePaperTearTimeOut->setText(QString::number(g_constantParam.TIMEOUT_PAPERTEAR/1000));
+
+    if(g_constantParam.commMode==PARAM_COMMMODE_GPRS)
+        cbDialType->setCurrentIndex(0);
+    else if(g_constantParam.commMode==PARAM_COMMMODE_WIFI)
+        cbDialType->setCurrentIndex(1);
+
+    // flag
+    if(g_constantParam.flagSettleReceipt==true)
+        chkSetReceipt->setChecked(true);
+    if(g_constantParam.flagSelectAccount==true)
+        chkSelAccEnable->setChecked(true);
+
+    // print
+    leRLine1->setText(QString::fromAscii((const char *)g_constantParam.aucReceiptLine1));
+    leRLine2->setText(QString::fromAscii((const char *)g_constantParam.aucReceiptLine2));
+    leRLine3->setText(QString::fromAscii((const char *)g_constantParam.aucReceiptLine3));
+    leRLine4->setText(QString::fromAscii((const char *)g_constantParam.aucReceiptLine4));
+    leALine1->setText(QString::fromAscii((const char *)g_constantParam.aucAgreeLine1));
+    leALine2->setText(QString::fromAscii((const char *)g_constantParam.aucAgreeLine2));
+    leALine3->setText(QString::fromAscii((const char *)g_constantParam.aucAgreeLine3));
+    leALine4->setText(QString::fromAscii((const char *)g_constantParam.aucAgreeLine4));
+
+    QString companyLabel=QString::fromAscii((const char *)g_constantParam.aucCompanyCopyLabel);
+    companyLabel.remove(" --- ");
+    leCompLb->setText(companyLabel);
+
+    // Tec Pass
+    leTechPass->setText(QString::fromAscii((const char *)g_cashier.aucSuperPSW));
+
+    qDebug()<<Q_FUNC_INFO<<"out";
 
 }
 
 void UIConfigTer::slotSubmitClicked()
 {
+    qDebug()<<"\n\n---------"<<Q_FUNC_INFO<<"---------";
     // 模拟选项
     closeTimer->stop();
 
@@ -386,16 +428,97 @@ void UIConfigTer::slotSubmitClicked()
         g_changeParam.simTrans=false;
 
 
+    // STAN
+    ulong stan=leSTAN->text().toULong();
+    if(stan>=g_changeParam.ulTransNum)
+    {
+        g_changeParam.ulTransNum=stan;
+        qDebug()<<"STAN::"<<leSTAN->text()<<stan<<g_changeParam.ulTransNum;
+    }
+    else
+        UIMsg::showNoticeMsgWithAutoClose("Trace No.\ncan`t reduce",g_constantParam.TIMEOUT_ERRMSG);
+    //    g_changeParam.ulTransNum=leSTAN->text().toULong();
+    //    qDebug()<<" g_changeParam.ulTransNum"<< g_changeParam.ulTransNum;
+
+    // invoice
+    ulong invoice=leInvoice->text().toULong();
+    if(invoice>=g_changeParam.ulInvoiceNum)
+    {
+        g_changeParam.ulInvoiceNum=invoice;
+        qDebug()<<"invoice::"<<leInvoice->text()<<invoice<<g_changeParam.ulInvoiceNum;
+    }
+    else
+        UIMsg::showNoticeMsgWithAutoClose("Invoice No\ncan`t reduce",g_constantParam.TIMEOUT_ERRMSG);
+    //    g_changeParam.ulInvoiceNum=leInvoice->text().toULong();
+    //    qDebug()<<" g_changeParam.ulInvoiceNum"<< g_changeParam.ulInvoiceNum;
+
+    // dial type
+    if(cbDialType->currentText()=="GPRS")
+    {
+        g_constantParam.commMode = PARAM_COMMMODE_GPRS;
+    }
+    else if(cbDialType->currentText()=="WIFI")
+    {
+        g_constantParam.commMode = PARAM_COMMMODE_WIFI;
+        g_constantParam.ulHostIP[0] = 0xAC100298;
+        g_constantParam.ulHostIP[1] = 0xAC100298;
+        g_constantParam.uiHostPort[0] = 5999;
+        g_constantParam.uiHostPort[1] = 5998;
+    }
+    else
+    {
+        g_constantParam.commMode = PARAM_COMMMODE_GPRS;
+        g_constantParam.ulHostIP[0] = 0x74D46CE5;
+        g_constantParam.ulHostIP[1] = 0x1B938067;
+        g_constantParam.uiHostPort[0] = 5999;
+        g_constantParam.uiHostPort[1] = 5999;
+    }
+
     // timeout
-    g_changeParam.TIMEOUT_HOST=leHostTimeOut->text().toUInt()*1000;
-    g_changeParam.TIMEOUT_UI=leUserTimeOut->text().toUInt()*1000;
-    g_changeParam.TIMEOUT_ERRMSG=leErrMsgTimeOut->text().toUInt()*1000;
-    g_changeParam.TIMEOUT_PAPERTEAR=lePaperTearTimeOut->text().toUInt()*1000;
+    g_constantParam.TIMEOUT_HOST=leHostTimeOut->text().toUInt()*1000;
+    g_constantParam.TIMEOUT_UI=leUserTimeOut->text().toUInt()*1000;
+    g_constantParam.TIMEOUT_ERRMSG=leErrMsgTimeOut->text().toUInt()*1000;
+    g_constantParam.TIMEOUT_PAPERTEAR=lePaperTearTimeOut->text().toUInt()*1000;
+
+    // flag
+    if(chkSetReceipt->isChecked()==true)
+        g_constantParam.flagSettleReceipt=true;
+    else
+        g_constantParam.flagSettleReceipt=false;
+
+    if(chkSelAccEnable->isChecked()==true)
+        g_constantParam.flagSelectAccount=true;
+    else
+        g_constantParam.flagSelectAccount=false;
+
+    // print
+    memcpy(g_constantParam.aucReceiptLine1, leRLine1->text().toAscii().data(), PARAM_PRINT_BIG_FONT_LEN);
+    memcpy(g_constantParam.aucReceiptLine2, leRLine2->text().toAscii().data(), PARAM_PRINT_BIG_FONT_LEN);
+    memcpy(g_constantParam.aucReceiptLine3, leRLine3->text().toAscii().data(), PARAM_PRINT_BIG_FONT_LEN);
+    memcpy(g_constantParam.aucReceiptLine4, leRLine4->text().toAscii().data(), PARAM_PRINT_BIG_FONT_LEN);
+    memcpy(g_constantParam.aucAgreeLine1, leALine1->text().toAscii().data(), PARAM_PRINT_SMALL_FONT_LEN);
+    memcpy(g_constantParam.aucAgreeLine2, leALine2->text().toAscii().data(), PARAM_PRINT_SMALL_FONT_LEN);
+    memcpy(g_constantParam.aucAgreeLine3, leALine3->text().toAscii().data(), PARAM_PRINT_SMALL_FONT_LEN);
+    memcpy(g_constantParam.aucAgreeLine4, leALine4->text().toAscii().data(), PARAM_PRINT_SMALL_FONT_LEN);
+
+    QString companyCopy;
+    companyCopy+=" --- ";
+    companyCopy+=leCompLb->text();
+    companyCopy+=" --- ";
+    memcpy(g_constantParam.aucCompanyCopyLabel, companyCopy.toAscii().data(), PARAM_PRINT_BIG_FONT_LEN);
 
 
+    // Tec pass
+    if(!leTechPass->text().isEmpty())
+        memcpy(g_cashier.aucSuperPSW,leTechPass->text().toAscii().data(),8);
 
+
+    xDATA::WriteValidFile(xDATA::DataSaveConstant);
     xDATA::WriteValidFile(xDATA::DataSaveChange);
-    UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("SAVE SUCCESS",g_constantParam.TIMEOUT_ERRMSG);
+
+    qDebug()<<"---------"<<Q_FUNC_INFO<<"out"<<"---------";
+
 }
 
 void UIConfigTer::setAutoClose(int timeout)
@@ -408,12 +531,11 @@ void UIConfigTer::setAutoClose(int timeout)
 
 void UIConfigTer::slotQuitCfg()
 {
-    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_changeParam.TIMEOUT_ERRMSG);
+    UIMsg::showNoticeMsgWithAutoClose("TIME OUT",g_constantParam.TIMEOUT_ERRMSG);
     this->close();
 }
 
 void UIConfigTer::restartTimer()
 {
-    qDebug()<<Q_FUNC_INFO;
-    closeTimer->start(g_changeParam.TIMEOUT_UI);
+    closeTimer->start(g_constantParam.TIMEOUT_UI);
 }

@@ -14,6 +14,8 @@ public:
     ~MyIpAddrEdit();
 
     void settext(const QString &text);
+    void setReadOnly(bool flag);
+    void clearIP();
     QString text();
     void setStyleSheet(const QString &styleSheet);
 

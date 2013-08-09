@@ -1,7 +1,7 @@
 #ifndef KEY_H
 #define KEY_H
 
-
+void KEY_DumpData(const char *pTitle, unsigned char *pData, short sDataLen);
 unsigned char KEY_LoadDefaultKey(void);
 
 unsigned char KEY_CalcMAC(unsigned char *pucInData,
